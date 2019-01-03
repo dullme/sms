@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Card extends Model
 {
     protected $fillable = [
-        'name', 'amount', 'password', 'real_password',
+        'name', 'amount', 'password',
     ];
 
     public function getAmountAttribute($value)
@@ -20,9 +20,4 @@ class Card extends Model
         $this->attributes['amount'] = $value * 10000;
     }
 
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
-        $this->attributes['real_password'] = $value;
-    }
 }

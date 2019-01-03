@@ -13,7 +13,15 @@ use Encore\Admin\Show;
 
 class CardController extends Controller
 {
-    use HasResourceActions;
+    use HasResourceActions, AdminControllerTrait;
+
+    /**
+     * CardController constructor.
+     */
+    public function __construct()
+    {
+        $this->loadVue();
+    }
 
     /**
      * Index interface.
@@ -93,6 +101,11 @@ class CardController extends Controller
             $filter->between('name', '账号');
         });
 
+        $grid->tools(function ($tools){
+            $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/add-account').'">批量导入账号</a>');
+            $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/add-account-amount').'">会员卡批量充值</a>');
+        });
+
         $excel = new CardExpoter();
         $excel->setAttr(
             ['账号', '密码'],
@@ -116,7 +129,7 @@ class CardController extends Controller
         $show->id('Id');
         $show->name('账号');
         $show->amount('金额');
-        $show->real_password('密码');
+        $show->password('密码');
         $show->created_at('添加时间');
         $show->updated_at('更新时间');
 
@@ -132,27 +145,30 @@ class CardController extends Controller
         $form = new Form(new Card);
 
         if($show){
-            $form->number('name', '卡号');
-            $form->number('amount', '金额');
+            $form->text('name', '卡号')->rules('required|unique:cards|number20');
+            $form->currency('amount', '金额')->symbol('￥')->rules('required|numeric');
         }else{
-            $form->display('name', '卡号');
-            $form->display('amount', '金额');
+            $form->display('name', '卡号')->rules('required|unique:cards|number20');
+            $form->display('amount', '金额')->rules('required|numeric');
         }
-        $form->password('password', '密码')->rules('required|confirmed')
-            ->default(function ($form) {
-                return $form->model()->password;
-            });
-        $form->password('password_confirmation', '确认密码')->rules('required')
-            ->default(function ($form) {
-                return $form->model()->password;
-            });
-        $form->ignore(['password_confirmation']);
-        $form->saving(function (Form $form) {
-            if ($form->password && $form->model()->password != $form->password) {
-                $form->password = $form->password;
-            }
-        });
+        $form->text('password', '密码')->rules('required');
 
         return $form;
+    }
+
+    public function addAccount(Content $content)
+    {
+        return $content
+            ->header('批量导入账号')
+            ->description('')
+            ->body(view('addAccount'));
+    }
+
+    public function addAccountAmount(Content $content)
+    {
+        return $content
+            ->header('会员卡批量充值')
+            ->description('')
+            ->body('<meter-reading></meter-reading>');
     }
 }

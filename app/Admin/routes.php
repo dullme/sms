@@ -12,5 +12,7 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
     $router->resource('card', CardController::class);
+    $router->get('add-account', 'CardController@addAccount');
+    $router->get('add-account-amount', 'CardController@addAccountAmount');
 
 });

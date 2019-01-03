@@ -15,10 +15,9 @@ class CreateCardsTable extends Migration
     {
         Schema::create('cards', function (Blueprint $table) {
             $table->increments('id');
-            $table->bigInteger('name')->unique()->comment('卡号');
+            $table->string('name')->unique()->comment('卡号');
             $table->integer('amount')->default(0)->comment('金额');
             $table->string('password')->comment('密码');
-            $table->string('real_password')->comment('真实密码');
             $table->timestamps();
         });
     }

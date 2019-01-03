@@ -19,3 +19,5 @@
  */
 
 Encore\Admin\Form::forget(['map', 'editor']);
+Encore\Admin\Admin::css('/css/app.css');
+Encore\Admin\Admin::js('/js/app.js');
