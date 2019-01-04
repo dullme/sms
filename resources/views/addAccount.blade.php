@@ -1,1 +1,1 @@
-<example-component></example-component>
+<import-cards></import-cards>

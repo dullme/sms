@@ -4,14 +4,16 @@ namespace App\Admin\Controllers;
 
 use App\Admin\Extensions\CardExpoter;
 use App\Card;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResponseController;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
-class CardController extends Controller
+class CardController extends ResponseController
 {
     use HasResourceActions, AdminControllerTrait;
 
@@ -170,5 +172,58 @@ class CardController extends Controller
             ->header('会员卡批量充值')
             ->description('')
             ->body('<meter-reading></meter-reading>');
+    }
+
+    public function importCards(Request $request)
+    {
+        $file = $request->file('file');
+        if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
+            return $this->setStatusCode(422)->responseError('上传文件格式错误');
+        }
+
+        $data = collect(Excel::load($file)->get()->toArray())->map(function ($item){
+            return [
+                'name' => $item[0],
+                'password' => $item[1],
+                'amount' => $item[2],
+            ];
+        });
+        $data->shift();
+
+        return $this->responseSuccess($data);
+    }
+
+    public function saveImportCards(Request $request)
+    {
+        $request->validate([
+            'adds' => 'required',
+        ]);
+
+        $adds = collect($request->input('adds'));
+        $adds_count = $adds->count();
+        $adds_unique = $adds->pluck('name')->unique()->count();
+        if($adds_count != $adds_unique){
+            return $this->setStatusCode(422)->responseError('存在重复的卡号请修改后重新上传！');
+        }
+
+        $date = date('Y-m-d H:i:s', time());
+        $adds = $adds->map(function ($item) use ($date) {
+
+            return [
+                'name' => $item['name'],
+                'password' => $item['password'],
+                'amount' => $item['amount'] * 10000,
+                'created_at' => $date,
+                'updated_at' => $date,
+            ];
+        });
+
+        try {
+            $card = Card::insert($adds->toArray());
+
+            return $this->responseSuccess($card);
+        }catch (\Exception $e){
+            return $this->setStatusCode(422)->responseError('出错啦，可能系统已存在即将导入的账号，请仔细核对！');
+        }
     }
 }

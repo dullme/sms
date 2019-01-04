@@ -14,5 +14,7 @@ Route::group([
     $router->resource('card', CardController::class);
     $router->get('add-account', 'CardController@addAccount');
     $router->get('add-account-amount', 'CardController@addAccountAmount');
+    $router->post('import-cards', 'CardController@importCards');
+    $router->post('save-import-cards', 'CardController@saveImportCards');
 
 });
