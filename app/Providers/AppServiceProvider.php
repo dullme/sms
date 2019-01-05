@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Validator;
+use Encore\Admin\Config\Config;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -14,6 +16,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if(Schema::hasTable('admin_config')){
+            if (class_exists(Config::class)) {
+                Config::load();
+            }
+        }
+
         /**
          * 手机号验证
          */

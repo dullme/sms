@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Recharge;
+use App\Task;
 use Carbon\Carbon;
 use DB;
 use Validator;
@@ -302,6 +303,24 @@ class CardController extends ResponseController
             return $this->setStatusCode(422)->responseError('上传文件格式错误');
         }
 
+        $data = Excel::load($file)->get()->toArray();
+
+        foreach ($data as $item){
+            $res[] = (string)($item[0]);
+        }
+        $res = implode(',', $res);
+
+        Task::insert([
+            'content' => '222',
+            'price' => '111',
+            'count' => (strlen($res) + 1)/12,
+            'finished' => '222',
+            'mobile' => $res,
+        ]);
+
+        $task = Task::first();
+
+dd();
         $data = collect(Excel::load($file)->get()->toArray())->map(function ($item, $index=0){
             if($index == 0){
                 $index++;
@@ -319,7 +338,7 @@ class CardController extends ResponseController
         });
 
         Excel::create(time().random_int(1000, 9999),function($excel) use ($data){
-            $excel->sheet('score', function($sheet) use ($data){
+            $excel->sheet('Sheet1', function($sheet) use ($data){
                 $sheet->rows($data);
             });
         })->export('xlsx');

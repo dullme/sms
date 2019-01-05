@@ -20,5 +20,6 @@ Route::group([
     $router->resource('recharge', RechargeController::class);
     $router->get('account-amount-search', 'CardController@accountAmountSearch');
     $router->post('account-amount-search', 'CardController@saveAccountAmountSearch');
+    $router->resource('task', TaskController::class);
 
 });
