@@ -89,14 +89,18 @@ class TaskController extends Controller
             $status = array_get(Task::$status, $status);
             return "<span class='badge bg-$color'>$status</span>";
         });
-        $states = [
+        $grid->column('jindu', '进度')->display(function (){
+            $res = round(100/$this->count * $this->finished, 2);
+
+           return '<div class="progress" style="min-width: 100px"><div class="progress-bar progress-bar-striped active" role="progressbar" style="color: #333;width: '.$res.'%;">'.$res.'%</div></div>';
+        });
+        $grid->created_at('添加时间');
+
+        $grid->running('是否开启')->switch([
             'on'  => ['value' => 1, 'text' => '开启', 'color' => 'success'],
             'off' => ['value' => 0, 'text' => '暂停', 'color' => 'default'],
-        ];
-        $grid->running('是否开启')->switch($states);
-        $grid->count('任务总数');
-        $grid->finished('已完成数');
-        $grid->created_at('添加时间');
+        ]);
+
 
         return $grid;
     }
@@ -111,16 +115,13 @@ class TaskController extends Controller
     {
         $show = new Show(Task::findOrFail($id));
 
-        $show->id('Id');
-        $show->content('Content');
-        $show->price('Price');
-        $show->status('Status');
-        $show->count('Count');
-        $show->finished('Finished');
-        $show->mobile('Mobile');
-        $show->finished_mobile('Finished mobile');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->id('ID');
+        $show->content('任务内容');
+        $show->price('任务单价');
+        $show->status('状态');
+        $show->count('任务总数');
+        $show->finished('已完成数');
+        $show->created_at('添加时间');
 
         return $show;
     }
@@ -134,13 +135,12 @@ class TaskController extends Controller
     {
         $form = new Form(new Task);
 
-        $form->text('content', 'Content');
-        $form->text('price', 'Price');
-        $form->text('status', 'Status')->default('UNDONE');
-        $form->number('count', 'Count');
-        $form->number('finished', 'Finished');
-        $form->textarea('mobile', 'Mobile');
-        $form->textarea('finished_mobile', 'Finished mobile');
+        $form->text('content', '任务内容');
+        $form->currency('price', '任务单价');
+        $form->switch('running', '是否开启	')->states([
+            'on'  => ['value' => 1, 'text' => '开启', 'color' => 'success'],
+            'off' => ['value' => 0, 'text' => '暂停', 'color' => 'default'],
+        ]);
 
         return $form;
     }
