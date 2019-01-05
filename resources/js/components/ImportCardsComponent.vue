@@ -3,6 +3,7 @@
         <div class="col-sm-12">
             <div class="box box-info">
                 <div class="box-header" style="min-height: 45px">
+                    <a href="/admin/card" title="列表" class="btn btn-sm btn-default"><i class="fa fa-list"></i> <span class="hidden-xs">&nbsp;列表</span></a>
                     <div class="box-tools">
                         <form onsubmit="return false" enctype="multipart/form-data">
                             <span class="btn btn-default btn-sm" v-on:click="uploadFileClick">

@@ -21,3 +21,5 @@ window.Vue = require('vue');
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('import-cards', require('./components/ImportCardsComponent.vue'));
+Vue.component('add-account-amount', require('./components/AddAccountAmountComponent.vue'));
+Vue.component('account-amount-search', require('./components/AccountAmountSearchComponent.vue'));

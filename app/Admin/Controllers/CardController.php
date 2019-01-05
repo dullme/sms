@@ -2,6 +2,10 @@
 
 namespace App\Admin\Controllers;
 
+use App\Recharge;
+use Carbon\Carbon;
+use DB;
+use Validator;
 use App\Admin\Extensions\CardExpoter;
 use App\Card;
 use App\Http\Controllers\ResponseController;
@@ -12,6 +16,7 @@ use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Exception;
 
 class CardController extends ResponseController
 {
@@ -106,12 +111,13 @@ class CardController extends ResponseController
         $grid->tools(function ($tools){
             $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/add-account').'">批量导入账号</a>');
             $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/add-account-amount').'">会员卡批量充值</a>');
+            $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/account-amount-search').'">会员卡批量查询</a>');
         });
 
         $excel = new CardExpoter();
         $excel->setAttr(
-            ['账号', '密码'],
-            ['name', 'real_password']
+            ['账号', '密码', '余额'],
+            ['name', 'password']
         );
         $grid->exporter($excel);
 
@@ -163,7 +169,7 @@ class CardController extends ResponseController
         return $content
             ->header('批量导入账号')
             ->description('')
-            ->body(view('addAccount'));
+            ->body('<import-cards></import-cards>');
     }
 
     public function addAccountAmount(Content $content)
@@ -171,7 +177,52 @@ class CardController extends ResponseController
         return $content
             ->header('会员卡批量充值')
             ->description('')
-            ->body('<meter-reading></meter-reading>');
+            ->body('<add-account-amount></add-account-amount>');
+    }
+
+    public function saveAccountAmount(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_name' => 'required|number20',
+            'end_name' => 'required|number20',
+            'amount' => 'required|numeric',
+        ]);
+        if($validator->fails()){
+            return $this->setStatusCode(422)->responseError($validator->errors()->first());
+        }
+        $start_name = $request->input('start_name');
+        $end_name = $request->input('end_name');
+        $start_name_start = substr($start_name, 0, 16);    //开始前缀
+        $start_name_end = intval(substr($start_name, 16, 4));    //开始尾数
+        $end_name_end = intval(substr($end_name, 16, 4));    //结束尾数
+        if($start_name_end + 1000 <= $end_name_end){
+            return $this->setStatusCode(422)->responseError('单次只能为1000个账号充值');
+        }
+        for ($i = $start_name_end; $i <= $end_name_end; $i++) {
+            $names[] = $start_name_start.str_pad($i,4,"0",STR_PAD_LEFT);
+        }
+        $cards = Card::whereIn('name', $names)->get();
+        if (count($cards) != count($names)) {
+            return $this->setStatusCode(422)->responseError('存在不连续的用户名');
+        }
+
+        $amount = intval($request->input('amount') * 10000);
+        $now = Carbon::now()->toDateTimeString();
+
+        DB::beginTransaction(); //开启事务
+        $res = Card::whereIn('id', $cards->pluck('id'))->increment("amount",$amount);
+        $recharge = $cards->map(function ($card) use($amount, $now){
+            return [
+                'card_id' => $card->id,
+                'amount' => $amount,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        });
+        Recharge::insert($recharge->toArray());
+        DB::commit();   //保存
+
+        return $this->responseSuccess('对'.$res.'条记录各增加了'.($amount / 10000).'元');
     }
 
     public function importCards(Request $request)
@@ -207,16 +258,25 @@ class CardController extends ResponseController
         }
 
         $date = date('Y-m-d H:i:s', time());
-        $adds = $adds->map(function ($item) use ($date) {
+        try {
+            $adds = $adds->map(function ($item) use ($date) {
 
-            return [
-                'name' => $item['name'],
-                'password' => $item['password'],
-                'amount' => $item['amount'] * 10000,
-                'created_at' => $date,
-                'updated_at' => $date,
-            ];
-        });
+                if(!preg_match('/^\d{20}$/', $item['name'])){
+                    throw new Exception($item['name'].'卡号有误请检查');
+                }
+
+                return [
+                    'name' => $item['name'],
+                    'password' => $item['password'],
+                    'amount' => $item['amount'] * 10000,
+                    'created_at' => $date,
+                    'updated_at' => $date,
+                ];
+            });
+        }catch (Exception $e){
+            return $this->setStatusCode(422)->responseError($e->getMessage());
+        }
+
 
         try {
             $card = Card::insert($adds->toArray());
@@ -225,5 +285,43 @@ class CardController extends ResponseController
         }catch (\Exception $e){
             return $this->setStatusCode(422)->responseError('出错啦，可能系统已存在即将导入的账号，请仔细核对！');
         }
+    }
+
+    public function accountAmountSearch(Content $content)
+    {
+        return $content
+            ->header('会员卡批量查询')
+            ->description('')
+            ->body('<account-amount-search></account-amount-search>');
+    }
+
+    public function saveAccountAmountSearch(Request $request)
+    {
+        $file = $request->file('file');
+        if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
+            return $this->setStatusCode(422)->responseError('上传文件格式错误');
+        }
+
+        $data = collect(Excel::load($file)->get()->toArray())->map(function ($item, $index=0){
+            if($index == 0){
+                $index++;
+                return [$item[0], $item[1], $item[2]];
+            }
+
+            $res = Card::where('name', $item[0])->first();
+            $status = '密码错误';
+            if($res && $res->password == $item[1]){
+                $status = '匹配成功';
+            }
+
+            $index++;
+            return [$item[0], $item[1], $status == '匹配成功' ? $res->amount : '匹配失败',];
+        });
+
+        Excel::create(time().random_int(1000, 9999),function($excel) use ($data){
+            $excel->sheet('score', function($sheet) use ($data){
+                $sheet->rows($data);
+            });
+        })->export('xlsx');
     }
 }

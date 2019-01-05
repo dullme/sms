@@ -14,7 +14,11 @@ Route::group([
     $router->resource('card', CardController::class);
     $router->get('add-account', 'CardController@addAccount');
     $router->get('add-account-amount', 'CardController@addAccountAmount');
+    $router->post('add-account-amount', 'CardController@saveAccountAmount');
     $router->post('import-cards', 'CardController@importCards');
     $router->post('save-import-cards', 'CardController@saveImportCards');
+    $router->resource('recharge', RechargeController::class);
+    $router->get('account-amount-search', 'CardController@accountAmountSearch');
+    $router->post('account-amount-search', 'CardController@saveAccountAmountSearch');
 
 });

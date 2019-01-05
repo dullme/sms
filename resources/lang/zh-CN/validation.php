@@ -130,7 +130,7 @@ return [
     'custom' => [
         'name' => [
             'required' => '请输入卡号',
-            'number20' => '请输入20位数字',
+            'number20' => '卡号请输入20位数字',
             'unique' => '该卡号已存在',
         ],
         'amount' => [
@@ -143,6 +143,14 @@ return [
         ],
         'password_confirmation' => [
             'required' => '请输入确认密码',
+        ],
+        'start_name' => [
+            'required' => '请输入开始账号',
+            'number20' => '开始账号请输入20位数字',
+        ],
+        'end_name' => [
+            'required' => '请输入结束账号',
+            'number20' => '结束账号请输入20位数字',
         ],
     ],
 
