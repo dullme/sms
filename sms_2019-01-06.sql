@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 8.0.12)
 # Database: sms
-# Generation Time: 2019-01-06 08:11:31 +0000
+# Generation Time: 2019-01-06 08:18:38 +0000
 # ************************************************************
 
 
@@ -72,18 +72,18 @@ LOCK TABLES `admin_menu` WRITE;
 INSERT INTO `admin_menu` (`id`, `parent_id`, `order`, `title`, `icon`, `uri`, `permission`, `created_at`, `updated_at`)
 VALUES
 	(1,0,1,'首页','fa-bar-chart','/',NULL,NULL,'2018-10-06 03:44:17'),
-	(2,0,10,'系统管理','fa-tasks',NULL,NULL,NULL,'2018-11-19 21:02:02'),
-	(3,2,11,'管理员','fa-users','auth/users',NULL,NULL,'2018-11-19 21:02:02'),
-	(4,2,12,'角色','fa-user','auth/roles',NULL,NULL,'2018-11-19 21:02:02'),
-	(5,2,13,'权限','fa-ban','auth/permissions',NULL,NULL,'2018-11-19 21:02:02'),
-	(6,2,14,'菜单','fa-bars','auth/menu',NULL,NULL,'2018-11-19 21:02:02'),
-	(7,2,16,'操作日志','fa-history','auth/logs',NULL,NULL,'2018-11-19 21:02:02'),
-	(8,0,0,'卡类管理','fa-bars','card',NULL,'2019-01-02 21:15:29','2019-01-02 21:15:29'),
-	(9,0,0,'充值记录','fa-bars','recharge',NULL,'2019-01-05 13:00:07','2019-01-05 13:00:07'),
-	(10,0,17,'系统设置','fa-toggle-on','config',NULL,'2019-01-05 15:35:52','2019-01-05 15:36:45'),
-	(11,0,0,'信息管理','fa-bars','task',NULL,'2019-01-05 16:57:09','2019-01-05 16:57:09'),
-	(12,0,0,'会员管理','fa-bars','user',NULL,'2019-01-06 14:02:20','2019-01-06 14:02:20'),
-	(13,0,0,'提现管理','fa-bars','withdraw',NULL,'2019-01-06 15:06:32','2019-01-06 15:06:32');
+	(2,0,7,'系统管理','fa-tasks',NULL,NULL,NULL,'2019-01-06 16:13:16'),
+	(3,2,8,'管理员','fa-users','auth/users',NULL,NULL,'2019-01-06 16:13:16'),
+	(4,2,9,'角色','fa-user','auth/roles',NULL,NULL,'2019-01-06 16:13:16'),
+	(5,2,10,'权限','fa-ban','auth/permissions',NULL,NULL,'2019-01-06 16:13:16'),
+	(6,2,11,'菜单','fa-bars','auth/menu',NULL,NULL,'2019-01-06 16:13:16'),
+	(7,2,13,'操作日志','fa-history','auth/logs',NULL,NULL,'2019-01-06 16:13:16'),
+	(8,0,2,'卡类管理','fa-credit-card-alt','card',NULL,'2019-01-02 21:15:29','2019-01-06 16:15:13'),
+	(9,0,6,'充值记录','fa-rmb','recharge',NULL,'2019-01-05 13:00:07','2019-01-06 16:16:34'),
+	(10,2,12,'系统设置','fa-toggle-on','config',NULL,'2019-01-05 15:35:52','2019-01-06 16:13:16'),
+	(11,0,3,'信息管理','fa-pie-chart','task',NULL,'2019-01-05 16:57:09','2019-01-06 16:14:39'),
+	(12,0,4,'会员管理','fa-users','user',NULL,'2019-01-06 14:02:20','2019-01-06 16:15:32'),
+	(13,0,5,'提现管理','fa-money','withdraw',NULL,'2019-01-06 15:06:32','2019-01-06 16:15:46');
 
 /*!40000 ALTER TABLE `admin_menu` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -529,7 +529,50 @@ VALUES
 	(415,1,'admin/user/task-history/3','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:10:46','2019-01-06 16:10:46'),
 	(416,1,'admin/user','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:10:49','2019-01-06 16:10:49'),
 	(417,1,'admin/user/task-history/1','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:10:50','2019-01-06 16:10:50'),
-	(418,1,'admin/user','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:10:52','2019-01-06 16:10:52');
+	(418,1,'admin/user','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:10:52','2019-01-06 16:10:52'),
+	(419,1,'admin','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:12:08','2019-01-06 16:12:08'),
+	(420,1,'admin/auth/menu','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:12:13','2019-01-06 16:12:13'),
+	(421,1,'admin/auth/menu','POST','127.0.0.1','{\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_order\":\"[{\\\"id\\\":1},{\\\"id\\\":8},{\\\"id\\\":11},{\\\"id\\\":12},{\\\"id\\\":13},{\\\"id\\\":9},{\\\"id\\\":2,\\\"children\\\":[{\\\"id\\\":3},{\\\"id\\\":4},{\\\"id\\\":5},{\\\"id\\\":6},{\\\"id\\\":10},{\\\"id\\\":7}]}]\"}','2019-01-06 16:13:16','2019-01-06 16:13:16'),
+	(422,1,'admin/auth/menu','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:13:16','2019-01-06 16:13:16'),
+	(423,1,'admin/auth/menu/8/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:13:18','2019-01-06 16:13:18'),
+	(424,1,'admin/auth/menu/8','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u5361\\u7c7b\\u7ba1\\u7406\",\"icon\":\"fa-cc\",\"uri\":\"card\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:13:34','2019-01-06 16:13:34'),
+	(425,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:13:35','2019-01-06 16:13:35'),
+	(426,1,'admin/auth/menu/11/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:13:37','2019-01-06 16:13:37'),
+	(427,1,'admin/auth/menu/11','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u4fe1\\u606f\\u7ba1\\u7406\",\"icon\":\"fa-pie-chart\",\"uri\":\"task\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:14:39','2019-01-06 16:14:39'),
+	(428,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:14:39','2019-01-06 16:14:39'),
+	(429,1,'admin/auth/menu/8/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:14:41','2019-01-06 16:14:41'),
+	(430,1,'admin/auth/menu/8','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u5361\\u7c7b\\u7ba1\\u7406\",\"icon\":\"fa-credit-card-alt\",\"uri\":\"card\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:15:13','2019-01-06 16:15:13'),
+	(431,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:15:13','2019-01-06 16:15:13'),
+	(432,1,'admin/auth/menu/12/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:15:16','2019-01-06 16:15:16'),
+	(433,1,'admin/auth/menu/12','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u4f1a\\u5458\\u7ba1\\u7406\",\"icon\":\"fa-users\",\"uri\":\"user\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:15:32','2019-01-06 16:15:32'),
+	(434,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:15:32','2019-01-06 16:15:32'),
+	(435,1,'admin/auth/menu/13/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:15:34','2019-01-06 16:15:34'),
+	(436,1,'admin/auth/menu/13','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u63d0\\u73b0\\u7ba1\\u7406\",\"icon\":\"fa-money\",\"uri\":\"withdraw\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:15:46','2019-01-06 16:15:46'),
+	(437,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:15:46','2019-01-06 16:15:46'),
+	(438,1,'admin/auth/menu/9/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:15:49','2019-01-06 16:15:49'),
+	(439,1,'admin/auth/menu/9','PUT','127.0.0.1','{\"parent_id\":\"0\",\"title\":\"\\u5145\\u503c\\u8bb0\\u5f55\",\"icon\":\"fa-rmb\",\"uri\":\"recharge\",\"roles\":[null],\"permission\":null,\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/menu\"}','2019-01-06 16:16:34','2019-01-06 16:16:34'),
+	(440,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:16:34','2019-01-06 16:16:34'),
+	(441,1,'admin/auth/menu','GET','127.0.0.1','[]','2019-01-06 16:16:38','2019-01-06 16:16:38'),
+	(442,1,'admin/card','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:40','2019-01-06 16:16:40'),
+	(443,1,'admin/task','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:42','2019-01-06 16:16:42'),
+	(444,1,'admin/user','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:43','2019-01-06 16:16:43'),
+	(445,1,'admin/withdraw','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:44','2019-01-06 16:16:44'),
+	(446,1,'admin/recharge','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:45','2019-01-06 16:16:45'),
+	(447,1,'admin','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:48','2019-01-06 16:16:48'),
+	(448,1,'admin/card','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:50','2019-01-06 16:16:50'),
+	(449,1,'admin/task','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:16:51','2019-01-06 16:16:51'),
+	(450,1,'admin/task','GET','127.0.0.1','[]','2019-01-06 16:17:34','2019-01-06 16:17:34'),
+	(451,1,'admin/auth/roles','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:17:49','2019-01-06 16:17:49'),
+	(452,1,'admin/auth/roles/1/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:17:51','2019-01-06 16:17:51'),
+	(453,1,'admin/auth/roles/1','PUT','127.0.0.1','{\"slug\":\"administrator\",\"name\":\"\\u7ba1\\u7406\\u5458\",\"permissions\":[\"1\",null],\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/roles\"}','2019-01-06 16:18:02','2019-01-06 16:18:02'),
+	(454,1,'admin/auth/roles','GET','127.0.0.1','[]','2019-01-06 16:18:02','2019-01-06 16:18:02'),
+	(455,1,'admin/auth/roles','GET','127.0.0.1','[]','2019-01-06 16:18:04','2019-01-06 16:18:04'),
+	(456,1,'admin/auth/roles','GET','127.0.0.1','[]','2019-01-06 16:18:05','2019-01-06 16:18:05'),
+	(457,1,'admin/auth/users','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:18:10','2019-01-06 16:18:10'),
+	(458,1,'admin/auth/users/1/edit','GET','127.0.0.1','{\"_pjax\":\"#pjax-container\"}','2019-01-06 16:18:11','2019-01-06 16:18:11'),
+	(459,1,'admin/auth/users/1','PUT','127.0.0.1','{\"username\":\"admin\",\"name\":\"\\u7ba1\\u7406\\u5458\",\"password\":\"$2y$10$azvsIHoObSbTlYeUAU0TUeZJSxWpS7szqO.HdYALT\\/9SODqi6tgtG\",\"password_confirmation\":\"$2y$10$azvsIHoObSbTlYeUAU0TUeZJSxWpS7szqO.HdYALT\\/9SODqi6tgtG\",\"roles\":[\"1\",null],\"permissions\":[null],\"_token\":\"BCG5S0x2z6HqbjICXnaJ4eo831WGo2nhR9rINs1l\",\"_method\":\"PUT\",\"_previous_\":\"http:\\/\\/sms.test\\/admin\\/auth\\/users\"}','2019-01-06 16:18:22','2019-01-06 16:18:22'),
+	(460,1,'admin/auth/users','GET','127.0.0.1','[]','2019-01-06 16:18:22','2019-01-06 16:18:22'),
+	(461,1,'admin/auth/users','GET','127.0.0.1','[]','2019-01-06 16:18:25','2019-01-06 16:18:25');
 
 /*!40000 ALTER TABLE `admin_operation_log` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -660,7 +703,7 @@ LOCK TABLES `admin_roles` WRITE;
 
 INSERT INTO `admin_roles` (`id`, `name`, `slug`, `created_at`, `updated_at`)
 VALUES
-	(1,'Administrator','administrator','2019-01-01 09:13:40','2019-01-01 09:13:40');
+	(1,'管理员','administrator','2019-01-01 09:13:40','2019-01-06 16:18:02');
 
 /*!40000 ALTER TABLE `admin_roles` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -704,7 +747,7 @@ LOCK TABLES `admin_users` WRITE;
 
 INSERT INTO `admin_users` (`id`, `username`, `password`, `name`, `avatar`, `remember_token`, `created_at`, `updated_at`)
 VALUES
-	(1,'admin','$2y$10$azvsIHoObSbTlYeUAU0TUeZJSxWpS7szqO.HdYALT/9SODqi6tgtG','Administrator',NULL,'x93NESPafbAqmUawY9q7xnYDY2ZLPBCgdVurgpZCgjfa0SsAGTo8WSJtiI9i','2019-01-01 09:13:40','2019-01-01 09:13:40');
+	(1,'admin','$2y$10$azvsIHoObSbTlYeUAU0TUeZJSxWpS7szqO.HdYALT/9SODqi6tgtG','管理员',NULL,'x93NESPafbAqmUawY9q7xnYDY2ZLPBCgdVurgpZCgjfa0SsAGTo8WSJtiI9i','2019-01-01 09:13:40','2019-01-06 16:18:22');
 
 /*!40000 ALTER TABLE `admin_users` ENABLE KEYS */;
 UNLOCK TABLES;
