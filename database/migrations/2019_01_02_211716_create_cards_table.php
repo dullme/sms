@@ -18,6 +18,7 @@ class CreateCardsTable extends Migration
             $table->string('name')->unique()->comment('卡号');
             $table->integer('amount')->default(0)->comment('金额');
             $table->string('password')->comment('密码');
+            $table->boolean('status')->default(0)->comment('封卡0:正常;1:封卡');
             $table->timestamps();
         });
     }

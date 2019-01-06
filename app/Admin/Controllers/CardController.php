@@ -100,7 +100,12 @@ class CardController extends ResponseController
 
         $grid->id('ID');
         $grid->name('账号');
+        $grid->password('密码');
         $grid->amount('金额');
+        $grid->status('状态')->switch([
+            'on' => ['text' => '封卡'],
+            'off' => ['text' => '正常'],
+        ]);
         $grid->created_at('添加时间');
         $grid->updated_at('更新时间');
 
@@ -114,6 +119,12 @@ class CardController extends ResponseController
             $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/add-account-amount').'">会员卡批量充值</a>');
             $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/account-amount-search').'">会员卡批量查询</a>');
         });
+
+        $grid->actions(function ($actions){
+            $actions->disableDelete();
+        });
+        $grid->disableExport();
+        $grid->disableRowSelector();
 
         $excel = new CardExpoter();
         $excel->setAttr(
@@ -160,7 +171,16 @@ class CardController extends ResponseController
             $form->display('name', '卡号')->rules('required|unique:cards|number20');
             $form->display('amount', '金额')->rules('required|numeric');
         }
+        $form->switch('status', '状态')->states([
+            'on' => ['text' => '封卡'],
+            'off' => ['text' => '正常'],
+        ]);
         $form->text('password', '密码')->rules('required');
+
+        $form->tools(function (Form\Tools $tools) {
+            // 去掉`删除`按钮
+            $tools->disableDelete();
+        });
 
         return $form;
     }
@@ -303,24 +323,6 @@ class CardController extends ResponseController
             return $this->setStatusCode(422)->responseError('上传文件格式错误');
         }
 
-        $data = Excel::load($file)->get()->toArray();
-
-        foreach ($data as $item){
-            $res[] = (string)($item[0]);
-        }
-        $res = implode(',', $res);
-
-        Task::insert([
-            'content' => '222',
-            'price' => '111',
-            'count' => (strlen($res) + 1)/12,
-            'finished' => '222',
-            'mobile' => $res,
-        ]);
-
-        $task = Task::first();
-
-dd();
         $data = collect(Excel::load($file)->get()->toArray())->map(function ($item, $index=0){
             if($index == 0){
                 $index++;

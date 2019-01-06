@@ -2,17 +2,27 @@
 
 namespace App\Admin\Controllers;
 
+use App\Http\Controllers\ResponseController;
 use App\Task;
-use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Http\Request;
 
-class TaskController extends Controller
+class TaskController extends ResponseController
 {
-    use HasResourceActions;
+    use HasResourceActions, AdminControllerTrait;
+
+    /**
+     * TaskController constructor.
+     */
+    public function __construct()
+    {
+        $this->loadVue();
+    }
 
     /**
      * Index interface.
@@ -69,7 +79,7 @@ class TaskController extends Controller
         return $content
             ->header('添加任务')
             ->description('')
-            ->body($this->form());
+            ->body('<add-task></add-task>');
     }
 
     /**
@@ -84,11 +94,6 @@ class TaskController extends Controller
         $grid->id('ID');
         $grid->content('任务内容');
         $grid->price('任务单价');
-        $grid->status('状态')->display(function ($status){
-            $color = array_get(Task::$color, $status);
-            $status = array_get(Task::$status, $status);
-            return "<span class='badge bg-$color'>$status</span>";
-        });
         $grid->column('jindu', '进度')->display(function (){
             $res = round(100/$this->count * $this->finished, 2);
 
@@ -143,5 +148,39 @@ class TaskController extends Controller
         ]);
 
         return $form;
+    }
+
+    public function taskAdd(Request $request)
+    {
+        $request->validate([
+            'price' => 'required|numeric',
+            'content' => 'required',
+            'file' => 'required|file',
+        ]);
+
+        $file = $request->file('file');
+        if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
+            return $this->setStatusCode(422)->responseError('上传文件格式错误');
+        }
+
+        $data = Excel::load($file)->get()->toArray();
+
+        foreach ($data as $item){
+            $mobile = (string)($item[0]);
+            if(strlen($mobile)!= 11){
+                return $this->setStatusCode(422)->responseError($mobile.'该号码有误');
+            }
+            $res[] = $mobile;
+        }
+        $res = implode(',', $res);
+
+        $task = Task::create([
+            'content' => $request->input('content'),
+            'price' => $request->input('price'),
+            'count' => (strlen($res) + 1)/12,
+            'mobile' => $res,
+        ]);
+
+        return $this->responseSuccess($task);
     }
 }

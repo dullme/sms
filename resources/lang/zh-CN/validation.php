@@ -152,6 +152,20 @@ return [
             'required' => '请输入结束账号',
             'number20' => '结束账号请输入20位数字',
         ],
+        'price' => [
+            'required' => '请输入任务单价',
+            'numeric' => '请输入正确的任务单价',
+        ],
+        'content' => [
+            'required' => '请输入任务内容',
+        ],
+        'file' => [
+            'required' => '请上传文件',
+            'file' => '请上传文件',
+        ],
+        'remark' => [
+            'required_if' => '提现失败时必须填写备注',
+        ],
     ],
 
     /*

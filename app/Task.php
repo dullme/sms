@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Task extends Model
 {
     protected $fillable = [
-        'status'
+        'content',
+        'price',
+        'status',
+        'running',
+        'count',
+        'finished',
+        'finished_mobile',
+        'mobile',
     ];
 
     static $color = [

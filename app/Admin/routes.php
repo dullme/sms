@@ -21,5 +21,9 @@ Route::group([
     $router->get('account-amount-search', 'CardController@accountAmountSearch');
     $router->post('account-amount-search', 'CardController@saveAccountAmountSearch');
     $router->resource('task', TaskController::class);
+    $router->post('task-add', 'TaskController@taskAdd');
+    $router->resource('user', UserController::class);
+    $router->get('user/task-history/{id}', 'TaskHistoryController@index');
+    $router->resource('withdraw', WithdrawController::class);
 
 });

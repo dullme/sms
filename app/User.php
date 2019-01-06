@@ -27,4 +27,19 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'pid','id');
+    }
+
+    public function getAmountAttribute($value)
+    {
+        return $value / 10000;
+    }
+
+    public function setAmountAttribute($value)
+    {
+        $this->attributes['amount'] = $value * 10000;
+    }
 }
