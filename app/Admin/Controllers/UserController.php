@@ -5,6 +5,7 @@ namespace App\Admin\Controllers;
 use App\TaskHistory;
 use App\User;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
@@ -87,8 +88,9 @@ class UserController extends Controller
             return $this->user ? $this->user->username : '-';
         });
         $grid->invite('已邀请人数')->sortable();
-        $grid->column('id', '当月邀请人数')->display(function ($id){
-            return User::where('pid', $id)->count();
+        $grid->column('dyyq', '当月邀请人数')->display(function (){
+            return User::where('pid', $this->id)->where('created_at', '>=', Carbon::today()->firstOfMonth())
+                ->where('created_at', '<=', Carbon::today()->lastOfMonth())->count();
         });
         $grid->username('账号');
         $grid->real_name('姓名');
