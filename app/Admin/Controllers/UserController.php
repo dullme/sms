@@ -87,6 +87,9 @@ class UserController extends Controller
             return $this->user ? $this->user->username : '-';
         });
         $grid->invite('已邀请人数')->sortable();
+        $grid->column('id', '当月邀请人数')->display(function ($id){
+            return User::where('pid', $id)->count();
+        });
         $grid->username('账号');
         $grid->real_name('姓名');
         $grid->bank_card_number('银行卡');
