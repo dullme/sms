@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -31,6 +32,13 @@ class User extends Authenticatable
     public function user()
     {
         return $this->belongsTo(User::class, 'pid','id');
+    }
+
+    public function taskHistories()
+    {
+        return $this->hasMany(TaskHistory::class)
+            ->where('created_at', '>=', Carbon::today())
+            ->where('created_at', '<=', Carbon::tomorrow())->select('user_id','amount');
     }
 
     public function getAmountAttribute($value)

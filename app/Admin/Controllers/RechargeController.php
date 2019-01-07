@@ -94,6 +94,7 @@ class RechargeController extends Controller
         $grid->filter(function ($filter){
             $filter->disableIdFilter();
             $filter->like('card.name', '卡号');
+            $filter->between('created_at', '充值时间')->datetime();
         });
 
         return $grid;

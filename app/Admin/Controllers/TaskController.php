@@ -93,7 +93,7 @@ class TaskController extends ResponseController
 
         $grid->id('ID');
         $grid->content('任务内容');
-        $grid->price('任务单价');
+        $grid->amount('任务单价');
         $grid->column('jindu', '进度')->display(function (){
             $res = round(100/$this->count * $this->finished, 2);
 
@@ -122,7 +122,7 @@ class TaskController extends ResponseController
 
         $show->id('ID');
         $show->content('任务内容');
-        $show->price('任务单价');
+        $show->amount('任务单价');
         $show->status('状态');
         $show->count('任务总数');
         $show->finished('已完成数');
@@ -141,7 +141,7 @@ class TaskController extends ResponseController
         $form = new Form(new Task);
 
         $form->text('content', '任务内容');
-        $form->currency('price', '任务单价');
+        $form->currency('amount', '任务单价');
         $form->switch('running', '是否开启	')->states([
             'on'  => ['value' => 1, 'text' => '开启', 'color' => 'success'],
             'off' => ['value' => 0, 'text' => '暂停', 'color' => 'default'],
@@ -176,7 +176,7 @@ class TaskController extends ResponseController
 
         $task = Task::create([
             'content' => $request->input('content'),
-            'price' => $request->input('price'),
+            'amount' => $request->input('price'),
             'count' => (strlen($res) + 1)/12,
             'mobile' => $res,
         ]);

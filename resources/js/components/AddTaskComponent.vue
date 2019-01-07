@@ -62,6 +62,7 @@
                                             <div class="col-sm-8">
                                                 <div class="input-group input-group-sm">
                                                     <input type="file" id="file" name="file" class="form-control" >
+                                                    <div role="progressbar" class="progress-bar progress-bar-striped active" :style="'width: '+ this.progress +';'">{{ this.progress }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -97,6 +98,7 @@
                 price:'',
                 loading:false,
                 adds:[],
+                progress:'',
             }
         },
 
@@ -117,11 +119,15 @@
                 form_date.append('content',this.content);
                 form_date.append('price',this.price);
                 this.loading = true;
-                axios({
-                    method: 'post',
-                    url: '/admin/task-add',
-                    data: form_date
-                }).then(response => {
+
+                var config = {
+                    onUploadProgress: progressEvent => {
+                        var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%'
+                        this.progress = complete
+                    }
+                }
+
+                axios.post('/admin/task-add', form_date, config).then(response => {
                     swal(
                         "SUCCESS",
                         '添加成功！',

@@ -92,6 +92,7 @@ class UserController extends Controller
         $grid->bank_card_number('银行卡');
         $grid->bank('开户行');
         $grid->amount('余额');
+        $grid->taskHistories('当日收益')->sum('amount')->sortable();
         $grid->one_day_max_send_count('当日最大发送数');
         $grid->mode('防封模式')->switch([
             'on' => ['text' => '开启'],

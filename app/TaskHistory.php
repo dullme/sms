@@ -20,4 +20,14 @@ class TaskHistory extends Model
     {
         return $this->belongsTo(Task::class);
     }
+
+    public function getAmountAttribute($value)
+    {
+        return $value / 10000;
+    }
+
+    public function setAmountAttribute($value)
+    {
+        $this->attributes['amount'] = $value * 10000;
+    }
 }

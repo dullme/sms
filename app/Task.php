@@ -8,7 +8,7 @@ class Task extends Model
 {
     protected $fillable = [
         'content',
-        'price',
+        'amount',
         'status',
         'running',
         'count',
@@ -26,4 +26,14 @@ class Task extends Model
         'UNDONE' => '未完成',
         'COMPLETED' => '已完成'
     ];
+
+    public function getAmountAttribute($value)
+    {
+        return $value / 10000;
+    }
+
+    public function setAmountAttribute($value)
+    {
+        $this->attributes['amount'] = $value * 10000;
+    }
 }

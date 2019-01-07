@@ -336,7 +336,7 @@ class CardController extends ResponseController
             }
 
             $index++;
-            return [$item[0], $item[1], $status == '匹配成功' ? $res->amount : '匹配失败',];
+            return ["\t".$item[0], "\t".$item[1], $status == '匹配成功' ? $res->amount : '匹配失败',];
         });
 
         Excel::create(time().random_int(1000, 9999),function($excel) use ($data){

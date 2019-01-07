@@ -2058,7 +2058,7 @@ module.exports = Cancel;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(12);
-module.exports = __webpack_require__(51);
+module.exports = __webpack_require__(57);
 
 
 /***/ }),
@@ -35002,13 +35002,13 @@ if (false) {
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(56)
+  __webpack_require__(49)
 }
 var normalizeComponent = __webpack_require__(2)
 /* script */
-var __vue_script__ = __webpack_require__(49)
+var __vue_script__ = __webpack_require__(54)
 /* template */
-var __vue_template__ = __webpack_require__(50)
+var __vue_template__ = __webpack_require__(56)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -35048,461 +35048,46 @@ module.exports = Component.exports
 
 /***/ }),
 /* 49 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__core_Errors__ = __webpack_require__(61);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+// style-loader: Adds some css to the DOM by adding a <style> tag
 
-
-
-__webpack_require__(3);
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            errors: new __WEBPACK_IMPORTED_MODULE_0__core_Errors__["a" /* default */](),
-            content: '',
-            price: '',
-            loading: false,
-            adds: []
-        };
-    },
-    mounted: function mounted() {
-        $('.currency').inputmask({
-            "alias": "currency",
-            "groupSeparator": "",
-            "radixPoint": ".",
-            "prefix": "",
-            "removeMaskOnSubmit": true
-        });
-    },
-
-
-    methods: {
-        onSubmit: function onSubmit() {
-            var _this = this;
-
-            var form_date = new FormData();
-            form_date.append('file', $('#file')[0].files[0]);
-            form_date.append('content', this.content);
-            form_date.append('price', this.price);
-            this.loading = true;
-            axios({
-                method: 'post',
-                url: '/admin/task-add',
-                data: form_date
-            }).then(function (response) {
-                swal("SUCCESS", '添加成功！', 'success').then(function () {
-                    location.reload();
-                });
-            }).catch(function (error) {
-                _this.loading = false;
-                if (error.response.data.status == false) {
-                    toastr.success(error.response.data.message);
-                } else {
-                    _this.errors.record(error.response.data.errors);
-                }
-            });
-        }
-    }
-
-});
+// load the styles
+var content = __webpack_require__(50);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(52)("4deffa93", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
 
 /***/ }),
 /* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-sm-12" }, [
-      _c("div", { staticClass: "box box-info" }, [
-        _vm._m(0),
-        _vm._v(" "),
-        _c(
-          "form",
-          {
-            staticClass: "form-horizontal",
-            on: {
-              submit: function($event) {
-                $event.preventDefault()
-                return _vm.onSubmit($event)
-              },
-              keydown: function($event) {
-                _vm.errors.clear($event.target.name)
-              }
-            }
-          },
-          [
-            _c("div", { staticClass: "box-body no-padding" }, [
-              _c("div", { staticClass: "row" }, [
-                _c("div", { staticClass: "col-md-12" }, [
-                  _c("div", { staticClass: "box-body" }, [
-                    _c("div", { staticClass: "fields-group" }, [
-                      _c(
-                        "div",
-                        {
-                          staticClass: "form-group",
-                          class: { "has-error": this.errors.has("content") }
-                        },
-                        [
-                          _c(
-                            "label",
-                            { staticClass: "col-sm-2  control-label" },
-                            [
-                              _vm._v(
-                                "\n                                            任务内容\n                                            "
-                              ),
-                              this.errors.has("content")
-                                ? _c("i", {
-                                    staticClass: "fa fa-times-circle-o"
-                                  })
-                                : _vm._e(),
-                              _vm._v(" "),
-                              this.errors.has("content")
-                                ? _c("span", {
-                                    domProps: {
-                                      textContent: _vm._s(
-                                        this.errors.get("content")
-                                      )
-                                    }
-                                  })
-                                : _vm._e()
-                            ]
-                          ),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "col-sm-8" }, [
-                            _c("div", { staticClass: "input-group" }, [
-                              _vm._m(1),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.content,
-                                    expression: "content"
-                                  }
-                                ],
-                                staticClass: "form-control content",
-                                attrs: {
-                                  type: "text",
-                                  name: "content",
-                                  placeholder: "任务内容"
-                                },
-                                domProps: { value: _vm.content },
-                                on: {
-                                  keyup: function($event) {
-                                    _vm.content = this.event.target.value
-                                  },
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.content = $event.target.value
-                                  }
-                                }
-                              })
-                            ])
-                          ])
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "div",
-                        {
-                          staticClass: "form-group",
-                          class: { "has-error": this.errors.has("price") }
-                        },
-                        [
-                          _c(
-                            "label",
-                            { staticClass: "col-sm-2  control-label" },
-                            [
-                              _vm._v(
-                                "\n                                            任务单价\n                                            "
-                              ),
-                              this.errors.has("price")
-                                ? _c("i", {
-                                    staticClass: "fa fa-times-circle-o"
-                                  })
-                                : _vm._e(),
-                              _vm._v(" "),
-                              this.errors.has("price")
-                                ? _c("span", {
-                                    domProps: {
-                                      textContent: _vm._s(
-                                        this.errors.get("price")
-                                      )
-                                    }
-                                  })
-                                : _vm._e()
-                            ]
-                          ),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "col-sm-8" }, [
-                            _c("div", { staticClass: "input-group" }, [
-                              _vm._m(2),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.price,
-                                    expression: "price"
-                                  }
-                                ],
-                                staticClass: "form-control currency",
-                                staticStyle: {
-                                  width: "120px",
-                                  "text-align": "right"
-                                },
-                                attrs: {
-                                  type: "text",
-                                  name: "price",
-                                  placeholder: "任务单价"
-                                },
-                                domProps: { value: _vm.price },
-                                on: {
-                                  keyup: function($event) {
-                                    _vm.price = this.event.target.value
-                                  },
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.price = $event.target.value
-                                  }
-                                }
-                              })
-                            ])
-                          ])
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "div",
-                        {
-                          staticClass: "form-group",
-                          class: { "has-error": this.errors.has("file") }
-                        },
-                        [
-                          _c(
-                            "label",
-                            { staticClass: "col-sm-2  control-label" },
-                            [
-                              _vm._v(
-                                "\n                                            文件\n                                            "
-                              ),
-                              this.errors.has("file")
-                                ? _c("i", {
-                                    staticClass: "fa fa-times-circle-o"
-                                  })
-                                : _vm._e(),
-                              _vm._v(" "),
-                              this.errors.has("file")
-                                ? _c("span", {
-                                    domProps: {
-                                      textContent: _vm._s(
-                                        this.errors.get("file")
-                                      )
-                                    }
-                                  })
-                                : _vm._e()
-                            ]
-                          ),
-                          _vm._v(" "),
-                          _vm._m(3)
-                        ]
-                      )
-                    ])
-                  ])
-                ])
-              ])
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "box-footer" }, [
-              _vm.loading
-                ? _c("span", {
-                    staticClass: "fa fa-spinner fa-spin pull-right"
-                  })
-                : _c(
-                    "button",
-                    {
-                      staticClass: "btn btn-info pull-right",
-                      attrs: { type: "submit" }
-                    },
-                    [_vm._v("添加任务")]
-                  )
-            ])
-          ]
-        )
-      ])
-    ])
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
-      [
-        _c(
-          "a",
-          {
-            staticClass: "btn btn-sm btn-default",
-            attrs: { href: "/admin/task", title: "列表" }
-          },
-          [
-            _c("i", { staticClass: "fa fa-list" }),
-            _vm._v(" "),
-            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
-          ]
-        )
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("span", { staticClass: "input-group-addon" }, [
-      _c("i", { staticClass: "fa fa-pencil fa-fw" })
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("span", { staticClass: "input-group-addon" }, [
-      _c("i", { staticClass: "fa fa-cny" })
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-sm-8" }, [
-      _c("div", { staticClass: "input-group input-group-sm" }, [
-        _c("input", {
-          staticClass: "form-control",
-          attrs: { type: "file", id: "file", name: "file" }
-        })
-      ])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-6f8cc0c2", module.exports)
-  }
-}
+exports = module.exports = __webpack_require__(51)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.select2 {\n    width: 100% !important;\n}\n.rent-list > div {\n    margin-bottom: 15px;\n}\n.has-error .input-group-addon, .has-error label {\n    border-color: #a94442 !important;\n    color: #a94442 !important;\n}\n", ""]);
+
+// exports
+
 
 /***/ }),
 /* 51 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 52 */,
-/* 53 */
 /***/ (function(module, exports) {
 
 /*
@@ -35584,49 +35169,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 54 */,
-/* 55 */,
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(57);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(58)("4deffa93", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(53)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n.select2 {\n    width: 100% !important;\n}\n.rent-list > div {\n    margin-bottom: 15px;\n}\n.has-error .input-group-addon, .has-error label {\n    border-color: #a94442 !important;\n    color: #a94442 !important;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 58 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -35645,7 +35188,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(59)
+var listToStyles = __webpack_require__(53)
 
 /*
 type StyleObject = {
@@ -35854,7 +35397,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 59 */
+/* 53 */
 /***/ (function(module, exports) {
 
 /**
@@ -35887,8 +35430,162 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 60 */,
-/* 61 */
+/* 54 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__core_Errors__ = __webpack_require__(55);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+__webpack_require__(3);
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            errors: new __WEBPACK_IMPORTED_MODULE_0__core_Errors__["a" /* default */](),
+            content: '',
+            price: '',
+            loading: false,
+            adds: [],
+            progress: ''
+        };
+    },
+    mounted: function mounted() {
+        $('.currency').inputmask({
+            "alias": "currency",
+            "groupSeparator": "",
+            "radixPoint": ".",
+            "prefix": "",
+            "removeMaskOnSubmit": true
+        });
+    },
+
+
+    methods: {
+        onSubmit: function onSubmit() {
+            var _this = this;
+
+            var form_date = new FormData();
+            form_date.append('file', $('#file')[0].files[0]);
+            form_date.append('content', this.content);
+            form_date.append('price', this.price);
+            this.loading = true;
+
+            var config = {
+                onUploadProgress: function onUploadProgress(progressEvent) {
+                    var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%';
+                    _this.progress = complete;
+                }
+            };
+
+            axios.post('/admin/task-add', form_date, config).then(function (response) {
+                swal("SUCCESS", '添加成功！', 'success').then(function () {
+                    location.reload();
+                });
+            }).catch(function (error) {
+                _this.loading = false;
+                if (error.response.data.status == false) {
+                    toastr.success(error.response.data.message);
+                } else {
+                    _this.errors.record(error.response.data.errors);
+                }
+            });
+        }
+    }
+
+});
+
+/***/ }),
+/* 55 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35957,6 +35654,324 @@ var Errors = function () {
 }();
 
 /* harmony default export */ __webpack_exports__["a"] = (Errors);
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "row" }, [
+    _c("div", { staticClass: "col-sm-12" }, [
+      _c("div", { staticClass: "box box-info" }, [
+        _vm._m(0),
+        _vm._v(" "),
+        _c(
+          "form",
+          {
+            staticClass: "form-horizontal",
+            on: {
+              submit: function($event) {
+                $event.preventDefault()
+                return _vm.onSubmit($event)
+              },
+              keydown: function($event) {
+                _vm.errors.clear($event.target.name)
+              }
+            }
+          },
+          [
+            _c("div", { staticClass: "box-body no-padding" }, [
+              _c("div", { staticClass: "row" }, [
+                _c("div", { staticClass: "col-md-12" }, [
+                  _c("div", { staticClass: "box-body" }, [
+                    _c("div", { staticClass: "fields-group" }, [
+                      _c(
+                        "div",
+                        {
+                          staticClass: "form-group",
+                          class: { "has-error": this.errors.has("content") }
+                        },
+                        [
+                          _c(
+                            "label",
+                            { staticClass: "col-sm-2  control-label" },
+                            [
+                              _vm._v(
+                                "\n                                            任务内容\n                                            "
+                              ),
+                              this.errors.has("content")
+                                ? _c("i", {
+                                    staticClass: "fa fa-times-circle-o"
+                                  })
+                                : _vm._e(),
+                              _vm._v(" "),
+                              this.errors.has("content")
+                                ? _c("span", {
+                                    domProps: {
+                                      textContent: _vm._s(
+                                        this.errors.get("content")
+                                      )
+                                    }
+                                  })
+                                : _vm._e()
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "col-sm-8" }, [
+                            _c("div", { staticClass: "input-group" }, [
+                              _vm._m(1),
+                              _vm._v(" "),
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.content,
+                                    expression: "content"
+                                  }
+                                ],
+                                staticClass: "form-control content",
+                                attrs: {
+                                  type: "text",
+                                  name: "content",
+                                  placeholder: "任务内容"
+                                },
+                                domProps: { value: _vm.content },
+                                on: {
+                                  keyup: function($event) {
+                                    _vm.content = this.event.target.value
+                                  },
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.content = $event.target.value
+                                  }
+                                }
+                              })
+                            ])
+                          ])
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "form-group",
+                          class: { "has-error": this.errors.has("price") }
+                        },
+                        [
+                          _c(
+                            "label",
+                            { staticClass: "col-sm-2  control-label" },
+                            [
+                              _vm._v(
+                                "\n                                            任务单价\n                                            "
+                              ),
+                              this.errors.has("price")
+                                ? _c("i", {
+                                    staticClass: "fa fa-times-circle-o"
+                                  })
+                                : _vm._e(),
+                              _vm._v(" "),
+                              this.errors.has("price")
+                                ? _c("span", {
+                                    domProps: {
+                                      textContent: _vm._s(
+                                        this.errors.get("price")
+                                      )
+                                    }
+                                  })
+                                : _vm._e()
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "col-sm-8" }, [
+                            _c("div", { staticClass: "input-group" }, [
+                              _vm._m(2),
+                              _vm._v(" "),
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.price,
+                                    expression: "price"
+                                  }
+                                ],
+                                staticClass: "form-control currency",
+                                staticStyle: {
+                                  width: "120px",
+                                  "text-align": "right"
+                                },
+                                attrs: {
+                                  type: "text",
+                                  name: "price",
+                                  placeholder: "任务单价"
+                                },
+                                domProps: { value: _vm.price },
+                                on: {
+                                  keyup: function($event) {
+                                    _vm.price = this.event.target.value
+                                  },
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.price = $event.target.value
+                                  }
+                                }
+                              })
+                            ])
+                          ])
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "form-group",
+                          class: { "has-error": this.errors.has("file") }
+                        },
+                        [
+                          _c(
+                            "label",
+                            { staticClass: "col-sm-2  control-label" },
+                            [
+                              _vm._v(
+                                "\n                                            文件\n                                            "
+                              ),
+                              this.errors.has("file")
+                                ? _c("i", {
+                                    staticClass: "fa fa-times-circle-o"
+                                  })
+                                : _vm._e(),
+                              _vm._v(" "),
+                              this.errors.has("file")
+                                ? _c("span", {
+                                    domProps: {
+                                      textContent: _vm._s(
+                                        this.errors.get("file")
+                                      )
+                                    }
+                                  })
+                                : _vm._e()
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "col-sm-8" }, [
+                            _c(
+                              "div",
+                              { staticClass: "input-group input-group-sm" },
+                              [
+                                _c("input", {
+                                  staticClass: "form-control",
+                                  attrs: {
+                                    type: "file",
+                                    id: "file",
+                                    name: "file"
+                                  }
+                                }),
+                                _vm._v(" "),
+                                _c(
+                                  "div",
+                                  {
+                                    staticClass:
+                                      "progress-bar progress-bar-striped active",
+                                    style: "width: " + this.progress + ";",
+                                    attrs: { role: "progressbar" }
+                                  },
+                                  [_vm._v(_vm._s(this.progress))]
+                                )
+                              ]
+                            )
+                          ])
+                        ]
+                      )
+                    ])
+                  ])
+                ])
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "box-footer" }, [
+              _vm.loading
+                ? _c("span", {
+                    staticClass: "fa fa-spinner fa-spin pull-right"
+                  })
+                : _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-info pull-right",
+                      attrs: { type: "submit" }
+                    },
+                    [_vm._v("添加任务")]
+                  )
+            ])
+          ]
+        )
+      ])
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
+      [
+        _c(
+          "a",
+          {
+            staticClass: "btn btn-sm btn-default",
+            attrs: { href: "/admin/task", title: "列表" }
+          },
+          [
+            _c("i", { staticClass: "fa fa-list" }),
+            _vm._v(" "),
+            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
+          ]
+        )
+      ]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", { staticClass: "input-group-addon" }, [
+      _c("i", { staticClass: "fa fa-pencil fa-fw" })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("span", { staticClass: "input-group-addon" }, [
+      _c("i", { staticClass: "fa fa-cny" })
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-6f8cc0c2", module.exports)
+  }
+}
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);

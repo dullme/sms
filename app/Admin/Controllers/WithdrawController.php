@@ -102,6 +102,8 @@ class WithdrawController extends Controller
         $grid->actions(function ($actions){
             $actions->disableDelete();
             $actions->disableView();
+            if($actions->row->status != 0)
+                $actions->disableEdit();
         });
         $grid->disableExport();
         $grid->disableRowSelector();
