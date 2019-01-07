@@ -137,6 +137,7 @@
                     });
                 }).catch(error => {
                     this.loading = false;
+                    this.progress= '';
                     if(error.response.data.status == false){
                         toastr.success(error.response.data.message);
                     }else{

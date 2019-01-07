@@ -35573,6 +35573,7 @@ __webpack_require__(3);
                 });
             }).catch(function (error) {
                 _this.loading = false;
+                _this.progress = '';
                 if (error.response.data.status == false) {
                     toastr.success(error.response.data.message);
                 } else {
