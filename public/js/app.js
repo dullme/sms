@@ -34216,6 +34216,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 __webpack_require__(3);
 
@@ -34223,7 +34224,8 @@ __webpack_require__(3);
     data: function data() {
         return {
             loading: false,
-            adds: []
+            adds: [],
+            progress: ''
         };
     },
     mounted: function mounted() {
@@ -34248,14 +34250,20 @@ __webpack_require__(3);
                 axios({
                     method: 'post',
                     url: '/admin/import-cards',
-                    data: form_date
+                    data: form_date,
+                    onUploadProgress: function onUploadProgress(progressEvent) {
+                        var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%';
+                        _this.progress = complete;
+                    }
                 }).then(function (response) {
                     _this.loading = false;
                     _this.adds = response.data.data;
+                    _this.progress = '';
                     $('#upload-file').val('');
                     console.log(response.data.data);
                 }).catch(function (error) {
                     _this.loading = false;
+                    _this.progress = '';
                     $('#upload-file').val('');
                     toastr.success(error.response.data.message);
                 });
@@ -34334,6 +34342,16 @@ var render = function() {
                     attrs: { id: "upload-file", type: "file" }
                   })
                 ]
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "progress-bar progress-bar-striped active",
+                  style: "width: " + this.progress + ";",
+                  attrs: { role: "progressbar" }
+                },
+                [_vm._v(_vm._s(this.progress))]
               )
             ])
           ]

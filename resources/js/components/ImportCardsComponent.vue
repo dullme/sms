@@ -11,6 +11,7 @@
                             </span>
                             <input id="upload-file" type="file" style="display: none">
                         </form>
+                        <div role="progressbar" class="progress-bar progress-bar-striped active" :style="'width: '+ this.progress +';'">{{ this.progress }}</div>
                     </div>
                 </div>
                 <!-- /.box-header -->
@@ -56,6 +57,7 @@
             return {
                 loading:false,
                 adds:[],
+                progress:''
             }
         },
 
@@ -79,14 +81,20 @@
                     axios({
                         method: 'post',
                         url: '/admin/import-cards',
-                        data: form_date
+                        data: form_date,
+                        onUploadProgress: progressEvent => {
+                            var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%'
+                            this.progress = complete
+                        }
                     }).then(response => {
                         this.loading = false;
                         this.adds = response.data.data;
+                        this.progress = '';
                         $('#upload-file').val('')
                         console.log(response.data.data);
                     }).catch(error => {
                         this.loading = false;
+                        this.progress = '';
                         $('#upload-file').val('');
                         toastr.success(error.response.data.message);
                     });
