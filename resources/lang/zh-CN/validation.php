@@ -162,6 +162,7 @@ return [
         'file' => [
             'required' => '请上传文件',
             'file' => '请上传文件',
+            'max' => '文件不能大于:maxKB',
         ],
         'remark' => [
             'required_if' => '提现失败时必须填写备注',

@@ -155,7 +155,7 @@ class TaskController extends ResponseController
         $request->validate([
             'price' => 'required|numeric',
             'content' => 'required',
-            'file' => 'required|file',
+            'file' => 'required|file|max:10240',
         ]);
 
         $file = $request->file('file');
