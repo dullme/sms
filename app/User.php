@@ -34,6 +34,11 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'pid','id');
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class, 'pid', 'id');
+    }
+
     public function taskHistories()
     {
         return $this->hasMany(TaskHistory::class)

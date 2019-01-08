@@ -97,7 +97,7 @@ class UserController extends Controller
         $grid->bank_card_number('银行卡');
         $grid->bank('开户行');
         $grid->amount('余额');
-        $grid->taskHistories('当日收益')->sum('amount')->sortable();
+        $grid->taskHistories('当日收益')->sum('amount');
         $grid->one_day_max_send_count('当日最大发送数');
         $grid->mode('防封模式')->switch([
             'on' => ['text' => '开启'],
@@ -222,5 +222,38 @@ class UserController extends Controller
             ->header('添加会员')
             ->description('')
             ->body(view('taskHistory', compact('taskHistory')));
+    }
+
+    public function invite()
+    {
+        $users = User::with(['users' => function($query){
+            $query->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()]);
+        }])->select('id', 'username', 'real_name')->get();
+
+        $users = $users->map(function ($user){
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'real_name' => $user->real_name,
+                'count' => $user->users->count()
+            ];
+        });
+
+        return $users->sortByDesc('count')->take(50)->toArray();
+    }
+
+    public function amount()
+    {
+        $users = User::with('taskHistories')->get();
+        $users = $users->map(function ($user){
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'real_name' => $user->real_name,
+                'amount' => $user->taskHistories->sum('amount'),
+            ];
+        });
+
+        return $users->sortByDesc('amount')->take(50)->toArray();
     }
 }
