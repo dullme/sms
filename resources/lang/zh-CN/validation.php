@@ -167,6 +167,27 @@ return [
         'remark' => [
             'required_if' => '提现失败时必须填写备注',
         ],
+        'username' => [
+            'required' => '请输入账号',
+            'min' => '账号最短为:min位',
+            'max' => '账号最长为:max位',
+        ],
+        'password' => [
+            'required' => '请输入密码',
+            'min' => '密码最短为:min位',
+            'max' => '密码最长为:max位',
+            'confirmed' => '两次输入的密码不一致',
+        ],
+        'security_question' => [
+            'required' => '请输入自定义问题',
+        ],
+        'classified_answer' => [
+            'required' => '请输入自定义问题答案',
+        ],
+        'code' => [
+            'required' => '请输入推荐码',
+            'code' => '该推荐码不存在',
+        ],
     ],
 
     /*

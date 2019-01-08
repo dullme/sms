@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 
 class RegisterController extends Controller
 {
+
     /*
     |--------------------------------------------------------------------------
     | Register Controller
@@ -43,30 +44,41 @@ class RegisterController extends Controller
     /**
      * Get a validator for an incoming registration request.
      *
-     * @param  array  $data
+     * @param  array $data
      * @return \Illuminate\Contracts\Validation\Validator
      */
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'username'          => ['required', 'string', 'min:6', 'max:20', 'unique:users'],
+            'password'          => ['required', 'string', 'min:6', 'max:20', 'confirmed'],
+            'security_question' => ['required', 'string', 'max:255'],
+            'classified_answer' => ['required', 'string', 'max:255'],
+            'code'              => ['code', 'required', 'string', 'max:255'],
         ]);
     }
 
     /**
      * Create a new user instance after a valid registration.
      *
-     * @param  array  $data
+     * @param  array $data
      * @return \App\User
      */
     protected function create(array $data)
     {
+        $user = User::where('code', strtoupper($data['code']))->first();
+        $user->increment('invite');
+        do {
+            $code = strtoupper(initCode());
+        } while (User::where('code', $code)->count());
+
         return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'pid'               => $user->id,
+            'username'          => $data['username'],
+            'security_question' => $data['security_question'],
+            'classified_answer' => $data['classified_answer'],
+            'code'              => $code,
+            'password'          => Hash::make($data['password']),
         ]);
     }
 }

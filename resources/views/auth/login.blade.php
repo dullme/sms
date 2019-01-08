@@ -1,73 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
-
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-
-                        <div class="form-group row">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
-
-                                @if ($errors->has('email'))
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('email') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required>
-
-                                @if ($errors->has('password'))
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('password') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
-                </div>
+<div class="container" style="width: 600px; min-width: 600px">
+    <div>
+        <div style="font-size: 40px; font-weight: bolder; text-align: center;background-color: #D7D7D7">欢迎使用SMS融云平台</div>
+        <form method="POST" action="{{ route('login') }}" style="font-size: 18px; font-weight: bolder; text-align: center">
+                @csrf
+            <div style="margin-top: 100px">
+                <label>账 号 ： &nbsp;</label>
+                <input type="text" style="width: 300px" name="username" value="{{ old('username') }}">
             </div>
-        </div>
+
+            <div style="margin-top: 18px">
+                <label>密 码 ： &nbsp;</label>
+                <input type="password" style="width: 300px;" name="password">
+            </div>
+            <div class="text-danger" style="height: 24px; font-size: 16px">
+                @if ($errors->has('username'))
+                    {{ $errors->first('username') }}
+                @elseif($errors->has('password'))
+                    {{ $errors->first('password') }}
+                @endif
+            </div>
+
+            <div style="margin-top: 30px;">
+                <input type="submit" class="btn btn-lg btn-default" value="登    陆" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB">
+            </div>
+
+            <div style="margin-top: 46px; font-size: 16px">
+                <a href="{{ route('register') }}" style="color: #1C9BCC; text-decoration:none">账号注册</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="{{ route('reset_password') }}" style="color: #1C9BCC; text-decoration:none">找回密码</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="{{ route('login') }}" style="color: #1C9BCC; text-decoration:none">用户登陆</a>
+            </div>
+
+        </form>
     </div>
 </div>
 @endsection

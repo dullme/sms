@@ -16,3 +16,42 @@
 table .fa{
   padding: 0 4px;
 }
+
+body {
+  background-color: #D7D7D7 !important;
+}
+
+.top-btn {
+  background-color: #D7D7D7;
+  border-radius: 0;
+  width: 120px;
+  margin-right: 10px;
+}
+
+.header .active {
+  background-color: white !important;
+}
+
+.pagination a, .pagination span{
+  color: black !important;
+  background-color: #D7D7D7;
+  border: none;
+}
+
+.pagination a:hover, .pagination span:hover{
+  color: black !important;
+  background-color: #D7D7D7;
+  border: none;
+}
+
+.pagination .page-item.disabled .page-link {
+  background-color: #D7D7D7;
+  color: #c1c1c1 !important;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: white;
+  border-radius: 20px;
+}
+
+
