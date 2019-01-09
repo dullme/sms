@@ -16,7 +16,7 @@ class CreateTasksTable extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->increments('id');
             $table->string('content');
-            $table->integer('amount')->comment('任务金额');
+            $table->unsignedBigInteger('amount')->comment('任务金额');
             $table->string('status')->default('UNDONE')->comment('UNDONE:未完成;COMPLETED:已完成');
             $table->boolean('running')->default(true)->comment('是否进行中');
             $table->integer('count')->comment('任务总数量');

@@ -20,10 +20,7 @@ window.Vue = require('vue');
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
-Vue.component('import-cards', require('./components/ImportCardsComponent.vue'));
-Vue.component('add-account-amount', require('./components/AddAccountAmountComponent.vue'));
-Vue.component('account-amount-search', require('./components/AccountAmountSearchComponent.vue'));
-Vue.component('add-task', require('./components/AddTaskComponent.vue'));
+Vue.component('transfer', require('./components/TransferComponent.vue'));
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

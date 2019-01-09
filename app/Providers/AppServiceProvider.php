@@ -40,6 +40,17 @@ class AppServiceProvider extends ServiceProvider
 
             return $user ? true : false;
         });
+
+        /**
+         * 整百
+         */
+        Validator::extend('hundred', function($attribute, $value, $parameters) {
+            if($value > Auth()->user()->amount){
+                return false;
+            }
+
+            return $value % 100 == 0 ? true : false;
+        });
     }
 
     /**

@@ -16,7 +16,7 @@ class CreateRechargesTable extends Migration
         Schema::create('recharges', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('card_id')->unsigned();
-            $table->integer('amount')->comment('重置金额');
+            $table->unsignedBigInteger('amount')->comment('充值金额');
             $table->timestamps();
         });
     }

@@ -16,7 +16,10 @@ class CreateWithdrawsTable extends Migration
         Schema::create('withdraws', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned()->comment('外键：users的主键');
-            $table->integer('amount')->comment('申请金额10000');
+            $table->unsignedBigInteger('amount')->comment('申请金额10000');
+            $table->unsignedBigInteger('balance')->comment('扣之前的金额10000');
+            $table->string('bank_card_number')->nullable()->comment('银行卡卡号');
+            $table->string('bank')->nullable()->comment('开户行');
             $table->boolean('status')->default(0)->comment('处理状态0:未处理;1:已处理');
             $table->string('remark')->nullable()->comment('备注');
             $table->timestamp('payment_at')->nullable()->comment('支付日期');

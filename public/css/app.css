@@ -11460,7 +11460,7 @@ body {
   margin-right: 10px;
 }
 
-.header .active {
+.active {
   background-color: white !important;
 }
 
@@ -11486,5 +11486,14 @@ body {
 .pagination .page-item.active .page-link {
   background-color: white;
   border-radius: 20px;
+}
+
+.table-bordered {
+  border: 2px solid #bbbbbb;
+}
+
+.table-bordered thead th,
+.table-bordered thead td {
+  border-bottom-width: 1px;
 }
 

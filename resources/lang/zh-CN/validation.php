@@ -188,6 +188,30 @@ return [
             'required' => '请输入推荐码',
             'code' => '该推荐码不存在',
         ],
+        'real_name' => [
+            'required' => '请输入真实姓名',
+        ],
+        'bank' => [
+            'required' => '请选择银行',
+        ],
+        'bank_card_number' => [
+            'required' => '请输入提款账户',
+        ],
+        'withdraw_password' => [
+            'required' => '请设输入金密码',
+            'min' => '资金密码最短为:min位',
+            'max' => '资金密码最长为:max位',
+        ],
+        'withdraw_amount' => [
+            'required' => '请输入提现金额',
+            'integer' => '金额必须为整数',
+            'hundred' => '提现金额有误',
+        ],
+        'transfer_amount' => [
+            'required' => '请输入转账金额',
+            'integer' => '金额必须为整数',
+            'hundred' => '转账金额有误',
+        ],
     ],
 
     /*

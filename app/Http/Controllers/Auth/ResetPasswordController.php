@@ -58,7 +58,7 @@ class ResetPasswordController extends Controller
         $user = User::where('username', $request->input('username'))->first();
 
         if($user && $user->security_question == $request->input('security_question') && $user->classified_answer == $request->input('classified_answer')){
-            $user->password = Hash::make($request->input('password'));
+            $user->password = bcrypt($request->input('password'));
             $user->save();
 
             Session::flash('register', '密码重置成功');

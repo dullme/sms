@@ -31,6 +31,8 @@ class User extends Authenticatable
         'status',
         'security_question',
         'classified_answer',
+        'withdraw_password',
+        'withdraw_time',
         'code',
     ];
 
