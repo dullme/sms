@@ -231,6 +231,30 @@ class HomeController extends ResponseController
         return view('config');
     }
 
+    public function saveConfig(Request $request)
+    {
+        $request->validate([
+            'baud_rate' => 'required',
+            'mode' => 'required',
+            'encryption' => 'required',
+        ]);
+
+        $user = User::findOrFail(Auth()->user()->id);
+        $user->baud_rate = $request->input('baud_rate');
+        $user->one_day_max_send_count = $request->input('one_day_max_send_count');
+        $user->mode = $request->input('mode');
+        $user->encryption = $request->input('encryption');
+        $res = $user->save();
+
+        if($res){
+            Session::flash('saveConfig', '保存成功！');
+        }else{
+            Session::flash('saveConfig', '保存失败！');
+        }
+
+        return back();
+    }
+
     public function searchUser(Request $request)
     {
         $request->validate([

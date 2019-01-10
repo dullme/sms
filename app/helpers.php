@@ -45,3 +45,17 @@ function getBank(){
         "杭州银行",
     ];
 }
+
+function oneDayMaxSendCount(){
+    return [
+        10,
+        20,
+        30,
+        50,
+        100,
+        200,
+        300,
+        500,
+        1000,
+    ];
+}

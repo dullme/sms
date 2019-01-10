@@ -4,16 +4,16 @@
     @include('layouts.header')
     <div style="display: flex;height: 100%">
         <div style="float: left;padding: 10px; min-width: 600px; width: 100%">
-            <form method="POST" action="{{ route('register') }}" style="margin-left: 150px;font-size: 18px; font-weight: bolder;">
+            <form method="POST" action="{{ route('config') }}" style="margin-left: 150px;font-size: 18px; font-weight: bolder;">
                 @csrf
                 <div style="margin-top: 100px;">
                     <label style="width: 200px">运行状态 ： &nbsp;</label>
-                    正常运行中...
+                    <span class="text-success">正常运行中...</span>
                 </div>
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">波特率 ： &nbsp;</label>
-                    <select style="width: 180px">
+                    <select style="width: 180px" name="baud_rate">
                         <option>1200</option>
                         <option>2400</option>
                     </select>
@@ -21,33 +21,34 @@
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">单卡单日发送上限 ： &nbsp;</label>
-                    <select style="width: 180px">
-                        <option>10</option>
-                        <option>20</option>
-                        <option>30</option>
-                        <option>50</option>
-                        <option>100</option>
-                        <option>200</option>
-                        <option>300</option>
-                        <option>500</option>
-                        <option>1000</option>
+                    <select style="width: 180px" name="one_day_max_send_count">
+                        <option value="0">请选择</option>
+                        @foreach(oneDayMaxSendCount() as $item)
+                            <option value="{{ $item }}" {{ Auth()->user()->one_day_max_send_count == $item ? 'selected="selected"' :'' }}>{{ $item }}</option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">是否开启防封模式 ： &nbsp;</label>
-                    <select style="width: 180px">
-                        <option>否</option>
-                        <option>是</option>
+                    <select style="width: 180px" name="mode">
+                        <option value="0" {{ Auth()->user()->mode == 0 ? 'selected="selected"' :'' }}>关闭</option>
+                        <option value="1" {{ Auth()->user()->mode == 1 ? 'selected="selected"' :'' }}>开启</option>
                     </select>
                 </div>
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">通道加密选择 ： &nbsp;</label>
-                    <select style="width: 180px">
-                        <option>否</option>
-                        <option>是</option>
+                    <select style="width: 180px" name="encryption">
+                        <option value="0" {{ Auth()->user()->encryption == 0 ? 'selected="selected"' :'' }}>不加密</option>
+                        <option value="1" {{ Auth()->user()->encryption == 1 ? 'selected="selected"' :'' }}>加密</option>
                     </select>
+                </div>
+
+                <div class="text-danger" style="height: 24px; font-size: 16px;margin-left: 110px">
+                    @if(Session::has('saveConfig'))
+                        {{ Session::get('saveConfig') }}
+                    @endif
                 </div>
 
                 <div style="margin-top: 30px; margin-left: 110px">

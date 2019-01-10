@@ -24,13 +24,14 @@ class CreateUsersTable extends Migration
             $table->string('bank_card_number')->nullable()->comment('银行卡卡号');
             $table->string('bank')->nullable()->comment('开户行');
             $table->unsignedBigInteger('amount')->default(0)->comment('余额10000');
-            $table->integer('one_day_max_send_count')->default(1000)->comment('当日最大发送条数');
+            $table->integer('one_day_max_send_count')->default(0)->comment('当日最大发送条数，为0时取配置表里的数据');
             $table->boolean('mode')->default(0)->comment('开启防封模式0:关闭;1:开启');
             $table->boolean('encryption')->default(0)->comment('通道加密0:不加密;1:加密');
             $table->boolean('status')->default(0)->comment('冻结状态0:不冻结;1:冻结');
             $table->string('security_question')->comment('密保问题');
             $table->string('classified_answer')->comment('密保答案');
             $table->string('code')->comment('邀请码');
+            $table->string('baud_rate')->default('1200')->comment('波特率');
             $table->nullableTimestamps('withdraw_time')->comment('在此时间之前无法提现');
             $table->rememberToken();
             $table->timestamps();

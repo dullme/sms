@@ -34,6 +34,7 @@ class User extends Authenticatable
         'withdraw_password',
         'withdraw_time',
         'code',
+        'baud_rate',
     ];
 
     /**

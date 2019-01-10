@@ -30,4 +30,5 @@ Route::get('/info/transfer', 'HomeController@infoTransfer')->name('info_transfer
 Route::post('/info/transfer', 'HomeController@saveInfoTransfer');
 Route::get('/info/transaction', 'HomeController@infoTransaction')->name('info_transaction');
 Route::get('/info/config', 'HomeController@config')->name('config');
+Route::post('/info/config', 'HomeController@saveConfig')->name('config');
 Route::post('/user/info', 'HomeController@searchUser');
