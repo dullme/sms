@@ -14,8 +14,8 @@
                 <div style="margin-top: 18px">
                     <label style="width: 200px">波特率 ： &nbsp;</label>
                     <select style="width: 180px" name="baud_rate">
-                        <option>1200</option>
-                        <option>2400</option>
+                        <option {{ Auth()->user()->baud_rate == 1200 ? 'selected="selected"' :'' }}>1200</option>
+                        <option {{ Auth()->user()->baud_rate == 2400 ? 'selected="selected"' :'' }}>2400</option>
                     </select>
                 </div>
 
