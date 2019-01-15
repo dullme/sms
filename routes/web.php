@@ -32,3 +32,4 @@ Route::get('/info/transaction', 'HomeController@infoTransaction')->name('info_tr
 Route::get('/info/config', 'HomeController@config')->name('config');
 Route::post('/info/config', 'HomeController@saveConfig')->name('config');
 Route::post('/user/info', 'HomeController@searchUser');
+Route::get('/user/device', 'HomeController@getMyDevice');

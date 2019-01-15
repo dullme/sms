@@ -11,6 +11,7 @@ use Validator;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class HomeController extends ResponseController
 {
@@ -269,5 +270,12 @@ class HomeController extends ResponseController
         }else{
             return $this->setStatusCode(422)->responseError('找不到该用户');
         }
+    }
+
+    public function getMyDevice()
+    {
+        $user = Redis::set('user:device:'.Auth()->user()->id, '123');
+
+        dd(Redis::get('user:device:'.Auth()->user()->id));
     }
 }
