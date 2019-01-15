@@ -27,6 +27,7 @@
             </tr>
             </tbody>
         </table>
+        <span v-text="ip"></span>
         <div class="text-center">
             <a  class="btn btn-lg btn-default" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB">搜索新设备</a>
         </div>

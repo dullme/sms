@@ -45007,6 +45007,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 __webpack_require__(4);
 
@@ -45097,6 +45098,8 @@ var render = function() {
         )
       ]
     ),
+    _vm._v(" "),
+    _c("span", { domProps: { textContent: _vm._s(_vm.ip) } }),
     _vm._v(" "),
     _vm._m(2)
   ])
