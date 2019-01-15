@@ -45012,6 +45012,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 __webpack_require__(4);
 
@@ -45025,7 +45026,8 @@ __webpack_require__(4);
             ip: '123',
             loading: false,
             time: 0,
-            interval: ''
+            interval: '',
+            emsg: ''
         };
     },
     created: function created() {},
@@ -45039,12 +45041,24 @@ __webpack_require__(4);
             clearInterval(this.interval);
             this.loading = true;
             this.time = 0;
+            this.emsg = '';
             this.interval = setInterval(function () {
                 _this.time += 1;
+                if (_this.time >= 20) {
+                    _this.emsg = '...搜索时间过长请重新搜索...';
+                }
             }, 1000);
             AsyncIPS.getUsefullIPs('80', function (json) {
                 _this.loading = false;
-                _this.ip = json;
+                _this.ip = JSON.parse('{"IPS": ["192.168.1.67|00-30-F1-00-AA-C1","192.168.1.68|00-30-F1-00-AA-C2"]}').IPS.data;
+                console.log(_this.ip);
+                axios.post("/user/device", {
+                    ip: _this.ip
+                }).then(function (response) {
+                    console.log(response.data);
+                }).catch(function (error) {
+                    console.log(error.response.data);
+                });
             }, function (message) {
                 _this.loading = false;
                 console.log(message);
@@ -45123,6 +45137,8 @@ var render = function() {
       _vm.loading == true
         ? _c("span", [
             _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
+            _vm._v(" "),
+            _c("i", { domProps: { textContent: _vm._s(_vm.emsg) } }),
             _vm._v(" "),
             _c("a", { attrs: { href: "##" }, on: { click: _vm.search } }, [
               _vm._v("重新搜索")

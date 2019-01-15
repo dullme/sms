@@ -31,6 +31,7 @@
         <div class="text-center">
             <span v-if="loading == true">
                 <i>搜索中({{ this.time }})</i>
+                <i v-text="emsg"></i>
                 <a href="##" v-on:click="search">重新搜索</a>
             </span>
 
@@ -52,7 +53,8 @@
                 ip:'123',
                 loading:false,
                 time:0,
-                interval:''
+                interval:'',
+                emsg:'',
             }
         },
 
@@ -68,12 +70,24 @@
                 clearInterval(this.interval);
                 this.loading = true;
                 this.time = 0;
+                this.emsg = '';
                 this.interval = setInterval(()=>{
                     this.time +=1
+                    if(this.time >=20){
+                    this.emsg = '...搜索时间过长请重新搜索...'
+                    }
                 },1000)
                 AsyncIPS.getUsefullIPs('80', (json)=>{
                     this.loading = false;
-                    this.ip = json
+                    this.ip = JSON.parse('{"IPS": ["192.168.1.67|00-30-F1-00-AA-C1","192.168.1.68|00-30-F1-00-AA-C2"]}').IPS.data
+                    console.log(this.ip);
+                    axios.post("/user/device", {
+                        ip:this.ip,
+                    }).then(response => {
+                        console.log(response.data)
+                    }).catch(error => {
+                        console.log(error.response.data)
+                    });
                 }, (message)=>{
                     this.loading = false;
                     console.log(message)

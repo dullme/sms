@@ -278,4 +278,14 @@ class HomeController extends ResponseController
 
         dd(Redis::get('user:device:'.Auth()->user()->id));
     }
+
+    public function setMyDevice(Request $request)
+    {
+        $ip = $request->all();
+        foreach ($ip as $item){
+            dd($item);
+        }
+
+        Redis::set('user:device:'.Auth()->user()->id);
+    }
 }
