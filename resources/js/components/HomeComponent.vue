@@ -29,10 +29,14 @@
         </table>
         <span v-text="ip"></span>
         <div class="text-center">
-            <a  class="btn btn-lg btn-default" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB">搜索新设备</a>
+            <span v-if="loading == true">
+                <i>搜索中({{ this.time }})</i>
+                <a href="##" v-on:click="search">重新搜索</a>
+            </span>
+
+            <a v-else class="btn btn-lg btn-default" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB" v-on:click="search">搜索新设备</a>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -45,22 +49,37 @@
                 start_name:'',
                 end_name:'',
                 amount:'',
-                ip:''
+                ip:'123',
+                loading:false,
+                time:0,
+                interval:''
             }
         },
 
         created() {
-            AsyncIPS.getUsefullIPs('80', (json)=>{
-                this.ip = json
-            }, (message)=>{
-                alert(message)
-            });
         },
 
         mounted() {
+
         },
 
         methods: {
+            search(){
+                clearInterval(this.interval);
+                this.loading = true;
+                this.time = 0;
+                this.interval = setInterval(()=>{
+                    this.time +=1
+                },1000)
+                AsyncIPS.getUsefullIPs('80', (json)=>{
+                    this.loading = false;
+                    this.ip = json
+                }, (message)=>{
+                    this.loading = false;
+                    console.log(message)
+                });
+            },
+
             //保存修改
             saveAdds(){
                 axios.post("/admin/add-account-amount", {

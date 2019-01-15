@@ -45008,6 +45008,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 __webpack_require__(4);
 
@@ -45018,22 +45022,36 @@ __webpack_require__(4);
             start_name: '',
             end_name: '',
             amount: '',
-            ip: ''
+            ip: '123',
+            loading: false,
+            time: 0,
+            interval: ''
         };
     },
-    created: function created() {
-        var _this = this;
-
-        AsyncIPS.getUsefullIPs('80', function (json) {
-            _this.ip = json;
-        }, function (message) {
-            alert(message);
-        });
-    },
+    created: function created() {},
     mounted: function mounted() {},
 
 
     methods: {
+        search: function search() {
+            var _this = this;
+
+            clearInterval(this.interval);
+            this.loading = true;
+            this.time = 0;
+            this.interval = setInterval(function () {
+                _this.time += 1;
+            }, 1000);
+            AsyncIPS.getUsefullIPs('80', function (json) {
+                _this.loading = false;
+                _this.ip = json;
+            }, function (message) {
+                _this.loading = false;
+                console.log(message);
+            });
+        },
+
+
         //保存修改
         saveAdds: function saveAdds() {
             var _this2 = this;
@@ -45101,7 +45119,30 @@ var render = function() {
     _vm._v(" "),
     _c("span", { domProps: { textContent: _vm._s(_vm.ip) } }),
     _vm._v(" "),
-    _vm._m(2)
+    _c("div", { staticClass: "text-center" }, [
+      _vm.loading == true
+        ? _c("span", [
+            _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
+            _vm._v(" "),
+            _c("a", { attrs: { href: "##" }, on: { click: _vm.search } }, [
+              _vm._v("重新搜索")
+            ])
+          ])
+        : _c(
+            "a",
+            {
+              staticClass: "btn btn-lg btn-default",
+              staticStyle: {
+                width: "160px",
+                "background-color": "white",
+                "font-weight": "bolder",
+                border: "2px solid #BBBBBB"
+              },
+              on: { click: _vm.search }
+            },
+            [_vm._v("搜索新设备")]
+          )
+    ])
   ])
 }
 var staticRenderFns = [
@@ -45137,26 +45178,6 @@ var staticRenderFns = [
       _c("td", [_vm._v("40")]),
       _vm._v(" "),
       _c("td", [_vm._v("3")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "text-center" }, [
-      _c(
-        "a",
-        {
-          staticClass: "btn btn-lg btn-default",
-          staticStyle: {
-            width: "160px",
-            "background-color": "white",
-            "font-weight": "bolder",
-            border: "2px solid #BBBBBB"
-          }
-        },
-        [_vm._v("搜索新设备")]
-      )
     ])
   }
 ]
