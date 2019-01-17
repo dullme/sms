@@ -34040,9 +34040,349 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /* 47 */,
 /* 48 */,
 /* 49 */,
-/* 50 */,
-/* 51 */,
-/* 52 */,
+/* 50 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+  Modified by Evan You @yyx990803
+*/
+
+var hasDocument = typeof document !== 'undefined'
+
+if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (!hasDocument) {
+    throw new Error(
+    'vue-style-loader cannot be used in a non-browser environment. ' +
+    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
+  ) }
+}
+
+var listToStyles = __webpack_require__(52)
+
+/*
+type StyleObject = {
+  id: number;
+  parts: Array<StyleObjectPart>
+}
+
+type StyleObjectPart = {
+  css: string;
+  media: string;
+  sourceMap: ?string
+}
+*/
+
+var stylesInDom = {/*
+  [id: number]: {
+    id: number,
+    refs: number,
+    parts: Array<(obj?: StyleObjectPart) => void>
+  }
+*/}
+
+var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
+var singletonElement = null
+var singletonCounter = 0
+var isProduction = false
+var noop = function () {}
+var options = null
+var ssrIdKey = 'data-vue-ssr-id'
+
+// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+// tags it will allow on a page
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
+
+module.exports = function (parentId, list, _isProduction, _options) {
+  isProduction = _isProduction
+
+  options = _options || {}
+
+  var styles = listToStyles(parentId, list)
+  addStylesToDom(styles)
+
+  return function update (newList) {
+    var mayRemove = []
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i]
+      var domStyle = stylesInDom[item.id]
+      domStyle.refs--
+      mayRemove.push(domStyle)
+    }
+    if (newList) {
+      styles = listToStyles(parentId, newList)
+      addStylesToDom(styles)
+    } else {
+      styles = []
+    }
+    for (var i = 0; i < mayRemove.length; i++) {
+      var domStyle = mayRemove[i]
+      if (domStyle.refs === 0) {
+        for (var j = 0; j < domStyle.parts.length; j++) {
+          domStyle.parts[j]()
+        }
+        delete stylesInDom[domStyle.id]
+      }
+    }
+  }
+}
+
+function addStylesToDom (styles /* Array<StyleObject> */) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i]
+    var domStyle = stylesInDom[item.id]
+    if (domStyle) {
+      domStyle.refs++
+      for (var j = 0; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j])
+      }
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j]))
+      }
+      if (domStyle.parts.length > item.parts.length) {
+        domStyle.parts.length = item.parts.length
+      }
+    } else {
+      var parts = []
+      for (var j = 0; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j]))
+      }
+      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
+    }
+  }
+}
+
+function createStyleElement () {
+  var styleElement = document.createElement('style')
+  styleElement.type = 'text/css'
+  head.appendChild(styleElement)
+  return styleElement
+}
+
+function addStyle (obj /* StyleObjectPart */) {
+  var update, remove
+  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
+
+  if (styleElement) {
+    if (isProduction) {
+      // has SSR styles and in production mode.
+      // simply do nothing.
+      return noop
+    } else {
+      // has SSR styles but in dev mode.
+      // for some reason Chrome can't handle source map in server-rendered
+      // style tags - source maps in <style> only works if the style tag is
+      // created and inserted dynamically. So we remove the server rendered
+      // styles and inject new ones.
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  if (isOldIE) {
+    // use singleton mode for IE9.
+    var styleIndex = singletonCounter++
+    styleElement = singletonElement || (singletonElement = createStyleElement())
+    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
+    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
+  } else {
+    // use multi-style-tag mode in all other cases
+    styleElement = createStyleElement()
+    update = applyToTag.bind(null, styleElement)
+    remove = function () {
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  update(obj)
+
+  return function updateStyle (newObj /* StyleObjectPart */) {
+    if (newObj) {
+      if (newObj.css === obj.css &&
+          newObj.media === obj.media &&
+          newObj.sourceMap === obj.sourceMap) {
+        return
+      }
+      update(obj = newObj)
+    } else {
+      remove()
+    }
+  }
+}
+
+var replaceText = (function () {
+  var textStore = []
+
+  return function (index, replacement) {
+    textStore[index] = replacement
+    return textStore.filter(Boolean).join('\n')
+  }
+})()
+
+function applyToSingletonTag (styleElement, index, remove, obj) {
+  var css = remove ? '' : obj.css
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = replaceText(index, css)
+  } else {
+    var cssNode = document.createTextNode(css)
+    var childNodes = styleElement.childNodes
+    if (childNodes[index]) styleElement.removeChild(childNodes[index])
+    if (childNodes.length) {
+      styleElement.insertBefore(cssNode, childNodes[index])
+    } else {
+      styleElement.appendChild(cssNode)
+    }
+  }
+}
+
+function applyToTag (styleElement, obj) {
+  var css = obj.css
+  var media = obj.media
+  var sourceMap = obj.sourceMap
+
+  if (media) {
+    styleElement.setAttribute('media', media)
+  }
+  if (options.ssrId) {
+    styleElement.setAttribute(ssrIdKey, obj.id)
+  }
+
+  if (sourceMap) {
+    // https://developer.chrome.com/devtools/docs/javascript-debugging
+    // this makes source maps inside style tags work properly in Chrome
+    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
+    // http://stackoverflow.com/a/26603875
+    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
+  }
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = css
+  } else {
+    while (styleElement.firstChild) {
+      styleElement.removeChild(styleElement.firstChild)
+    }
+    styleElement.appendChild(document.createTextNode(css))
+  }
+}
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports) {
+
+/**
+ * Translates the list format produced by css-loader into something
+ * easier to manipulate.
+ */
+module.exports = function listToStyles (parentId, list) {
+  var styles = []
+  var newStyles = {}
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i]
+    var id = item[0]
+    var css = item[1]
+    var media = item[2]
+    var sourceMap = item[3]
+    var part = {
+      id: parentId + ':' + i,
+      css: css,
+      media: media,
+      sourceMap: sourceMap
+    }
+    if (!newStyles[id]) {
+      styles.push(newStyles[id] = { id: id, parts: [part] })
+    } else {
+      newStyles[id].parts.push(part)
+    }
+  }
+  return styles
+}
+
+
+/***/ }),
 /* 53 */,
 /* 54 */,
 /* 55 */,
@@ -44923,6 +45263,10 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(72)
+}
 var normalizeComponent = __webpack_require__(3)
 /* script */
 var __vue_script__ = __webpack_require__(66)
@@ -44931,7 +45275,7 @@ var __vue_template__ = __webpack_require__(67)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = null
+var __vue_styles__ = injectStyle
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -45000,19 +45344,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 __webpack_require__(4);
 
@@ -45023,14 +45354,20 @@ __webpack_require__(4);
             start_name: '',
             end_name: '',
             amount: '',
-            ip: '123',
+            ip: [],
             loading: false,
             time: 0,
             interval: '',
-            emsg: ''
+            emsg: '',
+            open: 'STOPED',
+            frequency: 1,
+            send_interval: 1,
+            real_device: [] //真实的数据
         };
     },
-    created: function created() {},
+    created: function created() {
+        this.search();
+    },
     mounted: function mounted() {},
 
 
@@ -45042,45 +45379,360 @@ __webpack_require__(4);
             this.loading = true;
             this.time = 0;
             this.emsg = '';
+            this.device = [];
+            this.real_device = [];
+
             this.interval = setInterval(function () {
                 _this.time += 1;
                 if (_this.time >= 20) {
                     _this.emsg = '...搜索时间过长请重新搜索...';
                 }
             }, 1000);
-            AsyncIPS.getUsefullIPs('80', function (json) {
-                _this.loading = false;
-                _this.ip = JSON.parse('{"IPS": ["192.168.1.67|00-30-F1-00-AA-C1","192.168.1.68|00-30-F1-00-AA-C2"]}').IPS.data;
-                console.log(_this.ip);
-                axios.post("/user/device", {
-                    ip: _this.ip
-                }).then(function (response) {
-                    console.log(response.data);
-                }).catch(function (error) {
-                    console.log(error.response.data);
-                });
-            }, function (message) {
-                _this.loading = false;
-                console.log(message);
+
+            this.loading = false;
+            this.ip = JSON.parse('{"IPS": ["192.168.1.67","192.168.1.67"]}').IPS;
+            this.readCard();
+            this.getRealStatus(this.device);
+
+            // axios.post("/user/device", {
+            //     ip:this.ip,
+            // }).then(response => {
+            //     this.frequency = response.data.data.frequency;
+            //     this.device = response.data.data.device;
+            // }).catch(error => {
+            //     console.log(error.response.data)
+            // });
+
+            // AsyncIPS.getUsefullIPs('80', (json)=>{
+            //     this.loading = false;
+            //     this.ip = JSON.parse(json).IPS
+            //     axios.post("/user/device", {
+            //         ip:this.ip,
+            //     }).then(response => {
+            //         this.frequency = response.data.data.frequency;
+            //         this.device = response.data.data.device;
+            //     }).catch(error => {
+            //         console.log(error.response.data)
+            //     });
+            // }, (message)=>{
+            //     this.loading = false;
+            //     console.log(message)
+            // });
+        },
+        start: function start() {
+            var _this2 = this;
+
+            if (this.open == 'STOPED') {
+                console.log('发送中......');
+                this.open = 'SENDING';
+
+                this.send_interval = setInterval(function () {
+                    console.log(_this2.ip);
+                }, Number(this.frequency));
+            } else {
+                clearInterval(this.send_interval);
+                console.log('已停止发送');
+                this.open = 'STOPED';
+            }
+        },
+        readCard: function readCard() {
+            var _this3 = this;
+
+            this.ip.forEach(function (value) {
+                var r = value.split("|");
+                _this3.device.push(JSON.parse('{\n' + '    "type": "dev-status",\n' + '    "seq": 187,\n' + '    "expires": -1,\n' + '    "mac": "00-30-f1-00-aa-c1",\n' + '    "ip": "192.168.1.67",\n' + '    "ver": "616-520-840-641-100-020",\n' + '    "max-ports": 8,\n' + '    "max-slot": 32,\n' + '    "status": [\n' + '        {\n' + '            "port": "1.01",\n' + '            "seq": 1062,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "42402117840804569421",\n' + '            "imsi": "001012345678405",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.02",\n' + '            "seq": 1063,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.03",\n' + '            "seq": 1064,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.04",\n' + '            "seq": 1065,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.05",\n' + '            "seq": 1066,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.06",\n' + '            "seq": 1067,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.07",\n' + '            "seq": 1068,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.08",\n' + '            "seq": 1069,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "2.04",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032949548"\n' + '        },\n' + '        {\n' + '            "port": "3.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032841679"\n' + '        },\n' + '        {\n' + '            "port": "4.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032843212"\n' + '        },\n' + '        {\n' + '            "port": "5.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032952583"\n' + '        },\n' + '        {\n' + '            "port": "6A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032944838"\n' + '        },\n' + '        {\n' + '            "port": "7A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032958713"\n' + '        },\n' + '        {\n' + '            "port": "8A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032928997"\n' + '        },\n' + '        {\n' + '            "port": "9A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977069"\n' + '        },\n' + '        {\n' + '            "port": "10A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032991359"\n' + '        },\n' + '        {\n' + '            "port": "11A",\n' + '            "seq": 311,\n' + '            "st": 0,\n' + '            "imei": "866157032670136"\n' + '        },\n' + '        {\n' + '            "port": "12A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032668262"\n' + '        },\n' + '        {\n' + '            "port": "13A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977168"\n' + '        },\n' + '        {\n' + '            "port": "14A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032683295"\n' + '        },\n' + '        {\n' + '            "port": "15G",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032677222"\n' + '        },\n' + '        {\n' + '            "port": "16A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977416"\n' + '        }\n' + '    ]\n' + '}'));
+
+                // AsyncHttp.httpRequest(
+                //     "http://"+r[0]+"/goip_get_status.html?username=root&password=root&all_sims=1",
+                //     "get",
+                //     "",
+                //     (json)=>{
+                //         this.device.push(JSON.parse('{\n' +
+                //             '    "type": "dev-status",\n' +
+                //             '    "seq": 187,\n' +
+                //             '    "expires": -1,\n' +
+                //             '    "mac": "00-30-f1-00-aa-c1",\n' +
+                //             '    "ip": "192.168.1.67",\n' +
+                //             '    "ver": "616-520-840-641-100-020",\n' +
+                //             '    "max-ports": 8,\n' +
+                //             '    "max-slot": 32,\n' +
+                //             '    "status": [\n' +
+                //             '        {\n' +
+                //             '            "port": "1.01",\n' +
+                //             '            "seq": 1062,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "42402117840804569421",\n' +
+                //             '            "imsi": "001012345678405",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.02",\n' +
+                //             '            "seq": 1063,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.03",\n' +
+                //             '            "seq": 1064,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.04",\n' +
+                //             '            "seq": 1065,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.05",\n' +
+                //             '            "seq": 1066,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.06",\n' +
+                //             '            "seq": 1067,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.07",\n' +
+                //             '            "seq": 1068,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "1.08",\n' +
+                //             '            "seq": 1069,\n' +
+                //             '            "st": 6,\n' +
+                //             '            "imei": "866157032963614",\n' +
+                //             '            "iccid": "98001122334455667788",\n' +
+                //             '            "imsi": "001012345678901",\n' +
+                //             '            "sn": "",\n' +
+                //             '            "opr": "0 ",\n' +
+                //             '            "bal": "0.00",\n' +
+                //             '            "sig": 0,\n' +
+                //             '            "tot_dur": "0/-1",\n' +
+                //             '            "mon_dur": "0/-1",\n' +
+                //             '            "day_dur": "0/-1"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "2.04",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032949548"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "3.01",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032841679"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "4.01",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032843212"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "5.01",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032952583"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "6A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032944838"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "7A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032958713"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "8A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032928997"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "9A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032977069"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "10A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032991359"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "11A",\n' +
+                //             '            "seq": 311,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032670136"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "12A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032668262"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "13A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032977168"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "14A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032683295"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "15G",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032677222"\n' +
+                //             '        },\n' +
+                //             '        {\n' +
+                //             '            "port": "16A",\n' +
+                //             '            "seq": 187,\n' +
+                //             '            "st": 0,\n' +
+                //             '            "imei": "866157032977416"\n' +
+                //             '        }\n' +
+                //             '    ]\n' +
+                //             '}'));
+                //     },
+                //     (messsage)=>{
+                //         console.log(messsage)
+                //     });
             });
+
+            console.log(this.device);
+        },
+        prefixInteger: function prefixInteger(num, n) {
+            return (Array(n).join(0) + num).slice(-n);
         },
 
 
-        //保存修改
-        saveAdds: function saveAdds() {
-            var _this2 = this;
+        //根据状态获取全部卡槽
+        getRealStatus: function getRealStatus(device) {
+            var _this4 = this;
 
-            axios.post("/admin/add-account-amount", {
-                start_name: this.start_name,
-                end_name: this.end_name,
-                amount: this.amount
-            }).then(function (response) {
-                _this2.start_name = '';
-                _this2.end_name = '';
-                _this2.amount = '';
-                toastr.success(response.data.data);
-            }).catch(function (error) {
-                toastr.error(error.response.data.message);
+            var status = new Array();
+
+            device.forEach(function (value, index) {
+                var _loop = function _loop(i) {
+                    status[i] = new Array(i);
+
+                    var _loop2 = function _loop2(j) {
+                        var port = i + 1 + '.' + _this4.prefixInteger(j + 1, 2);
+
+                        try {
+                            device[index]['status'].forEach(function (value) {
+                                if (value['port'] == port) {
+                                    status[i][j] = {
+                                        'port': value['port'],
+                                        'imei': value['imei'],
+                                        'iccid': value['iccid'],
+                                        'imsi': value['imsi'],
+                                        'has_card': true
+                                    };
+                                    throw new Error('该卡已绑定');
+                                } else {
+                                    status[i][j] = {
+                                        'port': port,
+                                        'imei': '',
+                                        'iccid': '',
+                                        'imsi': '',
+                                        'has_card': false
+                                    };
+                                }
+                            });
+                        } catch (e) {}
+                    };
+
+                    for (var j = 0; j < value['max-slot']; j++) {
+                        _loop2(j);
+                    }
+                };
+
+                for (var i = 0; i < value['max-ports']; i++) {
+                    _loop(i);
+                }
+
+                _this4.real_device.push({
+                    'ip': value['ip'],
+                    'mac': value['mac'],
+                    'status': status
+                });
             });
         }
     }
@@ -45095,108 +45747,117 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticStyle: { padding: "10px", "min-width": "600px" } }, [
-    _c(
-      "table",
-      {
-        staticClass: "table table-bordered",
-        staticStyle: { "background-color": "white" }
-      },
-      [
-        _vm._m(0),
-        _vm._v(" "),
-        _c(
-          "tbody",
-          [
-            _vm._l(_vm.device, function(item) {
-              return _c("tr", [
-                _c("th", [_vm._v(_vm._s(item.ip))]),
+  return _c(
+    "div",
+    { staticStyle: { padding: "10px", "min-width": "600px" } },
+    [
+      _vm._l(_vm.real_device, function(item) {
+        return _vm.real_device.length
+          ? _c(
+              "div",
+              [
+                _c("span", [_vm._v("当前设备:" + _vm._s(item.ip))]),
                 _vm._v(" "),
-                _c("td", { staticClass: "text-success" }, [
-                  _vm._v(_vm._s(item.status))
-                ]),
+                _c("span", [_vm._v("状态:通讯正常")]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(item.income))]),
+                _c("span", [_vm._v("当日收益:")]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(item.successful))]),
+                _c("span", [_vm._v("当日成功条数:")]),
                 _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(item.failures))])
+                _c("span", [_vm._v("当日失败条数:")]),
+                _vm._v(" "),
+                _vm._l(item.status, function(s) {
+                  return _c(
+                    "div",
+                    _vm._l(s, function(t) {
+                      return _c(
+                        "div",
+                        {
+                          staticClass: "ka_cao",
+                          class: t.has_card ? "bg-success" : ""
+                        },
+                        [_vm._v(_vm._s(t.port))]
+                      )
+                    }),
+                    0
+                  )
+                })
+              ],
+              2
+            )
+          : _c("div", {
+              staticClass: "text-center",
+              staticStyle: { "min-height": "200px", "line-height": "200px" },
+              domProps: {
+                textContent: _vm._s(_vm.loading == false ? "未找到设备" : "")
+              }
+            })
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "text-center" }, [
+        _vm.loading == true
+          ? _c("span", [
+              _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
+              _vm._v(" "),
+              _c("i", { domProps: { textContent: _vm._s(_vm.emsg) } }),
+              _vm._v(" "),
+              _c("a", { attrs: { href: "##" }, on: { click: _vm.search } }, [
+                _vm._v("重新搜索")
               ])
-            }),
-            _vm._v(" "),
-            _vm._m(1)
-          ],
-          2
-        )
-      ]
-    ),
-    _vm._v(" "),
-    _c("span", { domProps: { textContent: _vm._s(_vm.ip) } }),
-    _vm._v(" "),
-    _c("div", { staticClass: "text-center" }, [
-      _vm.loading == true
-        ? _c("span", [
-            _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
-            _vm._v(" "),
-            _c("i", { domProps: { textContent: _vm._s(_vm.emsg) } }),
-            _vm._v(" "),
-            _c("a", { attrs: { href: "##" }, on: { click: _vm.search } }, [
-              _vm._v("重新搜索")
             ])
-          ])
-        : _c(
-            "a",
-            {
-              staticClass: "btn btn-lg btn-default",
-              staticStyle: {
-                width: "160px",
-                "background-color": "white",
-                "font-weight": "bolder",
-                border: "2px solid #BBBBBB"
-              },
-              on: { click: _vm.search }
-            },
-            [_vm._v("搜索新设备")]
-          )
-    ])
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("thead", [
-      _c("tr", [
-        _c("th", [_vm._v("当前设备")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("状态")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("当日收益")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("当日成功条数")]),
-        _vm._v(" "),
-        _c("th", [_vm._v("当日失败条数")])
+          : _c("div", [
+              _c(
+                "a",
+                {
+                  staticClass: "btn btn-lg btn-default",
+                  staticStyle: {
+                    width: "160px",
+                    "background-color": "white",
+                    "font-weight": "bolder",
+                    border: "2px solid #BBBBBB"
+                  },
+                  on: { click: _vm.search }
+                },
+                [_vm._v("搜索新设备")]
+              ),
+              _vm._v(" "),
+              _c("a", {
+                staticClass: "btn btn-lg btn-default",
+                class: _vm.open == true ? "text-danger" : "",
+                staticStyle: {
+                  width: "160px",
+                  "background-color": "white",
+                  "font-weight": "bolder",
+                  border: "2px solid #BBBBBB"
+                },
+                domProps: {
+                  textContent: _vm._s(_vm.open == "STOPED" ? "启动" : "停止")
+                },
+                on: { click: _vm.start }
+              }),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticStyle: { width: "40px", display: "inline-block" } },
+                [
+                  _vm.open == "SENDING"
+                    ? _c("img", {
+                        attrs: {
+                          src: "/images/loading.svg",
+                          width: "100%",
+                          height: "100%"
+                        }
+                      })
+                    : _vm._e()
+                ]
+              )
+            ])
       ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("tr", [
-      _c("th", [_vm._v("192.168.1.32")]),
-      _vm._v(" "),
-      _c("td", [_vm._v("通讯正常")]),
-      _vm._v(" "),
-      _c("td", [_vm._v("43")]),
-      _vm._v(" "),
-      _c("td", [_vm._v("40")]),
-      _vm._v(" "),
-      _c("td", [_vm._v("3")])
-    ])
-  }
-]
+    ],
+    2
+  )
+}
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
@@ -45205,6 +45866,50 @@ if (false) {
     require("vue-hot-reload-api")      .rerender("data-v-782dcf83", module.exports)
   }
 }
+
+/***/ }),
+/* 68 */,
+/* 69 */,
+/* 70 */,
+/* 71 */,
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(73);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(51)("f814b80a", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-782dcf83\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./HomeComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-782dcf83\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./HomeComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(50)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.ka_cao{\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.bg-fail{\n    background-color: #e3342f;\n    color:white;\n}\n.bg-success{\n    background-color: #38c172;\n    color:white;\n}\n", ""]);
+
+// exports
+
 
 /***/ })
 /******/ ]);

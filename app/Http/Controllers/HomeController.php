@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Redis;
 
 class HomeController extends ResponseController
 {
+
     /**
      * Create a new controller instance.
      *
@@ -37,16 +38,16 @@ class HomeController extends ResponseController
 
     public function detail(Request $request)
     {
-        $task_histories =  TaskHistory::with(['task' => function($query){
+        $task_histories = TaskHistory::with(['task' => function ($query) {
             $query->select('id', 'content', 'amount');
         }])
             ->where('user_id', Auth()->user()->id);
 
-        if ($request->input('status') == 'fail'){
+        if ($request->input('status') == 'fail') {
             $task_histories = $task_histories->where('status', 0)->paginate(20);
-        }elseif($request->input('status') == 'success'){
+        } else if ($request->input('status') == 'success') {
             $task_histories = $task_histories->where('status', 1)->paginate(20);
-        }else{
+        } else {
             $task_histories = $task_histories->paginate(20);
         }
 
@@ -69,21 +70,21 @@ class HomeController extends ResponseController
     public function saveInfoEdit(Request $request)
     {
         $request->validate([
-            'real_name' => 'required',
-            'bank' => 'required',
-            'bank_card_number' => 'required',
+            'real_name'         => 'required',
+            'bank'              => 'required',
+            'bank_card_number'  => 'required',
             'withdraw_password' => 'required|min:6|max:20',
-            'password' => 'required'
+            'password'          => 'required'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
-        if(!Hash::check($request->input('password'), $user->password)){
+        if (!Hash::check($request->input('password'), $user->password)) {
             Session::flash('editInfo', '修改失败，登陆密码错误！');
-        }else{
+        } else {
             $user->real_name = $request->input('real_name');
             $user->bank = $request->input('bank');
             $user->bank_card_number = $request->input('bank_card_number');
-            if($user->withdraw_password != $request->input('withdraw_password')){
+            if ($user->withdraw_password != $request->input('withdraw_password')) {
                 $user->withdraw_password = $request->input('withdraw_password');
                 $user->withdraw_time = Carbon::now()->addDay();
             }
@@ -103,39 +104,41 @@ class HomeController extends ResponseController
     public function saveInfoWithdraw(Request $request)
     {
         $request->validate([
-            'withdraw_amount' => 'required|integer|hundred',
+            'withdraw_amount'   => 'required|integer|hundred',
             'withdraw_password' => 'required',
         ]);
         $user = User::findOrFail(Auth()->user()->id);
 
-        if($request->input('withdraw_password') != $user->withdraw_password){
+        if ($request->input('withdraw_password') != $user->withdraw_password) {
             Session::flash('withdrawInfo', '资金密码错误！');
+
             return back();
         }
 
-        if(!is_null($user->withdraw_time)  && $user->withdraw_time > Carbon::now()){
+        if (!is_null($user->withdraw_time) && $user->withdraw_time > Carbon::now()) {
             Session::flash('withdrawInfo', "{$user->withdraw_time} 之前无法申请提现");
+
             return back();
         }
 
-        $has_amount = intval($user->amount * 100) /100;
+        $has_amount = intval($user->amount * 100) / 100;
         $amount = $request->input('withdraw_amount');
 
-        if($has_amount >= $amount){
-            DB::transaction(function () use($user, $amount) {
+        if ($has_amount >= $amount) {
+            DB::transaction(function () use ($user, $amount) {
                 Withdraw::create([
-                    'user_id' => Auth()->user()->id,
-                    'amount' => $amount,
-                    'status' => 0,
-                    'balance' => $user->amount,
-                    'bank_card_number'=> $user->bank_card_number,
-                    'bank' => $user->bank,
+                    'user_id'          => Auth()->user()->id,
+                    'amount'           => $amount,
+                    'status'           => 0,
+                    'balance'          => $user->amount,
+                    'bank_card_number' => $user->bank_card_number,
+                    'bank'             => $user->bank,
                 ]);
                 $user->decrement('amount', $amount * 10000);
             });
 
             Session::flash('withdrawInfo', '提现成功！');
-        }else{
+        } else {
             Session::flash('withdrawInfo', '提现失败！');
         }
 
@@ -150,72 +153,73 @@ class HomeController extends ResponseController
     public function saveInfoTransfer(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'transfer_amount' => 'required|integer|hundred',
+            'transfer_amount'   => 'required|integer|hundred',
             'withdraw_password' => 'required',
-            'username' => 'required',
+            'username'          => 'required',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return $this->setStatusCode(422)->responseError($validator->errors()->first());
         }
 
         $transfer_user = User::where('username', $request->input('username'))->first();
-        if(!$transfer_user){
+        if (!$transfer_user) {
             return $this->setStatusCode(422)->responseError('找不到该用户');
         }
 
-        if($transfer_user->id == Auth()->user()->id){
+        if ($transfer_user->id == Auth()->user()->id) {
             return $this->setStatusCode(422)->responseError('您不能给自己转转');
         }
 
         $user = User::findOrFail(Auth()->user()->id);
 
-        if($request->input('withdraw_password') != $user->withdraw_password){
+        if ($request->input('withdraw_password') != $user->withdraw_password) {
             return $this->setStatusCode(422)->responseError('资金密码错误');
         }
 
-        if(!is_null($user->withdraw_time)  && $user->withdraw_time > Carbon::now()){
+        if (!is_null($user->withdraw_time) && $user->withdraw_time > Carbon::now()) {
             return $this->setStatusCode(422)->responseError("{$user->withdraw_time} 之前无法申请提现");
         }
 
-        $has_amount = intval($user->amount * 100) /100;
+        $has_amount = intval($user->amount * 100) / 100;
         $amount = $request->input('transfer_amount');
 
-        if($has_amount >= $amount){
-            $res = DB::transaction(function () use($user, $transfer_user, $amount) {
+        if ($has_amount >= $amount) {
+            $res = DB::transaction(function () use ($user, $transfer_user, $amount) {
                 //转出
                 Withdraw::create([
-                    'user_id' => Auth()->user()->id,
-                    'amount' => $amount,
-                    'status' => 7,
-                    'balance' => $user->amount,
-                    'bank_card_number'=> $transfer_user->username,
-                    'bank' => '内部转出',
-                    'remark' => '成功',
-                    'payment_at' => Carbon::now(),
+                    'user_id'          => Auth()->user()->id,
+                    'amount'           => $amount,
+                    'status'           => 7,
+                    'balance'          => $user->amount,
+                    'bank_card_number' => $transfer_user->username,
+                    'bank'             => '内部转出',
+                    'remark'           => '成功',
+                    'payment_at'       => Carbon::now(),
                 ]);
                 $user->decrement('amount', $amount * 10000);
 
                 //转入
                 Withdraw::create([
-                    'user_id' => $transfer_user->id,
-                    'amount' => $amount,
-                    'status' => 8,
-                    'balance' => $transfer_user->amount,
-                    'bank_card_number'=> $user->username,
-                    'bank' => '内部转入',
-                    'remark' => '成功',
-                    'payment_at' => Carbon::now(),
+                    'user_id'          => $transfer_user->id,
+                    'amount'           => $amount,
+                    'status'           => 8,
+                    'balance'          => $transfer_user->amount,
+                    'bank_card_number' => $user->username,
+                    'bank'             => '内部转入',
+                    'remark'           => '成功',
+                    'payment_at'       => Carbon::now(),
                 ]);
+
                 return $transfer_user->increment('amount', $amount * 10000);
 
             });
 
-            if($res){
+            if ($res) {
                 return $this->responseSuccess("转账成功！");
-            }else{
+            } else {
                 return $this->setStatusCode(422)->responseError("转账失败");
             }
-        }else{
+        } else {
             return $this->setStatusCode(422)->responseError("转账金额不足");
         }
     }
@@ -235,8 +239,8 @@ class HomeController extends ResponseController
     public function saveConfig(Request $request)
     {
         $request->validate([
-            'baud_rate' => 'required',
-            'mode' => 'required',
+            'baud_rate'  => 'required',
+            'mode'       => 'required',
             'encryption' => 'required',
         ]);
 
@@ -247,9 +251,9 @@ class HomeController extends ResponseController
         $user->encryption = $request->input('encryption');
         $res = $user->save();
 
-        if($res){
+        if ($res) {
             Session::flash('saveConfig', '保存成功！');
-        }else{
+        } else {
             Session::flash('saveConfig', '保存失败！');
         }
 
@@ -265,27 +269,39 @@ class HomeController extends ResponseController
         $username = $request->input('username');
 
         $user = User::where('username', $username)->select('id', 'username', 'real_name')->first();
-        if($user){
+        if ($user) {
             return $this->responseSuccess($user);
-        }else{
+        } else {
             return $this->setStatusCode(422)->responseError('找不到该用户');
         }
     }
 
     public function getMyDevice()
     {
-        $user = Redis::set('user:device:'.Auth()->user()->id, '123');
+        $user = Redis::set('user:device:' . Auth()->user()->id, '123');
 
-        dd(Redis::get('user:device:'.Auth()->user()->id));
+        dd(Redis::get('user:device:' . Auth()->user()->id));
     }
 
     public function setMyDevice(Request $request)
     {
-        $ip = $request->all();
-        foreach ($ip as $item){
-            dd($item);
+        $device = [];
+        foreach ($request->input('ip', []) as $ip) {
+            $res = explode('|', $ip);
+            Redis::set(Auth()->user()->id . ':' . $res[1] . ':ip', $res[0]);
+            $device[] = [
+                'ip'        => $res[0],
+                'mac'       => $res[1],
+                'status'    => true,
+                'income'    => Redis::get(Auth()->user()->id . ':' . $res[1] . ':income') ?? 0,
+                'success'   => Redis::get(Auth()->user()->id . ':' . $res[1] . ':success') ?? 0,
+                'fail'      => Redis::get(Auth()->user()->id . ':' . $res[1] . ':fail') ?? 0,
+            ];
         }
 
-        Redis::set('user:device:'.Auth()->user()->id);
+        return $this->responseSuccess([
+            'device' => $device,
+            'frequency' => config('frequency', '1') * 1000,
+        ]);
     }
 }
