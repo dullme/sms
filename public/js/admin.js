@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 36);
+/******/ 	return __webpack_require__(__webpack_require__.s = 39);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -34027,1079 +34027,6 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 
 /***/ }),
 /* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(37);
-__webpack_require__(56);
-module.exports = __webpack_require__(57);
-
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-window._ = __webpack_require__(11);
-window.Popper = __webpack_require__(13).default;
-
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
-
-window.axios = __webpack_require__(14);
-
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
-/**
- * Next we will register the CSRF Token as a common header with Axios so that
- * all outgoing HTTP requests automatically have it attached. This is just
- * a simple convenience so we don't have to attach every token manually.
- */
-
-var token = LA.token;
-
-if (token) {
-  window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
-} else {
-  console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
-}
-
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
-
-// import Echo from 'laravel-echo'
-
-// window.Pusher = require('pusher-js');
-
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     encrypted: true
-// });
-
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
-
-window.Vue = __webpack_require__(33);
-
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
-
-// const files = require.context('./', true, /\.vue$/i)
-// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
-
-Vue.component('import-cards', __webpack_require__(38));
-Vue.component('add-account-amount', __webpack_require__(41));
-Vue.component('account-amount-search', __webpack_require__(44));
-Vue.component('add-task', __webpack_require__(47));
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(39)
-/* template */
-var __vue_template__ = __webpack_require__(40)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/js/components/ImportCardsComponent.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-a09a4d6c", Component.options)
-  } else {
-    hotAPI.reload("data-v-a09a4d6c", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 39 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-__webpack_require__(4);
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            loading: false,
-            adds: [],
-            progress: ''
-        };
-    },
-    mounted: function mounted() {
-        this.uploadFile();
-    },
-
-
-    methods: {
-        uploadFileClick: function uploadFileClick() {
-            $('#upload-file').click();
-        },
-        uploadFile: function uploadFile() {
-            var _this = this;
-
-            $('#upload-file').on('change', function () {
-                $('#upload-file').closest('form').submit();
-            });
-            $('form').submit(function () {
-                var form_date = new FormData();
-                form_date.append('file', $('#upload-file')[0].files[0]);
-                _this.loading = true;
-                axios({
-                    method: 'post',
-                    url: '/admin/import-cards',
-                    data: form_date,
-                    onUploadProgress: function onUploadProgress(progressEvent) {
-                        var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%';
-                        _this.progress = complete;
-                    }
-                }).then(function (response) {
-                    _this.loading = false;
-                    _this.adds = response.data.data;
-                    _this.progress = '';
-                    $('#upload-file').val('');
-                    console.log(response.data.data);
-                }).catch(function (error) {
-                    _this.loading = false;
-                    _this.progress = '';
-                    $('#upload-file').val('');
-                    toastr.success(error.response.data.message);
-                });
-            });
-        },
-
-
-        //导入水电费
-        saveAdds: function saveAdds() {
-            var _this2 = this;
-
-            if (this.adds.length) {
-                this.loading = true;
-                axios.post("/admin/save-import-cards", {
-                    adds: this.adds
-                }).then(function (response) {
-                    _this2.loading = false;
-                    _this2.adds = [];
-                    toastr.success('导入成功');
-                }).catch(function (error) {
-                    _this2.loading = false;
-                    if (error.response.data.errors) {
-                        toastr.error(error.response.data.errors.payable_time[0]);
-                    } else {
-                        toastr.error(error.response.data.message);
-                    }
-                });
-            }
-        }
-    }
-
-});
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-sm-12" }, [
-      _c("div", { staticClass: "box box-info" }, [
-        _c(
-          "div",
-          { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
-          [
-            _vm._m(0),
-            _vm._v(" "),
-            _c("div", { staticClass: "box-tools" }, [
-              _c(
-                "form",
-                {
-                  attrs: {
-                    onsubmit: "return false",
-                    enctype: "multipart/form-data"
-                  }
-                },
-                [
-                  _c(
-                    "span",
-                    {
-                      staticClass: "btn btn-default btn-sm",
-                      on: { click: _vm.uploadFileClick }
-                    },
-                    [
-                      _vm._v(
-                        "\n                            批量导入账号\n                        "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("input", {
-                    staticStyle: { display: "none" },
-                    attrs: { id: "upload-file", type: "file" }
-                  })
-                ]
-              ),
-              _vm._v(" "),
-              _c(
-                "div",
-                {
-                  staticClass: "progress-bar progress-bar-striped active",
-                  style: "width: " + this.progress + ";",
-                  attrs: { role: "progressbar" }
-                },
-                [_vm._v(_vm._s(this.progress))]
-              )
-            ])
-          ]
-        ),
-        _vm._v(" "),
-        _c("div", { staticClass: "box-body no-padding" }, [
-          _c("table", { staticClass: "table" }, [
-            _vm.adds.length
-              ? _c(
-                  "tbody",
-                  [
-                    _vm._m(1),
-                    _vm._v(" "),
-                    _vm._l(_vm.adds, function(add, index) {
-                      return _c("tr", [
-                        _c("td", [_vm._v(_vm._s(add.name))]),
-                        _vm._v(" "),
-                        _c("td", [_vm._v(_vm._s(add.password))]),
-                        _vm._v(" "),
-                        _c("td", [_vm._v(_vm._s(add.amount))])
-                      ])
-                    })
-                  ],
-                  2
-                )
-              : _c("tbody", [
-                  _c(
-                    "div",
-                    {
-                      staticClass: "text-center",
-                      staticStyle: {
-                        "min-height": "200px",
-                        "line-height": "200px",
-                        "font-size": "40px",
-                        opacity: ".1"
-                      }
-                    },
-                    [
-                      _vm.loading
-                        ? _c("span", { staticClass: "fa fa-spinner fa-spin" })
-                        : _c("span", [_vm._v("请上传文件")])
-                    ]
-                  )
-                ])
-          ])
-        ]),
-        _vm._v(" "),
-        _vm.adds.length
-          ? _c("div", { staticClass: "box-footer" }, [
-              _c(
-                "button",
-                {
-                  staticClass: "btn btn-info pull-right",
-                  on: { click: _vm.saveAdds }
-                },
-                [_vm._v("保存")]
-              )
-            ])
-          : _vm._e()
-      ])
-    ])
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "a",
-      {
-        staticClass: "btn btn-sm btn-default",
-        attrs: { href: "/admin/card", title: "列表" }
-      },
-      [
-        _c("i", { staticClass: "fa fa-list" }),
-        _vm._v(" "),
-        _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("tr", [
-      _c("th", [_vm._v("卡号")]),
-      _vm._v(" "),
-      _c("th", [_vm._v("密码")]),
-      _vm._v(" "),
-      _c("th", [_vm._v("初始金额")])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-a09a4d6c", module.exports)
-  }
-}
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(42)
-/* template */
-var __vue_template__ = __webpack_require__(43)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/js/components/AddAccountAmountComponent.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-3e05bf3e", Component.options)
-  } else {
-    hotAPI.reload("data-v-3e05bf3e", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-__webpack_require__(4);
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            start_name: '',
-            end_name: '',
-            amount: ''
-        };
-    },
-    mounted: function mounted() {},
-
-
-    methods: {
-        //保存修改
-        saveAdds: function saveAdds() {
-            var _this = this;
-
-            axios.post("/admin/add-account-amount", {
-                start_name: this.start_name,
-                end_name: this.end_name,
-                amount: this.amount
-            }).then(function (response) {
-                _this.start_name = '';
-                _this.end_name = '';
-                _this.amount = '';
-                toastr.success(response.data.data);
-            }).catch(function (error) {
-                toastr.error(error.response.data.message);
-            });
-        }
-    }
-
-});
-
-/***/ }),
-/* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-sm-12" }, [
-      _c("div", { staticClass: "box box-info" }, [
-        _vm._m(0),
-        _vm._v(" "),
-        _c("div", { staticClass: "box-body no-padding" }, [
-          _c("form", { staticClass: "form-horizontal" }, [
-            _c("div", { staticClass: "row" }, [
-              _c("div", { staticClass: "col-md-12" }, [
-                _c("div", { staticClass: "box-body" }, [
-                  _c("div", { staticClass: "fields-group" }, [
-                    _c("div", { staticClass: "form-group" }, [
-                      _c("label", { staticClass: "col-sm-2 control-label" }, [
-                        _vm._v("账号")
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "div",
-                        {
-                          staticClass: "col-sm-8",
-                          staticStyle: { width: "390px" }
-                        },
-                        [
-                          _c(
-                            "div",
-                            { staticClass: "input-group input-group-sm" },
-                            [
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.start_name,
-                                    expression: "start_name"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "开始账号",
-                                  name: "start_name",
-                                  value: ""
-                                },
-                                domProps: { value: _vm.start_name },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.start_name = $event.target.value
-                                  }
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c(
-                                "span",
-                                {
-                                  staticClass: "input-group-addon",
-                                  staticStyle: {
-                                    "border-left": "0px",
-                                    "border-right": "0px"
-                                  }
-                                },
-                                [_vm._v("-")]
-                              ),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.end_name,
-                                    expression: "end_name"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "结束账号",
-                                  name: "end_name",
-                                  value: ""
-                                },
-                                domProps: { value: _vm.end_name },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.end_name = $event.target.value
-                                  }
-                                }
-                              })
-                            ]
-                          )
-                        ]
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "form-group" }, [
-                      _c("label", { staticClass: "col-sm-2 control-label" }, [
-                        _vm._v("金额")
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "div",
-                        {
-                          staticClass: "col-sm-8",
-                          staticStyle: { width: "390px" }
-                        },
-                        [
-                          _c(
-                            "div",
-                            { staticClass: "input-group input-group-sm" },
-                            [
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.amount,
-                                    expression: "amount"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "金额",
-                                  name: "amount",
-                                  value: ""
-                                },
-                                domProps: { value: _vm.amount },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.amount = $event.target.value
-                                  }
-                                }
-                              })
-                            ]
-                          )
-                        ]
-                      )
-                    ])
-                  ])
-                ])
-              ])
-            ])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "box-footer" }, [
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-info pull-right",
-              on: { click: _vm.saveAdds }
-            },
-            [_vm._v("保存")]
-          )
-        ])
-      ])
-    ])
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
-      [
-        _c(
-          "a",
-          {
-            staticClass: "btn btn-sm btn-default",
-            attrs: { href: "/admin/card", title: "列表" }
-          },
-          [
-            _c("i", { staticClass: "fa fa-list" }),
-            _vm._v(" "),
-            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
-          ]
-        )
-      ]
-    )
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-3e05bf3e", module.exports)
-  }
-}
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(45)
-/* template */
-var __vue_template__ = __webpack_require__(46)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/js/components/AccountAmountSearchComponent.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-06ceda7b", Component.options)
-  } else {
-    hotAPI.reload("data-v-06ceda7b", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-__webpack_require__(4);
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            token: LA.token
-        };
-    }
-});
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-sm-12" }, [
-      _c("div", { staticClass: "box box-info" }, [
-        _vm._m(0),
-        _vm._v(" "),
-        _c(
-          "form",
-          {
-            staticClass: "form-horizontal",
-            attrs: {
-              action: "/admin/account-amount-search",
-              method: "post",
-              enctype: "multipart/form-data"
-            }
-          },
-          [
-            _vm._m(1),
-            _vm._v(" "),
-            _c("div", { staticClass: "box-footer" }, [
-              _c("input", {
-                attrs: { type: "hidden", name: "_token" },
-                domProps: { value: _vm.token }
-              }),
-              _vm._v(" "),
-              _c("input", {
-                staticClass: "btn btn-info pull-right",
-                attrs: { type: "submit", value: "自动填充金额" }
-              })
-            ])
-          ]
-        )
-      ])
-    ])
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
-      [
-        _c(
-          "a",
-          {
-            staticClass: "btn btn-sm btn-default",
-            attrs: { href: "/admin/card", title: "列表" }
-          },
-          [
-            _c("i", { staticClass: "fa fa-list" }),
-            _vm._v(" "),
-            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
-          ]
-        )
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "box-body no-padding" }, [
-      _c("div", { staticClass: "row" }, [
-        _c("div", { staticClass: "col-md-12" }, [
-          _c("div", { staticClass: "box-body" }, [
-            _c("div", { staticClass: "fields-group" }, [
-              _c("div", { staticClass: "form-group" }, [
-                _c("label", { staticClass: "col-sm-2 control-label" }, [
-                  _vm._v("文件")
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-sm-8" }, [
-                  _c("div", { staticClass: "input-group input-group-sm" }, [
-                    _c("input", {
-                      staticClass: "form-control",
-                      attrs: { type: "file", name: "file" }
-                    })
-                  ])
-                ])
-              ])
-            ])
-          ])
-        ])
-      ])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-06ceda7b", module.exports)
-  }
-}
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(48)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(53)
-/* template */
-var __vue_template__ = __webpack_require__(55)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/js/components/AddTaskComponent.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-6f8cc0c2", Component.options)
-  } else {
-    hotAPI.reload("data-v-6f8cc0c2", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(49);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(51)("4deffa93", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(50)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n.select2 {\n    width: 100% !important;\n}\n.rent-list > div {\n    margin-bottom: 15px;\n}\n.has-error .input-group-addon, .has-error label {\n    border-color: #a94442 !important;\n    color: #a94442 !important;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 50 */
 /***/ (function(module, exports) {
 
 /*
@@ -35181,7 +34108,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 51 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -35200,7 +34127,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(52)
+var listToStyles = __webpack_require__(38)
 
 /*
 type StyleObject = {
@@ -35409,7 +34336,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 52 */
+/* 38 */
 /***/ (function(module, exports) {
 
 /**
@@ -35439,6 +34366,1079 @@ module.exports = function listToStyles (parentId, list) {
   }
   return styles
 }
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(40);
+__webpack_require__(56);
+module.exports = __webpack_require__(57);
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+window._ = __webpack_require__(11);
+window.Popper = __webpack_require__(13).default;
+
+/**
+ * We'll load the axios HTTP library which allows us to easily issue requests
+ * to our Laravel back-end. This library automatically handles sending the
+ * CSRF token as a header based on the value of the "XSRF" token cookie.
+ */
+
+window.axios = __webpack_require__(14);
+
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+/**
+ * Next we will register the CSRF Token as a common header with Axios so that
+ * all outgoing HTTP requests automatically have it attached. This is just
+ * a simple convenience so we don't have to attach every token manually.
+ */
+
+var token = LA.token;
+
+if (token) {
+  window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+} else {
+  console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+}
+
+/**
+ * Echo exposes an expressive API for subscribing to channels and listening
+ * for events that are broadcast by Laravel. Echo and event broadcasting
+ * allows your team to easily build robust real-time web applications.
+ */
+
+// import Echo from 'laravel-echo'
+
+// window.Pusher = require('pusher-js');
+
+// window.Echo = new Echo({
+//     broadcaster: 'pusher',
+//     key: process.env.MIX_PUSHER_APP_KEY,
+//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
+//     encrypted: true
+// });
+
+/**
+ * First we will load all of this project's JavaScript dependencies which
+ * includes Vue and other libraries. It is a great starting point when
+ * building robust, powerful web applications using Vue and Laravel.
+ */
+
+window.Vue = __webpack_require__(33);
+
+/**
+ * The following block of code may be used to automatically register your
+ * Vue components. It will recursively scan this directory for the Vue
+ * components and automatically register them with their "basename".
+ *
+ * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
+ */
+
+// const files = require.context('./', true, /\.vue$/i)
+// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
+
+Vue.component('import-cards', __webpack_require__(41));
+Vue.component('add-account-amount', __webpack_require__(44));
+Vue.component('account-amount-search', __webpack_require__(47));
+Vue.component('add-task', __webpack_require__(50));
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(42)
+/* template */
+var __vue_template__ = __webpack_require__(43)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/ImportCardsComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-a09a4d6c", Component.options)
+  } else {
+    hotAPI.reload("data-v-a09a4d6c", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+__webpack_require__(4);
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            loading: false,
+            adds: [],
+            progress: ''
+        };
+    },
+    mounted: function mounted() {
+        this.uploadFile();
+    },
+
+
+    methods: {
+        uploadFileClick: function uploadFileClick() {
+            $('#upload-file').click();
+        },
+        uploadFile: function uploadFile() {
+            var _this = this;
+
+            $('#upload-file').on('change', function () {
+                $('#upload-file').closest('form').submit();
+            });
+            $('form').submit(function () {
+                var form_date = new FormData();
+                form_date.append('file', $('#upload-file')[0].files[0]);
+                _this.loading = true;
+                axios({
+                    method: 'post',
+                    url: '/admin/import-cards',
+                    data: form_date,
+                    onUploadProgress: function onUploadProgress(progressEvent) {
+                        var complete = (progressEvent.loaded / progressEvent.total * 100 | 0) + '%';
+                        _this.progress = complete;
+                    }
+                }).then(function (response) {
+                    _this.loading = false;
+                    _this.adds = response.data.data;
+                    _this.progress = '';
+                    $('#upload-file').val('');
+                    console.log(response.data.data);
+                }).catch(function (error) {
+                    _this.loading = false;
+                    _this.progress = '';
+                    $('#upload-file').val('');
+                    toastr.success(error.response.data.message);
+                });
+            });
+        },
+
+
+        //导入水电费
+        saveAdds: function saveAdds() {
+            var _this2 = this;
+
+            if (this.adds.length) {
+                this.loading = true;
+                axios.post("/admin/save-import-cards", {
+                    adds: this.adds
+                }).then(function (response) {
+                    _this2.loading = false;
+                    _this2.adds = [];
+                    toastr.success('导入成功');
+                }).catch(function (error) {
+                    _this2.loading = false;
+                    if (error.response.data.errors) {
+                        toastr.error(error.response.data.errors.payable_time[0]);
+                    } else {
+                        toastr.error(error.response.data.message);
+                    }
+                });
+            }
+        }
+    }
+
+});
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "row" }, [
+    _c("div", { staticClass: "col-sm-12" }, [
+      _c("div", { staticClass: "box box-info" }, [
+        _c(
+          "div",
+          { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
+          [
+            _vm._m(0),
+            _vm._v(" "),
+            _c("div", { staticClass: "box-tools" }, [
+              _c(
+                "form",
+                {
+                  attrs: {
+                    onsubmit: "return false",
+                    enctype: "multipart/form-data"
+                  }
+                },
+                [
+                  _c(
+                    "span",
+                    {
+                      staticClass: "btn btn-default btn-sm",
+                      on: { click: _vm.uploadFileClick }
+                    },
+                    [
+                      _vm._v(
+                        "\n                            批量导入账号\n                        "
+                      )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c("input", {
+                    staticStyle: { display: "none" },
+                    attrs: { id: "upload-file", type: "file" }
+                  })
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "progress-bar progress-bar-striped active",
+                  style: "width: " + this.progress + ";",
+                  attrs: { role: "progressbar" }
+                },
+                [_vm._v(_vm._s(this.progress))]
+              )
+            ])
+          ]
+        ),
+        _vm._v(" "),
+        _c("div", { staticClass: "box-body no-padding" }, [
+          _c("table", { staticClass: "table" }, [
+            _vm.adds.length
+              ? _c(
+                  "tbody",
+                  [
+                    _vm._m(1),
+                    _vm._v(" "),
+                    _vm._l(_vm.adds, function(add, index) {
+                      return _c("tr", [
+                        _c("td", [_vm._v(_vm._s(add.name))]),
+                        _vm._v(" "),
+                        _c("td", [_vm._v(_vm._s(add.password))]),
+                        _vm._v(" "),
+                        _c("td", [_vm._v(_vm._s(add.amount))])
+                      ])
+                    })
+                  ],
+                  2
+                )
+              : _c("tbody", [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "text-center",
+                      staticStyle: {
+                        "min-height": "200px",
+                        "line-height": "200px",
+                        "font-size": "40px",
+                        opacity: ".1"
+                      }
+                    },
+                    [
+                      _vm.loading
+                        ? _c("span", { staticClass: "fa fa-spinner fa-spin" })
+                        : _c("span", [_vm._v("请上传文件")])
+                    ]
+                  )
+                ])
+          ])
+        ]),
+        _vm._v(" "),
+        _vm.adds.length
+          ? _c("div", { staticClass: "box-footer" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-info pull-right",
+                  on: { click: _vm.saveAdds }
+                },
+                [_vm._v("保存")]
+              )
+            ])
+          : _vm._e()
+      ])
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "a",
+      {
+        staticClass: "btn btn-sm btn-default",
+        attrs: { href: "/admin/card", title: "列表" }
+      },
+      [
+        _c("i", { staticClass: "fa fa-list" }),
+        _vm._v(" "),
+        _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
+      ]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("th", [_vm._v("卡号")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("密码")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("初始金额")])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-a09a4d6c", module.exports)
+  }
+}
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(45)
+/* template */
+var __vue_template__ = __webpack_require__(46)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/AddAccountAmountComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-3e05bf3e", Component.options)
+  } else {
+    hotAPI.reload("data-v-3e05bf3e", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+__webpack_require__(4);
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            start_name: '',
+            end_name: '',
+            amount: ''
+        };
+    },
+    mounted: function mounted() {},
+
+
+    methods: {
+        //保存修改
+        saveAdds: function saveAdds() {
+            var _this = this;
+
+            axios.post("/admin/add-account-amount", {
+                start_name: this.start_name,
+                end_name: this.end_name,
+                amount: this.amount
+            }).then(function (response) {
+                _this.start_name = '';
+                _this.end_name = '';
+                _this.amount = '';
+                toastr.success(response.data.data);
+            }).catch(function (error) {
+                toastr.error(error.response.data.message);
+            });
+        }
+    }
+
+});
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "row" }, [
+    _c("div", { staticClass: "col-sm-12" }, [
+      _c("div", { staticClass: "box box-info" }, [
+        _vm._m(0),
+        _vm._v(" "),
+        _c("div", { staticClass: "box-body no-padding" }, [
+          _c("form", { staticClass: "form-horizontal" }, [
+            _c("div", { staticClass: "row" }, [
+              _c("div", { staticClass: "col-md-12" }, [
+                _c("div", { staticClass: "box-body" }, [
+                  _c("div", { staticClass: "fields-group" }, [
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { staticClass: "col-sm-2 control-label" }, [
+                        _vm._v("账号")
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "col-sm-8",
+                          staticStyle: { width: "390px" }
+                        },
+                        [
+                          _c(
+                            "div",
+                            { staticClass: "input-group input-group-sm" },
+                            [
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.start_name,
+                                    expression: "start_name"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: {
+                                  type: "text",
+                                  placeholder: "开始账号",
+                                  name: "start_name",
+                                  value: ""
+                                },
+                                domProps: { value: _vm.start_name },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.start_name = $event.target.value
+                                  }
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "input-group-addon",
+                                  staticStyle: {
+                                    "border-left": "0px",
+                                    "border-right": "0px"
+                                  }
+                                },
+                                [_vm._v("-")]
+                              ),
+                              _vm._v(" "),
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.end_name,
+                                    expression: "end_name"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: {
+                                  type: "text",
+                                  placeholder: "结束账号",
+                                  name: "end_name",
+                                  value: ""
+                                },
+                                domProps: { value: _vm.end_name },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.end_name = $event.target.value
+                                  }
+                                }
+                              })
+                            ]
+                          )
+                        ]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { staticClass: "col-sm-2 control-label" }, [
+                        _vm._v("金额")
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "col-sm-8",
+                          staticStyle: { width: "390px" }
+                        },
+                        [
+                          _c(
+                            "div",
+                            { staticClass: "input-group input-group-sm" },
+                            [
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.amount,
+                                    expression: "amount"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: {
+                                  type: "text",
+                                  placeholder: "金额",
+                                  name: "amount",
+                                  value: ""
+                                },
+                                domProps: { value: _vm.amount },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.amount = $event.target.value
+                                  }
+                                }
+                              })
+                            ]
+                          )
+                        ]
+                      )
+                    ])
+                  ])
+                ])
+              ])
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "box-footer" }, [
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-info pull-right",
+              on: { click: _vm.saveAdds }
+            },
+            [_vm._v("保存")]
+          )
+        ])
+      ])
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
+      [
+        _c(
+          "a",
+          {
+            staticClass: "btn btn-sm btn-default",
+            attrs: { href: "/admin/card", title: "列表" }
+          },
+          [
+            _c("i", { staticClass: "fa fa-list" }),
+            _vm._v(" "),
+            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
+          ]
+        )
+      ]
+    )
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-3e05bf3e", module.exports)
+  }
+}
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(48)
+/* template */
+var __vue_template__ = __webpack_require__(49)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/AccountAmountSearchComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-06ceda7b", Component.options)
+  } else {
+    hotAPI.reload("data-v-06ceda7b", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+__webpack_require__(4);
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            token: LA.token
+        };
+    }
+});
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "row" }, [
+    _c("div", { staticClass: "col-sm-12" }, [
+      _c("div", { staticClass: "box box-info" }, [
+        _vm._m(0),
+        _vm._v(" "),
+        _c(
+          "form",
+          {
+            staticClass: "form-horizontal",
+            attrs: {
+              action: "/admin/account-amount-search",
+              method: "post",
+              enctype: "multipart/form-data"
+            }
+          },
+          [
+            _vm._m(1),
+            _vm._v(" "),
+            _c("div", { staticClass: "box-footer" }, [
+              _c("input", {
+                attrs: { type: "hidden", name: "_token" },
+                domProps: { value: _vm.token }
+              }),
+              _vm._v(" "),
+              _c("input", {
+                staticClass: "btn btn-info pull-right",
+                attrs: { type: "submit", value: "自动填充金额" }
+              })
+            ])
+          ]
+        )
+      ])
+    ])
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "box-header", staticStyle: { "min-height": "45px" } },
+      [
+        _c(
+          "a",
+          {
+            staticClass: "btn btn-sm btn-default",
+            attrs: { href: "/admin/card", title: "列表" }
+          },
+          [
+            _c("i", { staticClass: "fa fa-list" }),
+            _vm._v(" "),
+            _c("span", { staticClass: "hidden-xs" }, [_vm._v(" 列表")])
+          ]
+        )
+      ]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "box-body no-padding" }, [
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-md-12" }, [
+          _c("div", { staticClass: "box-body" }, [
+            _c("div", { staticClass: "fields-group" }, [
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", { staticClass: "col-sm-2 control-label" }, [
+                  _vm._v("文件")
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-sm-8" }, [
+                  _c("div", { staticClass: "input-group input-group-sm" }, [
+                    _c("input", {
+                      staticClass: "form-control",
+                      attrs: { type: "file", name: "file" }
+                    })
+                  ])
+                ])
+              ])
+            ])
+          ])
+        ])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-06ceda7b", module.exports)
+  }
+}
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(51)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(53)
+/* template */
+var __vue_template__ = __webpack_require__(55)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/AddTaskComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-6f8cc0c2", Component.options)
+  } else {
+    hotAPI.reload("data-v-6f8cc0c2", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(52);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(37)("4deffa93", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6f8cc0c2\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./AddTaskComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(36)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.select2 {\n    width: 100% !important;\n}\n.rent-list > div {\n    margin-bottom: 15px;\n}\n.has-error .input-group-addon, .has-error label {\n    border-color: #a94442 !important;\n    color: #a94442 !important;\n}\n", ""]);
+
+// exports
 
 
 /***/ }),

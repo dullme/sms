@@ -7,19 +7,19 @@
             <span>当日成功条数:</span>
             <span>当日失败条数:</span>
             <div v-for="s in item.status">
-                <div class="ka_cao" :class="t.has_card ? 'bg-success':''" v-for="t in s">{{ t.port }}</div>
+                <div class="ka_cao" :class="t.status" v-for="t in s">{{ t.port }}-{{ t.count }}</div>
             </div>
         </div>
         <div class="text-center" v-else v-text="loading == false ? '未找到设备':''" style="min-height: 200px; line-height: 200px"></div>
         <div class="text-center">
             <span v-if="loading == true">
                 <i>搜索中({{ this.time }})</i>
-                <i v-text="emsg"></i>
+                <i v-text="message"></i>
                 <a href="##" v-on:click="search">重新搜索</a>
             </span>
             <div v-else>
                 <a class="btn btn-lg btn-default" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB" v-on:click="search">搜索新设备</a>
-                <a class="btn btn-lg btn-default" :class="open == true ? 'text-danger':''" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB" v-on:click="start" v-text="open == 'STOPED' ? '启动':'停止' "></a>
+                <a class="btn btn-lg btn-default" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB" v-on:click="start" v-text="open == 'STOPPED' ? '启动':'停止' "></a>
                 <div style="width: 40px;display: inline-block"><img v-if="open == 'SENDING'" src="/images/loading.svg" width="100%" height="100%"></div>
 
             </div>
@@ -33,19 +33,17 @@
     export default {
         data() {
             return {
-                device:[],
-                start_name:'',
-                end_name:'',
-                amount:'',
-                ip:[],
-                loading:false,
-                time:0,
-                interval:'',
-                emsg:'',
-                open:'STOPED',
-                frequency:1,
-                send_interval:1,
-                real_device:[], //真实的数据
+                device:[],  //读取的数据
+                real_device:[], //真实的数据,
+                ip:[],  // 所有设备的IP
+                loading:false,  //是否在读取设备
+                time:0, //搜索设备等待秒数
+                search_interval:'', //搜索事件
+                send_interval: '',    //发送事件
+                message:'', //提示信息
+                open:'STOPPED', //是否开启发送短信
+                frequency:1000, //请求频率/毫秒
+                data:[],
             }
         },
 
@@ -62,20 +60,20 @@
                 clearInterval(this.interval);
                 this.loading = true;
                 this.time = 0;
-                this.emsg = '';
+                this.message = '';
                 this.device = [];
                 this.real_device = [];
 
-                this.interval = setInterval(()=>{
+                this.search_interval = setInterval(()=>{
                     this.time +=1
                     if(this.time >=20){
-                    this.emsg = '...搜索时间过长请重新搜索...'
+                    this.message = '...搜索时间过长请重新搜索...'
                     }
                 },1000)
 
 
                 this.loading = false;
-                this.ip = JSON.parse('{"IPS": ["192.168.1.67","192.168.1.67"]}').IPS
+                this.ip = JSON.parse('{"IPS": ["192.168.1.67"]}').IPS
                 this.readCard();
                 this.getRealStatus(this.device);
 
@@ -108,21 +106,72 @@
             },
 
             start(){
-                if(this.open == 'STOPED'){
+                if(this.open == 'STOPPED'){
                     console.log('发送中......');
+                    this.data = [];
                     this.open = 'SENDING'
+                        this.real_device.forEach((device, d_index) =>{
+                            device.status.forEach((ports, p_ports)=>{
+                                ports.forEach((value, v_index)=>{
+                                    if(value.has_card && value.status == 'waiting'){
+                                        this.data.push({
+                                            iccid:value.iccid,
+                                            imei:value.imei,
+                                            _token:document.head.querySelector('meta[name="csrf-token"]').content
+                                        });
+                                        // this.send_interval = setInterval(()=>{
+                                        //     $.ajax({
+                                        //         url:'/user/send/message',
+                                        //         type:'POST', //GET
+                                        //         async:true,    //或false,是否异步
+                                        //         data:{
+                                        //             iccid:value.iccid,
+                                        //             imei:value.imei,
+                                        //             _token:document.head.querySelector('meta[name="csrf-token"]').content
+                                        //         },
+                                        //         timeout:5000,    //超时时间
+                                        //         dataType:'json',    //返回的数据格式：
+                                        //         beforeSend:(xhr)=>{
+                                        //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'executing';
+                                        //         },
+                                        //         success:(data,textStatus,jqXHR)=>{
+                                        //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'waiting';
+                                        //             this.real_device[d_index]['status'][p_ports][v_index]['count'] += 1;
+                                        //         },
+                                        //         error:(xhr,textStatus)=>{
+                                        //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'closed';
+                                        //         },
+                                        //         complete:()=>{
+                                        //         }
+                                        //     })
+                                        // }, 2000)
 
+                                    }
+                                })
+                            })
 
+                        })
 
-                    this.send_interval = setInterval(()=>{
-                        console.log(this.ip);
-                    }, Number(this.frequency))
+                    if(this.data.length){
+                        this.sendAxios(0);
+                    }
 
                 }else{
                     clearInterval(this.send_interval);
                     console.log('已停止发送');
-                    this.open = 'STOPED';
+                    this.open = 'STOPPED';
                 }
+            },
+
+            sendAxios(current_length){
+                axios.post("/user/send/message", this.data[current_length]).then(response => {
+                    if(current_length + 1 <= this.data.length){
+                        console.log(current_length)
+                        this.sendAxios(current_length + 1)
+                    }
+                }).catch(error => {
+                    console.log(error.response.data)
+                });
             },
 
             readCard(){
@@ -585,7 +634,6 @@
                     //     });
                 })
 
-                console.log(this.device);
             },
 
             prefixInteger(num, n) {
@@ -606,20 +654,24 @@
                                 device[index]['status'].forEach(function (value) {
                                     if(value['port'] == port){
                                         status[i][j] = {
+                                            'count':0,
                                             'port':value['port'],
                                             'imei':value['imei'],
                                             'iccid':value['iccid'],
                                             'imsi':value['imsi'],
                                             'has_card':true,
+                                            'status':'waiting', //waiting:等待中;executing执行中
                                         }
                                         throw new Error('该卡已绑定')
                                     }else{
                                         status[i][j] = {
+                                            'count':0,
                                             'port':port,
                                             'imei':'',
                                             'iccid':'',
                                             'imsi':'',
                                             'has_card':false,
+                                            'status':'closed', //closed:已关闭;
                                         }
                                     }
                                 })
@@ -653,13 +705,17 @@
         padding: 0.5rem;
     }
 
-    .bg-fail{
-        background-color: #e3342f;
+    .closed{
+        color:black;
+    }
+
+    .waiting{
+        background-color: #38c172;
         color:white;
     }
 
-    .bg-success{
-        background-color: #38c172;
+    .executing{
+        background-color: #c110b3;
         color:white;
     }
 </style>

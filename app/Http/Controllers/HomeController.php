@@ -304,4 +304,16 @@ class HomeController extends ResponseController
             'frequency' => config('frequency', '1') * 1000,
         ]);
     }
+
+    /**
+     * 发送短信
+     * @param Request $request
+     */
+    public function sendMessage(Request $request)
+    {
+        sleep(10);
+        return $this->responseSuccess([
+            'key' => 123
+        ]);
+    }
 }

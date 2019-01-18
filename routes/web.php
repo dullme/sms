@@ -34,3 +34,4 @@ Route::post('/info/config', 'HomeController@saveConfig')->name('config');
 Route::post('/user/info', 'HomeController@searchUser');
 Route::get('/user/device', 'HomeController@getMyDevice');
 Route::post('/user/device', 'HomeController@setMyDevice');
+Route::post('/user/send/message', 'HomeController@sendMessage');
