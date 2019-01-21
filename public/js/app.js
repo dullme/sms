@@ -45344,7 +45344,7 @@ exports = module.exports = __webpack_require__(36)(false);
 
 
 // module
-exports.push([module.i, "\n.ka_cao{\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.closed{\n    color:black;\n}\n.waiting{\n    background-color: #38c172;\n    color:white;\n}\n.executing{\n    background-color: #c110b3;\n    color:white;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao{\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.closed{\n    color:black;\n}\n.waiting{\n    background-color: #38c172;\n    color:white;\n}\n.executing{\n    background-color: #c110b3;\n    color:white;\n}\n.current{\n    background-color: #1b72c1;\n    color:white;\n}\n", ""]);
 
 // exports
 
@@ -45396,7 +45396,7 @@ __webpack_require__(4);
             loading: false, //是否在读取设备
             time: 0, //搜索设备等待秒数
             search_interval: '', //搜索事件
-            send_interval: '', //发送事件
+            send_interval: '', //请求事件
             message: '', //提示信息
             open: 'STOPPED', //是否开启发送短信
             frequency: 1000, //请求频率/毫秒
@@ -45413,49 +45413,46 @@ __webpack_require__(4);
         search: function search() {
             var _this = this;
 
-            clearInterval(this.interval);
-            this.loading = true;
-            this.time = 0;
-            this.message = '';
-            this.device = [];
-            this.real_device = [];
+            if (this.open == 'SENDING') {
+                console.log('启动中无法搜索新设备');
+            } else {
+                clearInterval(this.search_interval);
+                this.device = [];
+                this.real_device = [];
+                this.ip = [];
+                this.loading = true;
+                this.time = 0;
+                this.search_interval = '';
+                this.message = '';
+                this.open = 'STOPPED';
+                this.frequency = 1000;
+                this.data = [];
 
-            this.search_interval = setInterval(function () {
-                _this.time += 1;
-                if (_this.time >= 20) {
-                    _this.message = '...搜索时间过长请重新搜索...';
-                }
-            }, 1000);
+                this.search_interval = setInterval(function () {
+                    _this.time += 1;
+                    if (_this.time >= 20) {
+                        _this.message = '...搜索时间过长请重新搜索...';
+                    }
+                }, 1000);
 
-            this.loading = false;
-            this.ip = JSON.parse('{"IPS": ["192.168.1.67"]}').IPS;
-            this.readCard();
-            this.getRealStatus(this.device);
-
-            // axios.post("/user/device", {
-            //     ip:this.ip,
-            // }).then(response => {
-            //     this.frequency = response.data.data.frequency;
-            //     this.device = response.data.data.device;
-            // }).catch(error => {
-            //     console.log(error.response.data)
-            // });
-
-            // AsyncIPS.getUsefullIPs('80', (json)=>{
-            //     this.loading = false;
-            //     this.ip = JSON.parse(json).IPS
-            //     axios.post("/user/device", {
-            //         ip:this.ip,
-            //     }).then(response => {
-            //         this.frequency = response.data.data.frequency;
-            //         this.device = response.data.data.device;
-            //     }).catch(error => {
-            //         console.log(error.response.data)
-            //     });
-            // }, (message)=>{
-            //     this.loading = false;
-            //     console.log(message)
-            // });
+                AsyncIPS.getUsefullIPs('80', function (json) {
+                    _this.loading = false;
+                    _this.ip = JSON.parse(json).IPS;
+                    axios.post("/user/device", {
+                        ip: _this.ip
+                    }).then(function (response) {
+                        _this.frequency = response.data.data.frequency;
+                        _this.device = response.data.data.device;
+                        _this.readCard();
+                        _this.getRealStatus(_this.device);
+                    }).catch(function (error) {
+                        console.log(error.response.data);
+                    });
+                }, function (message) {
+                    _this.loading = false;
+                    console.log(message);
+                });
+            }
         },
         start: function start() {
             var _this2 = this;
@@ -45469,300 +45466,41 @@ __webpack_require__(4);
                         ports.forEach(function (value, v_index) {
                             if (value.has_card && value.status == 'waiting') {
                                 _this2.data.push({
+                                    path: d_index + '|' + p_ports + '|' + v_index, //路径
                                     iccid: value.iccid,
                                     imei: value.imei,
                                     _token: document.head.querySelector('meta[name="csrf-token"]').content
                                 });
-                                // this.send_interval = setInterval(()=>{
-                                //     $.ajax({
-                                //         url:'/user/send/message',
-                                //         type:'POST', //GET
-                                //         async:true,    //或false,是否异步
-                                //         data:{
-                                //             iccid:value.iccid,
-                                //             imei:value.imei,
-                                //             _token:document.head.querySelector('meta[name="csrf-token"]').content
-                                //         },
-                                //         timeout:5000,    //超时时间
-                                //         dataType:'json',    //返回的数据格式：
-                                //         beforeSend:(xhr)=>{
-                                //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'executing';
-                                //         },
-                                //         success:(data,textStatus,jqXHR)=>{
-                                //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'waiting';
-                                //             this.real_device[d_index]['status'][p_ports][v_index]['count'] += 1;
-                                //         },
-                                //         error:(xhr,textStatus)=>{
-                                //             this.real_device[d_index]['status'][p_ports][v_index]['status'] = 'closed';
-                                //         },
-                                //         complete:()=>{
-                                //         }
-                                //     })
-                                // }, 2000)
                             }
                         });
                     });
                 });
 
                 if (this.data.length) {
-                    this.sendAxios(0);
+                    this.send_interval = setInterval(function () {
+                        axios.post("/user/send/message", _this2.data).then(function (response) {
+
+                            console.log(response.data);
+                        }).catch(function (error) {
+                            console.log(error);
+                        });
+                    }, this.frequency);
                 }
             } else {
                 clearInterval(this.send_interval);
-                console.log('已停止发送');
                 this.open = 'STOPPED';
+                console.log('已停止发送');
             }
         },
-        sendAxios: function sendAxios(current_length) {
+        readCard: function readCard() {
             var _this3 = this;
 
-            axios.post("/user/send/message", this.data[current_length]).then(function (response) {
-                if (current_length + 1 <= _this3.data.length) {
-                    console.log(current_length);
-                    _this3.sendAxios(current_length + 1);
-                }
-            }).catch(function (error) {
-                console.log(error.response.data);
-            });
-        },
-        readCard: function readCard() {
-            var _this4 = this;
-
-            this.ip.forEach(function (value) {
-                var r = value.split("|");
-                _this4.device.push(JSON.parse('{\n' + '    "type": "dev-status",\n' + '    "seq": 187,\n' + '    "expires": -1,\n' + '    "mac": "00-30-f1-00-aa-c1",\n' + '    "ip": "192.168.1.67",\n' + '    "ver": "616-520-840-641-100-020",\n' + '    "max-ports": 8,\n' + '    "max-slot": 32,\n' + '    "status": [\n' + '        {\n' + '            "port": "1.01",\n' + '            "seq": 1062,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "42402117840804569421",\n' + '            "imsi": "001012345678405",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.02",\n' + '            "seq": 1063,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.03",\n' + '            "seq": 1064,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.04",\n' + '            "seq": 1065,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.05",\n' + '            "seq": 1066,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.06",\n' + '            "seq": 1067,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.07",\n' + '            "seq": 1068,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "1.08",\n' + '            "seq": 1069,\n' + '            "st": 6,\n' + '            "imei": "866157032963614",\n' + '            "iccid": "98001122334455667788",\n' + '            "imsi": "001012345678901",\n' + '            "sn": "",\n' + '            "opr": "0 ",\n' + '            "bal": "0.00",\n' + '            "sig": 0,\n' + '            "tot_dur": "0/-1",\n' + '            "mon_dur": "0/-1",\n' + '            "day_dur": "0/-1"\n' + '        },\n' + '        {\n' + '            "port": "2.04",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032949548"\n' + '        },\n' + '        {\n' + '            "port": "3.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032841679"\n' + '        },\n' + '        {\n' + '            "port": "4.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032843212"\n' + '        },\n' + '        {\n' + '            "port": "5.01",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032952583"\n' + '        },\n' + '        {\n' + '            "port": "6A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032944838"\n' + '        },\n' + '        {\n' + '            "port": "7A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032958713"\n' + '        },\n' + '        {\n' + '            "port": "8A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032928997"\n' + '        },\n' + '        {\n' + '            "port": "9A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977069"\n' + '        },\n' + '        {\n' + '            "port": "10A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032991359"\n' + '        },\n' + '        {\n' + '            "port": "11A",\n' + '            "seq": 311,\n' + '            "st": 0,\n' + '            "imei": "866157032670136"\n' + '        },\n' + '        {\n' + '            "port": "12A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032668262"\n' + '        },\n' + '        {\n' + '            "port": "13A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977168"\n' + '        },\n' + '        {\n' + '            "port": "14A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032683295"\n' + '        },\n' + '        {\n' + '            "port": "15G",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032677222"\n' + '        },\n' + '        {\n' + '            "port": "16A",\n' + '            "seq": 187,\n' + '            "st": 0,\n' + '            "imei": "866157032977416"\n' + '        }\n' + '    ]\n' + '}'));
-
-                // AsyncHttp.httpRequest(
-                //     "http://"+r[0]+"/goip_get_status.html?username=root&password=root&all_sims=1",
-                //     "get",
-                //     "",
-                //     (json)=>{
-                //         this.device.push(JSON.parse('{\n' +
-                //             '    "type": "dev-status",\n' +
-                //             '    "seq": 187,\n' +
-                //             '    "expires": -1,\n' +
-                //             '    "mac": "00-30-f1-00-aa-c1",\n' +
-                //             '    "ip": "192.168.1.67",\n' +
-                //             '    "ver": "616-520-840-641-100-020",\n' +
-                //             '    "max-ports": 8,\n' +
-                //             '    "max-slot": 32,\n' +
-                //             '    "status": [\n' +
-                //             '        {\n' +
-                //             '            "port": "1.01",\n' +
-                //             '            "seq": 1062,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "42402117840804569421",\n' +
-                //             '            "imsi": "001012345678405",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.02",\n' +
-                //             '            "seq": 1063,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.03",\n' +
-                //             '            "seq": 1064,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.04",\n' +
-                //             '            "seq": 1065,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.05",\n' +
-                //             '            "seq": 1066,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.06",\n' +
-                //             '            "seq": 1067,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.07",\n' +
-                //             '            "seq": 1068,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "1.08",\n' +
-                //             '            "seq": 1069,\n' +
-                //             '            "st": 6,\n' +
-                //             '            "imei": "866157032963614",\n' +
-                //             '            "iccid": "98001122334455667788",\n' +
-                //             '            "imsi": "001012345678901",\n' +
-                //             '            "sn": "",\n' +
-                //             '            "opr": "0 ",\n' +
-                //             '            "bal": "0.00",\n' +
-                //             '            "sig": 0,\n' +
-                //             '            "tot_dur": "0/-1",\n' +
-                //             '            "mon_dur": "0/-1",\n' +
-                //             '            "day_dur": "0/-1"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "2.04",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032949548"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "3.01",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032841679"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "4.01",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032843212"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "5.01",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032952583"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "6A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032944838"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "7A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032958713"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "8A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032928997"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "9A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032977069"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "10A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032991359"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "11A",\n' +
-                //             '            "seq": 311,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032670136"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "12A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032668262"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "13A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032977168"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "14A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032683295"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "15G",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032677222"\n' +
-                //             '        },\n' +
-                //             '        {\n' +
-                //             '            "port": "16A",\n' +
-                //             '            "seq": 187,\n' +
-                //             '            "st": 0,\n' +
-                //             '            "imei": "866157032977416"\n' +
-                //             '        }\n' +
-                //             '    ]\n' +
-                //             '}'));
-                //     },
-                //     (messsage)=>{
-                //         console.log(messsage)
-                //     });
+            this.ip.forEach(function (value, index) {
+                AsyncHttp.httpRequest("http://" + r[0] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
+                    _this3.device.push(JSON.parse(json));
+                }, function (messsage) {
+                    console.log(messsage);
+                });
             });
         },
         prefixInteger: function prefixInteger(num, n) {
@@ -45772,7 +45510,7 @@ __webpack_require__(4);
 
         //根据状态获取全部卡槽
         getRealStatus: function getRealStatus(device) {
-            var _this5 = this;
+            var _this4 = this;
 
             var status = new Array();
 
@@ -45781,7 +45519,7 @@ __webpack_require__(4);
                     status[i] = new Array(i);
 
                     var _loop2 = function _loop2(j) {
-                        var port = i + 1 + '.' + _this5.prefixInteger(j + 1, 2);
+                        var port = i + 1 + '.' + _this4.prefixInteger(j + 1, 2);
 
                         try {
                             device[index]['status'].forEach(function (value) {
@@ -45820,7 +45558,7 @@ __webpack_require__(4);
                     _loop(i);
                 }
 
-                _this5.real_device.push({
+                _this4.real_device.push({
                     'ip': value['ip'],
                     'mac': value['mac'],
                     'status': status
@@ -45843,7 +45581,7 @@ var render = function() {
     "div",
     { staticStyle: { padding: "10px", "min-width": "600px" } },
     [
-      _vm._l(_vm.real_device, function(item) {
+      _vm._l(_vm.real_device, function(item, d_index) {
         return _vm.real_device.length
           ? _c(
               "div",
@@ -45858,14 +45596,18 @@ var render = function() {
                 _vm._v(" "),
                 _c("span", [_vm._v("当日失败条数:")]),
                 _vm._v(" "),
-                _vm._l(item.status, function(s) {
+                _vm._l(item.status, function(s, s_index) {
                   return _c(
                     "div",
-                    _vm._l(s, function(t) {
+                    _vm._l(s, function(t, t_index) {
                       return _c(
                         "div",
-                        { staticClass: "ka_cao", class: t.status },
-                        [_vm._v(_vm._s(t.port) + "-" + _vm._s(t.count))]
+                        {
+                          staticClass: "ka_cao",
+                          class: t.status,
+                          attrs: { id: d_index + "-" + s_index + "-" + t_index }
+                        },
+                        [_vm._v(_vm._s(t.port))]
                       )
                     }),
                     0

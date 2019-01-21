@@ -269,6 +269,16 @@ class HomeController extends ResponseController
         $username = $request->input('username');
 
         $user = User::where('username', $username)->select('id', 'username', 'real_name')->first();
+        if(mb_strlen($user->real_name) ==2){
+            $user->real_name = '*'.mb_substr($user->real_name, -1);
+        }elseif (mb_strlen($user->real_name) > 2){
+            $ss = '';
+            for ($i = 1; $i <= mb_strlen($user->real_name)-2; $i++){
+                $ss.='*';
+            }
+            $user->real_name = mb_substr($user->real_name, 0,1).$ss.mb_substr($user->real_name,-1);
+        }
+
         if ($user) {
             return $this->responseSuccess($user);
         } else {
@@ -308,10 +318,14 @@ class HomeController extends ResponseController
     /**
      * 发送短信
      * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function sendMessage(Request $request)
     {
-        sleep(10);
+        sleep(1);
+        if($request->input('iccid') == '98001122334455667788'){
+            return $this->setStatusCode(422)->responseError('shibai');
+        }
         return $this->responseSuccess([
             'key' => 123
         ]);

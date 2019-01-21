@@ -35,7 +35,7 @@
                     </div>
                     <div style="margin-top: 18px">
                         <label>推&nbsp;&nbsp;荐&nbsp;&nbsp;码 ： &nbsp;</label>
-                        <input type="password" style="width: 200px;" name="code" value="{{ old('code') }}">
+                        <input type="text" style="width: 200px;" name="code" value="{{ old('code') }}">
                         <label style="font-size: 16px;font-weight: normal;">&nbsp;&nbsp;* 请输入推荐码</label>
                     </div>
                     <div class="text-danger" style="height: 24px; font-size: 16px;margin-left: 110px">

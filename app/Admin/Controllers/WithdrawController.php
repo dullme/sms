@@ -2,6 +2,8 @@
 
 namespace App\Admin\Controllers;
 
+use DB;
+use App\User;
 use App\Withdraw;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
@@ -9,9 +11,11 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Http\Request;
 
 class WithdrawController extends Controller
 {
+
     use HasResourceActions;
 
     /**
@@ -52,10 +56,38 @@ class WithdrawController extends Controller
      */
     public function edit($id, Content $content)
     {
+        Withdraw::where('status', 0)->findOrFail($id);
+
         return $content
             ->header('编辑提现')
             ->description('')
             ->body($this->form()->edit($id));
+    }
+
+    public function update($id, Request $request)
+    {
+        $request->validate([
+            'status' => 'required',
+            'remark' => 'required_if:status,9',
+        ]);
+
+        $data = [
+            'status' => $request->get('status'),
+            'remark' => $request->get('remark', ''),
+        ];
+
+        DB::transaction(function () use ($id, $data) {
+            $withdraw = Withdraw::where('status', 0)->findOrFail($id);
+            if ($data['status'] == 9) {
+                $data['remark'] .= '(已退回余额)';
+                User::where('id', $withdraw->user_id)->increment('amount', ($withdraw->amount * 10000));
+            }
+
+            return $withdraw->update($data);
+
+        });
+
+        return redirect()->to('/admin/withdraw');
     }
 
     /**
@@ -80,29 +112,30 @@ class WithdrawController extends Controller
     protected function grid()
     {
         $grid = new Grid(new Withdraw);
-
-        $grid->id('ID');
+        $grid->model()->orderBy('status');
+        $grid->id('ID')->sortable();
         $grid->column('user.username', '用户账号');
         $grid->column('user.real_name', '用户姓名');
         $grid->amount('提现金额');
-        $grid->status('状态')->display(function ($status){
-            $color = array_get(Withdraw::$colors,$status);
-            $status = array_get(Withdraw::$status,$status);
-            return "<span class='badge bg-$color'>$status</span>";
-        });
-        $grid->remark('备注');
-        $grid->payment_at('提现时间');
-        $grid->created_at('申请时间');
+        $grid->status('状态')->display(function ($status) {
+            $color = array_get(Withdraw::$colors, $status);
+            $status = array_get(Withdraw::$status, $status);
 
-        $grid->filter(function ($filter){
+            return "<span class='badge bg-$color'>$status</span>";
+        })->sortable();
+        $grid->remark('备注');
+        $grid->payment_at('提现时间')->sortable();
+        $grid->created_at('申请时间')->sortable();
+
+        $grid->filter(function ($filter) {
             $filter->disableIdFilter();
             $filter->like('user.username', '用户账号');
             $filter->scope('status', '待处理')->where('status', 0);
         });
-        $grid->actions(function ($actions){
+        $grid->actions(function ($actions) {
             $actions->disableDelete();
             $actions->disableView();
-            if($actions->row->status != 0)
+            if ($actions->row->status != 0)
                 $actions->disableEdit();
         });
         $grid->disableExport();
@@ -166,6 +199,7 @@ class WithdrawController extends Controller
             $footer->disableCreatingCheck();
 
         });
+
         return $form;
     }
 }

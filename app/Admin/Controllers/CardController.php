@@ -101,7 +101,7 @@ class CardController extends ResponseController
         $grid->id('ID');
         $grid->name('账号');
         $grid->password('密码');
-        $grid->amount('金额');
+        $grid->amount('金额')->sortable();
         $grid->status('状态')->switch([
             'on' => ['text' => '封卡'],
             'off' => ['text' => '正常'],
