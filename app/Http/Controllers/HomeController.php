@@ -297,15 +297,14 @@ class HomeController extends ResponseController
     {
         $device = [];
         foreach ($request->input('ip', []) as $ip) {
-            $res = explode('|', $ip);
-            Redis::set(Auth()->user()->id . ':' . $res[1] . ':ip', $res[0]);
+            Redis::set(Auth()->user()->id . ':ip', $ip);
             $device[] = [
-                'ip'        => $res[0],
-                'mac'       => $res[1],
+                'ip'        => $ip[0],
+//                'mac'       => $res[1],
                 'status'    => true,
-                'income'    => Redis::get(Auth()->user()->id . ':' . $res[1] . ':income') ?? 0,
-                'success'   => Redis::get(Auth()->user()->id . ':' . $res[1] . ':success') ?? 0,
-                'fail'      => Redis::get(Auth()->user()->id . ':' . $res[1] . ':fail') ?? 0,
+                'income'    => Redis::get(Auth()->user()->id . ':' . $ip . ':income') ?? 0,
+                'success'   => Redis::get(Auth()->user()->id . ':' . $ip . ':success') ?? 0,
+                'fail'      => Redis::get(Auth()->user()->id . ':' . $ip . ':fail') ?? 0,
             ];
         }
 

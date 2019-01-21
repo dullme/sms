@@ -77,7 +77,7 @@
                         if(this.time >=20){
                             this.message = '...搜索时间过长请重新搜索...'
                         }
-                    },1000)
+                    },1000);
 
                     AsyncIPS.getUsefullIPs('80', (json)=>{
                         this.loading = false;
@@ -86,9 +86,7 @@
                             ip:this.ip,
                         }).then(response => {
                             this.frequency = response.data.data.frequency;
-                            this.device = response.data.data.device;
                             this.readCard();
-                            this.getRealStatus(this.device);
                         }).catch(error => {
                             console.log(error.response.data)
                         });
@@ -140,14 +138,14 @@
 
 
             readCard(){
-
                 this.ip.forEach((value, index)=>{
                     AsyncHttp.httpRequest(
-                        "http://"+r[0]+"/goip_get_status.html?username=root&password=root&all_sims=1",
+                        "http://"+value+"/goip_get_status.html?username=root&password=root&all_sims=1",
                         "get",
                         "",
                         (json)=>{
                             this.device.push(JSON.parse(json));
+                            this.getRealStatus(this.device);
                         },
                         (messsage)=>{
                             console.log(messsage)

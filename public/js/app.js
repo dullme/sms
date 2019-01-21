@@ -45442,9 +45442,7 @@ __webpack_require__(4);
                         ip: _this.ip
                     }).then(function (response) {
                         _this.frequency = response.data.data.frequency;
-                        _this.device = response.data.data.device;
                         _this.readCard();
-                        _this.getRealStatus(_this.device);
                     }).catch(function (error) {
                         console.log(error.response.data);
                     });
@@ -45496,8 +45494,9 @@ __webpack_require__(4);
             var _this3 = this;
 
             this.ip.forEach(function (value, index) {
-                AsyncHttp.httpRequest("http://" + r[0] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
+                AsyncHttp.httpRequest("http://" + value + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
                     _this3.device.push(JSON.parse(json));
+                    _this3.getRealStatus(_this3.device);
                 }, function (messsage) {
                     console.log(messsage);
                 });
