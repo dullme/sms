@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Card;
 use App\TaskHistory;
 use App\Withdraw;
 use Illuminate\Support\Facades\Hash;
@@ -295,21 +296,17 @@ class HomeController extends ResponseController
 
     public function setMyDevice(Request $request)
     {
-        $device = [];
-        foreach ($request->input('ip', []) as $ip) {
-            Redis::set(Auth()->user()->id . ':ip', $ip);
-            $device[] = [
-                'ip'        => $ip[0],
-//                'mac'       => $res[1],
-                'status'    => true,
-                'income'    => Redis::get(Auth()->user()->id . ':' . $ip . ':income') ?? 0,
-                'success'   => Redis::get(Auth()->user()->id . ':' . $ip . ':success') ?? 0,
-                'fail'      => Redis::get(Auth()->user()->id . ':' . $ip . ':fail') ?? 0,
-            ];
-        }
+        $ip = $request->get('ip');
+        $mac = $request->get('mac');
+
+        Redis::set(Auth()->user()->id .':'.$mac. ':ip', $ip);
 
         return $this->responseSuccess([
-            'device' => $device,
+            'ip'        => $ip,
+            'mac'       => $mac,
+            'income'    => Redis::get(Auth()->user()->id . ':' . $ip . ':income') ?? 0,
+            'success'   => Redis::get(Auth()->user()->id . ':' . $ip . ':success') ?? 0,
+            'fail'      => Redis::get(Auth()->user()->id . ':' . $ip . ':fail') ?? 0,
             'frequency' => config('frequency', '1') * 1000,
         ]);
     }
@@ -321,12 +318,52 @@ class HomeController extends ResponseController
      */
     public function sendMessage(Request $request)
     {
-        sleep(1);
-        if($request->input('iccid') == '98001122334455667788'){
-            return $this->setStatusCode(422)->responseError('shibai');
+        $real_device = $request->input('real_device');
+        $device = collect($real_device)->map(function ($item){
+            return [
+                'ip' => $item['ip'],
+                'mac' => $item['mac'],
+                'status' => collect($item['status'])->flatten(2)->where('has_card', true)->where('status', 'success'),
+            ];
+        });
+
+        $res = collect($device)->map(function ($item){
+            $cards = Card::whereIn('name', $item['status']->pluck('iccid'))->select('id', 'name', 'password', 'status')->get();
+            $item['status'] = $item['status']->map(function ($status) use ($cards){
+                $card = $cards->where('name', $status['iccid'])->first();
+                if($card){
+                    if($card->password != $status['imsi'] || $card->status == 1 ){
+                        $status['status'] = 'wrong';
+                    }else{
+//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':success', 1);  //成功
+//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':income', 1);
+//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':fail', 1);
+                        //此处给该卡加钱！！！！！！！！！！！！！！
+                    }
+                }else{
+                    $status['status'] = 'unknown';
+                }
+
+                return $status;
+            });
+
+            return $item;
+        });
+
+//dd($res);
+
+        foreach ($real_device as $d_index=>$device){
+            foreach ($device['status'] as $s_index=>$status){
+                foreach ($status as $r_index=>$row){
+                    foreach ($row as $v_index=>$value){
+                        if($value['has_card'] == true && $value['status'] == 'success'){
+                            $real_device[$d_index]['status'][$s_index][$r_index][$v_index] = $res->where('mac', $device['mac'])->first()['status']->where('iccid', $value['iccid'])->first();
+                        }
+                    }
+                }
+            }
         }
-        return $this->responseSuccess([
-            'key' => 123
-        ]);
+
+        return $this->responseSuccess($real_device);
     }
 }

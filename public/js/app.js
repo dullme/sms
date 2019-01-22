@@ -45344,7 +45344,7 @@ exports = module.exports = __webpack_require__(36)(false);
 
 
 // module
-exports.push([module.i, "\n.ka_cao{\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.closed{\n    color:black;\n}\n.waiting{\n    background-color: #38c172;\n    color:white;\n}\n.executing{\n    background-color: #c110b3;\n    color:white;\n}\n.current{\n    background-color: #1b72c1;\n    color:white;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success , .unknown{\n    background-color: #38c172;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
 
 // exports
 
@@ -45355,6 +45355,36 @@ exports.push([module.i, "\n.ka_cao{\n    float: left;\n    border: 1px solid #de
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -45399,8 +45429,7 @@ __webpack_require__(4);
             send_interval: '', //请求事件
             message: '', //提示信息
             open: 'STOPPED', //是否开启发送短信
-            frequency: 1000, //请求频率/毫秒
-            data: []
+            frequency: 1000 //请求频率/毫秒
         };
     },
     created: function created() {
@@ -45426,7 +45455,6 @@ __webpack_require__(4);
                 this.message = '';
                 this.open = 'STOPPED';
                 this.frequency = 1000;
-                this.data = [];
 
                 this.search_interval = setInterval(function () {
                     _this.time += 1;
@@ -45435,17 +45463,16 @@ __webpack_require__(4);
                     }
                 }, 1000);
 
+                //扫描设备IP
                 AsyncIPS.getUsefullIPs('80', function (json) {
                     _this.loading = false;
-                    _this.ip = JSON.parse(json).IPS;
-                    axios.post("/user/device", {
-                        ip: _this.ip
-                    }).then(function (response) {
-                        _this.frequency = response.data.data.frequency;
-                        _this.readCard();
-                    }).catch(function (error) {
-                        console.log(error.response.data);
+                    JSON.parse(json).IPS.forEach(function (value) {
+                        _this.ip.push({
+                            ip: value,
+                            mac: '00-30-f1-00-b7-d5'
+                        });
                     });
+                    _this.readCard();
                 }, function (message) {
                     _this.loading = false;
                     console.log(message);
@@ -45457,27 +45484,13 @@ __webpack_require__(4);
 
             if (this.open == 'STOPPED') {
                 console.log('发送中......');
-                this.data = [];
                 this.open = 'SENDING';
-                this.real_device.forEach(function (device, d_index) {
-                    device.status.forEach(function (ports, p_ports) {
-                        ports.forEach(function (value, v_index) {
-                            if (value.has_card && value.status == 'waiting') {
-                                _this2.data.push({
-                                    path: d_index + '|' + p_ports + '|' + v_index, //路径
-                                    iccid: value.iccid,
-                                    imei: value.imei,
-                                    _token: document.head.querySelector('meta[name="csrf-token"]').content
-                                });
-                            }
-                        });
-                    });
-                });
-
-                if (this.data.length) {
+                if (this.real_device.length) {
                     this.send_interval = setInterval(function () {
-                        axios.post("/user/send/message", _this2.data).then(function (response) {
-
+                        axios.post("/user/send/message", {
+                            real_device: _this2.real_device
+                        }).then(function (response) {
+                            _this2.real_device = response.data.data;
                             console.log(response.data);
                         }).catch(function (error) {
                             console.log(error);
@@ -45490,79 +45503,117 @@ __webpack_require__(4);
                 console.log('已停止发送');
             }
         },
+
+
+        //读取设备
         readCard: function readCard() {
             var _this3 = this;
 
-            this.ip.forEach(function (value, index) {
-                AsyncHttp.httpRequest("http://" + value + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
-                    _this3.device.push(JSON.parse(json));
-                    _this3.getRealStatus(_this3.device);
+            this.ip.forEach(function (value) {
+                AsyncHttp.httpRequest("http://" + value['ip'] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
+                    var device = JSON.parse(json);
+                    _this3.device.push(device);
+                    _this3.makeCard(device);
                 }, function (messsage) {
                     console.log(messsage);
                 });
             });
         },
-        prefixInteger: function prefixInteger(num, n) {
-            return (Array(n).join(0) + num).slice(-n);
-        },
 
 
-        //根据状态获取全部卡槽
-        getRealStatus: function getRealStatus(device) {
+        //构建设备卡槽
+        makeCard: function makeCard(device) {
             var _this4 = this;
 
             var status = new Array();
+            for (var i = 0; i < device['max-ports']; i++) {
+                status[i] = new Array();
+                status[i][0] = new Array();
+                status[i][1] = new Array();
 
-            device.forEach(function (value, index) {
-                var _loop = function _loop(i) {
-                    status[i] = new Array(i);
+                var _loop = function _loop(j, _k, _l) {
+                    var port = i + 1 + '.' + _this4.prefixInteger(j + 1, 2);
+                    var res = {};
+                    try {
+                        device['status'].forEach(function (value) {
+                            var status = 'empty';
+                            if (value['port'] == port) {
 
-                    var _loop2 = function _loop2(j) {
-                        var port = i + 1 + '.' + _this4.prefixInteger(j + 1, 2);
-
-                        try {
-                            device[index]['status'].forEach(function (value) {
-                                if (value['port'] == port) {
-                                    status[i][j] = {
-                                        'count': 0,
-                                        'port': value['port'],
-                                        'imei': value['imei'],
-                                        'iccid': value['iccid'],
-                                        'imsi': value['imsi'],
-                                        'has_card': true,
-                                        'status': 'waiting' //waiting:等待中;executing执行中
-                                    };
-                                    throw new Error('该卡已绑定');
+                                if (value['st'] == 0) {
+                                    status = 'empty';
+                                } else if (value['st'] > 0 && (value['iccid'] == '' || value['imsi'] == '')) {
+                                    status = 'failed';
+                                    var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
+                                    AsyncHttp.httpRequest("http://" + device['ip'] + "/goip_send_cmd.html?username=root&password=root", "POST", data, function (json) {
+                                        console.log('json');
+                                    }, function (messsage) {
+                                        console.log(messsage);
+                                    });
                                 } else {
-                                    status[i][j] = {
-                                        'count': 0,
-                                        'port': port,
-                                        'imei': '',
-                                        'iccid': '',
-                                        'imsi': '',
-                                        'has_card': false,
-                                        'status': 'closed' //closed:已关闭;
-                                    };
+                                    status = 'success';
                                 }
-                            });
-                        } catch (e) {}
-                    };
 
-                    for (var j = 0; j < value['max-slot']; j++) {
-                        _loop2(j);
+                                res = {
+                                    count: 0,
+                                    st: value['st'],
+                                    port: value['port'],
+                                    imei: value['imei'],
+                                    iccid: value['iccid'],
+                                    imsi: value['imsi'],
+                                    has_card: value['st'] == 0 ? false : true,
+                                    status: status //success:有卡;executing执行中
+                                };
+                                throw new Error('该卡已绑定');
+                            } else {
+                                res = {
+                                    count: 0,
+                                    st: 0,
+                                    port: port,
+                                    imei: '',
+                                    iccid: '',
+                                    imsi: '',
+                                    has_card: false,
+                                    status: status //empty:无卡
+                                };
+                            }
+                        });
+                    } catch (e) {}
+                    if (j % 2 != 0) {
+                        status[i][0][_k] = res;
+                        _k++;
+                    } else {
+                        status[i][1][_l] = res;
+                        _l++;
                     }
+                    k = _k;
+                    l = _l;
                 };
 
-                for (var i = 0; i < value['max-ports']; i++) {
-                    _loop(i);
+                for (var j = 0, k = 0, l = 0; j < device['max-slot']; j++) {
+                    _loop(j, k, l);
                 }
+            }
 
+            status = status.reverse();
+            axios.post("/user/device", {
+                ip: device['ip'],
+                mac: device['mac']
+            }).then(function (response) {
+                _this4.frequency = response.data.data.frequency;
                 _this4.real_device.push({
-                    'ip': value['ip'],
-                    'mac': value['mac'],
-                    'status': status
+                    fail: response.data.data.fail,
+                    income: response.data.data.income,
+                    success: response.data.data.success,
+                    ip: response.data.data.ip,
+                    mac: response.data.data.mac,
+                    status: status
                 });
+            }).catch(function (error) {
+                console.log(error.response.data);
             });
+        },
+        prefixInteger: function prefixInteger(num, n) {
+            return (Array(n).join(0) + num).slice(-n);
         }
     }
 
@@ -45580,33 +45631,37 @@ var render = function() {
     "div",
     { staticStyle: { padding: "10px", "min-width": "600px" } },
     [
-      _vm._l(_vm.real_device, function(item, d_index) {
+      _vm._m(0),
+      _vm._v(" "),
+      _vm._l(_vm.real_device, function(device) {
         return _vm.real_device.length
           ? _c(
               "div",
               [
-                _c("span", [_vm._v("当前设备:" + _vm._s(item.ip))]),
+                _c("span", [_vm._v("当前设备:" + _vm._s(device.ip))]),
                 _vm._v(" "),
                 _c("span", [_vm._v("状态:通讯正常")]),
                 _vm._v(" "),
-                _c("span", [_vm._v("当日收益:")]),
+                _c("span", [_vm._v("当日收益:" + _vm._s(device.income))]),
                 _vm._v(" "),
-                _c("span", [_vm._v("当日成功条数:")]),
+                _c("span", [_vm._v("当日成功条数:" + _vm._s(device.success))]),
                 _vm._v(" "),
-                _c("span", [_vm._v("当日失败条数:")]),
+                _c("span", [_vm._v("当日失败条数:" + _vm._s(device.fail))]),
                 _vm._v(" "),
-                _vm._l(item.status, function(s, s_index) {
+                _vm._l(device.status, function(status) {
                   return _c(
                     "div",
-                    _vm._l(s, function(t, t_index) {
+                    _vm._l(status, function(row) {
                       return _c(
                         "div",
-                        {
-                          staticClass: "ka_cao",
-                          class: t.status,
-                          attrs: { id: d_index + "-" + s_index + "-" + t_index }
-                        },
-                        [_vm._v(_vm._s(t.port))]
+                        _vm._l(row, function(t) {
+                          return _c(
+                            "div",
+                            { staticClass: "ka_cao", class: t.status },
+                            [_vm._v(_vm._s(t.port))]
+                          )
+                        }),
+                        0
                       )
                     }),
                     0
@@ -45686,7 +45741,80 @@ var render = function() {
     2
   )
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticStyle: { width: "100%", padding: "20px 0px" } }, [
+      _c(
+        "div",
+        {
+          staticClass: "failed",
+          staticStyle: {
+            border: "1px solid #dee2e6",
+            width: "80px",
+            height: "40px",
+            "text-align": "center",
+            "line-height": "39px",
+            float: "left"
+          }
+        },
+        [_vm._v("\n            未识别\n        ")]
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "success",
+          staticStyle: {
+            border: "1px solid #dee2e6",
+            width: "80px",
+            height: "40px",
+            "text-align": "center",
+            "line-height": "39px",
+            float: "left"
+          }
+        },
+        [_vm._v("\n            卡正常\n        ")]
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "wrong",
+          staticStyle: {
+            border: "1px solid #dee2e6",
+            width: "80px",
+            height: "40px",
+            "text-align": "center",
+            "line-height": "39px",
+            float: "left"
+          }
+        },
+        [_vm._v("\n            卡错误\n        ")]
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "empty",
+          staticStyle: {
+            border: "1px solid #dee2e6",
+            width: "80px",
+            height: "40px",
+            "text-align": "center",
+            "line-height": "39px",
+            float: "left"
+          }
+        },
+        [_vm._v("\n            无卡\n        ")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticStyle: { clear: "both" } })
+    ])
+  }
+]
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
