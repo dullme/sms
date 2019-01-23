@@ -2,5 +2,5 @@
 
 @section('content')
     @include('layouts.header')
-    <home></home>
+    <device></device>
 @endsection

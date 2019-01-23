@@ -1,51 +1,37 @@
 <template>
     <div style="padding: 10px; min-width: 600px">
-        <div style="width: 100%;padding: 20px 0px">
-
-            <!--<div style="width: 80px;height: 40px;background-color: #D7D7D7;text-align: center;line-height: 40px; float: left">颜色表示：</div>-->
-            <div class="failed"
-                 style="border: 1px solid #dee2e6;width: 80px;height: 40px;text-align: center;line-height: 39px;float: left">
-                未识别
-            </div>
-            <div class="success"
-                 style="border: 1px solid #dee2e6;width: 80px;height: 40px;text-align: center;line-height: 39px;float: left">
-                卡正常
-            </div>
-            <div class="wrong"
-                 style="border: 1px solid #dee2e6;width: 80px;height: 40px;text-align: center;line-height: 39px;float: left">
-                卡错误
-            </div>
-            <div class="empty"
-                 style="border: 1px solid #dee2e6;width: 80px;height: 40px;text-align: center;line-height: 39px;float: left">
-                无卡
-            </div>
-            <div style="clear: both"></div>
+        <div>
+            <span class="ka_cao_example failed">未识别</span>
+            <span class="ka_cao_example success">卡正常</span>
+            <span class="ka_cao_example wrong">卡错误</span>
+            <span class="ka_cao_example empty">无卡</span>
+            <span class="clearfix"></span>
         </div>
-        <div v-if="real_device.length" v-for="device in real_device">
-            <span>当前设备:{{ device.ip }}</span>
+        <div v-if="real_device.length" v-for="value in real_device">
+            <span>当前设备:{{ value.ip }}</span>
             <span>状态:通讯正常</span>
-            <span>当日收益:{{ device.income }}</span>
-            <span>当日成功条数:{{ device.success }}</span>
-            <span>当日失败条数:{{ device.fail }}</span>
-            <div v-for="status in device.status">
+            <span>当日收益:{{ value.income }}</span>
+            <span>当日成功条数:{{ value.success }}</span>
+            <span>当日失败条数:{{ value.fail }}</span>
+            <div v-for="status in value.status">
                 <div v-for="row in status">
                     <div class="ka_cao" :class="t.status" v-for="t in row">{{ t.port }}</div>
                 </div>
 
             </div>
         </div>
-        <div class="text-center" v-else v-text="loading == false ? '未找到设备':''"
+        <div class="text-center" v-else v-text="read_card_status == true ? '未找到设备':''"
              style="min-height: 200px; line-height: 200px"></div>
         <div class="text-center">
-            <span v-if="loading == true">
+            <span v-if="read_card_status == false">
                 <i>搜索中({{ this.time }})</i>
                 <i v-text="message"></i>
-                <a href="##" v-on:click="search">重新搜索</a>
+                <a href="##" v-on:click="scanningIp">重新搜索</a>
             </span>
             <div v-else>
                 <a class="btn btn-lg btn-default"
                    style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
-                   v-on:click="search">搜索新设备</a>
+                   v-on:click="scanningIp">搜索新设备</a>
                 <a class="btn btn-lg btn-default"
                    style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
                    v-on:click="start" v-text="open == 'STOPPED' ? '启动':'停止' "></a>
@@ -59,14 +45,15 @@
 
 <script>
     require('../../../public/vendor/datejs/date-zh-CN')
+    var _this;
 
     export default {
         data() {
             return {
-                device: [],  //读取的数据
-                real_device: [], //真实的数据,
-                ip: [],  // 所有设备的IP
-                loading: false,  //是否在读取设备
+                device:[],  //设备
+                real_device:[],  //包含所有卡槽的全部设备
+                ips:[],  //设备ip
+                read_card_status:false,  //读卡完成状态
                 time: 0, //搜索设备等待秒数
                 search_interval: '', //搜索事件
                 send_interval: '', //请求事件
@@ -76,29 +63,45 @@
             }
         },
 
-        created() {
-            this.search();
+        watch:{
+            read_card_status:(current) => {
+                if(current){
+                    console.log('读卡完成')
+                }else{
+                    console.log('读卡未完成')
+                }
+            }
         },
 
+        created() {
+            _this = this;
+            this.scanningIp();
+        },
         mounted() {
 
         },
 
         methods: {
-            search() {
+            //扫描IP
+            scanningIp(){
+                // this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111","192.168.1.111"]}').IPS;
+                // this.read_card_status = false;
+                // this.readCard(0);
+
+                clearInterval(this.search_interval);
                 if (this.open == 'SENDING') {
                     console.log('启动中无法搜索新设备')
                 } else {
-                    clearInterval(this.search_interval);
-                    this.device = [];
-                    this.real_device = [];
-                    this.ip = [];
-                    this.loading = true;
-                    this.time = 0;
-                    this.search_interval = '';
-                    this.message = '';
-                    this.open = 'STOPPED';
-                    this.frequency = 1000;
+                    this.device=[],  //设备
+                    this.real_device=[],  //包含所有卡槽的全部设备
+                    this.ips=[],  //设备ip
+                    this.read_card_status=false,  //读卡完成状态
+                    this.frequency= 1000, //请求频率/毫秒
+                    this.time= 0, //搜索设备等待秒数
+                    this.search_interval= '', //搜索事件
+                    this.send_interval= '', //请求事件
+                    this.message= '', //提示信息
+                    this.open= 'STOPPED', //是否开启发送短信
 
                     this.search_interval = setInterval(() => {
                         this.time += 1
@@ -106,70 +109,45 @@
                             this.message = '...搜索时间过长请重新搜索...'
                         }
                     }, 1000);
-
-                    //扫描设备IP
-                    AsyncIPS.getUsefullIPs('80', (json) => {
-                        this.loading = false;
-                        JSON.parse(json).IPS.forEach((value) => {
-                            this.ip.push({
-                                ip: value,
-                                mac: '00-30-f1-00-b7-d5',
-                            })
-                        });
-                        this.readCard();
-                    }, (message) => {
-                        this.loading = false;
-                        console.log(message)
-                    });
+                    this.getIps();
                 }
+
             },
 
-            start() {
-                if (this.open == 'STOPPED') {
-                    console.log('发送中......');
-                    this.open = 'SENDING'
-                    if (this.real_device.length) {
-                        this.send_interval = setInterval(() => {
-                            axios.post("/user/send/message", {
-                                real_device:this.real_device
-                            }).then(response => {
-                                this.real_device = response.data.data;
-                                console.log(response.data)
-                            }).catch(error => {
-                                console.log(error)
-                            });
-                        }, this.frequency)
+            getIps(){
+                AsyncIPS.getUsefullIPs('80', (json) => {
+                    this.ips = JSON.parse(json).IPS;
+                    this.read_card_status = false;
+                    this.readCard(0);    //读卡
+
+                }, (message) => {
+                    console.log(message)
+                });
+            },
+
+            readCard(index){
+                AsyncHttp.httpRequest(
+                    "http://" + this.ips[index] + "/goip_get_status.html?username=root&password=root&all_sims=1",
+                    "get",
+                    "",
+                    (json) => {
+                        this.device[index] = {};
+                        this.device[index] = JSON.parse(json)
+                        this.makeCard(index);
+                        if(index < this.ips.length - 1){
+                            this.readCard(index + 1)
+                        }else{
+                            this.read_card_status = true;
+                        }
+                    },
+                    (messsage) => {
+                        console.log(messsage)
                     }
-
-                } else {
-                    clearInterval(this.send_interval);
-                    this.open = 'STOPPED';
-                    console.log('已停止发送');
-                }
+                );
             },
 
-
-            //读取设备
-            readCard() {
-                this.ip.forEach(value => {
-                    AsyncHttp.httpRequest(
-                        "http://" + value['ip'] + "/goip_get_status.html?username=root&password=root&all_sims=1",
-                        "get",
-                        "",
-                        (json) => {
-                            let device = JSON.parse(json)
-                            this.device.push(device);
-                            this.makeCard(device);
-                        },
-                        (messsage) => {
-                            console.log(messsage)
-                        });
-                })
-
-            },
-
-            //构建设备卡槽
-            makeCard(device) {
+            makeCard(index) {
+                let device = this.device[index];
                 let status = new Array();
                 for (let i = 0; i < device['max-ports']; i++) {
                     status[i] = new Array();
@@ -258,15 +236,53 @@
                 });
             },
 
+            start() {
+                if (this.open == 'STOPPED') {
+                    console.log('发送中......');
+                    this.open = 'SENDING'
+                    if (this.real_device.length) {
+                        this.send_interval = setInterval(() => {
+                            this.read_card_status = false;
+                            this.device = [];
+                            this.real_device = [];
+                            this.readCard(0);    //读卡
+                            axios.post("/user/send/message", {
+                                real_device:this.real_device
+                            }).then(response => {
+                                this.real_device = response.data.data;
+                                console.log(response.data)
+                            }).catch(error => {
+                                console.log(error)
+                            });
+                        }, this.frequency)
+                    }
+
+                } else {
+                    clearInterval(this.send_interval);
+                    this.open = 'STOPPED';
+                    console.log('已停止发送');
+                }
+            },
+
             prefixInteger(num, n) {
                 return (Array(n).join(0) + num).slice(-n);
             },
+
 
         }
 
     }
 </script>
 <style>
+    .ka_cao_example {
+        border: 1px solid #dee2e6;
+        width: 80px;
+        height: 40px;
+        text-align: center;
+        line-height: 39px;
+        float: left;
+    }
+
     .ka_cao {
         float: left;
         border: 1px solid #dee2e6;

@@ -22,6 +22,7 @@ window.Vue = require('vue');
 
 Vue.component('transfer', require('./components/TransferComponent.vue'));
 Vue.component('home', require('./components/HomeComponent.vue'));
+Vue.component('device', require('./components/DeviceComponent.vue'));
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

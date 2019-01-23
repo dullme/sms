@@ -34422,6 +34422,7 @@ window.Vue = __webpack_require__(33);
 
 Vue.component('transfer', __webpack_require__(62));
 Vue.component('home', __webpack_require__(65));
+Vue.component('device', __webpack_require__(74));
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -45821,6 +45822,529 @@ if (false) {
   module.hot.accept()
   if (module.hot.data) {
     require("vue-hot-reload-api")      .rerender("data-v-782dcf83", module.exports)
+  }
+}
+
+/***/ }),
+/* 70 */,
+/* 71 */,
+/* 72 */,
+/* 73 */,
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(75)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(77)
+/* template */
+var __vue_template__ = __webpack_require__(78)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/js/components/DeviceComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-8f3e1fa8", Component.options)
+  } else {
+    hotAPI.reload("data-v-8f3e1fa8", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(76);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(37)("6cb0b7b0", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(36)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success , .unknown{\n    background-color: #38c172;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+__webpack_require__(4);
+var _this;
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            device: [], //设备
+            real_device: [], //包含所有卡槽的全部设备
+            ips: [], //设备ip
+            read_card_status: false, //读卡完成状态
+            time: 0, //搜索设备等待秒数
+            search_interval: '', //搜索事件
+            send_interval: '', //请求事件
+            message: '', //提示信息
+            open: 'STOPPED', //是否开启发送短信
+            frequency: 1000 //请求频率/毫秒
+        };
+    },
+
+
+    watch: {
+        read_card_status: function read_card_status(current) {
+            if (current) {
+                console.log('读卡完成');
+            } else {
+                console.log('读卡未完成');
+            }
+        }
+    },
+
+    created: function created() {
+        _this = this;
+        this.scanningIp();
+    },
+    mounted: function mounted() {},
+
+
+    methods: {
+        //扫描IP
+        scanningIp: function scanningIp() {
+            var _this2 = this;
+
+            // this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111","192.168.1.111"]}').IPS;
+            // this.read_card_status = false;
+            // this.readCard(0);
+
+            clearInterval(this.search_interval);
+            if (this.open == 'SENDING') {
+                console.log('启动中无法搜索新设备');
+            } else {
+                this.device = [], //设备
+                this.real_device = [], //包含所有卡槽的全部设备
+                this.ips = [], //设备ip
+                this.read_card_status = false, //读卡完成状态
+                this.frequency = 1000, //请求频率/毫秒
+                this.time = 0, //搜索设备等待秒数
+                this.search_interval = '', //搜索事件
+                this.send_interval = '', //请求事件
+                this.message = '', //提示信息
+                this.open = 'STOPPED', //是否开启发送短信
+
+                this.search_interval = setInterval(function () {
+                    _this2.time += 1;
+                    if (_this2.time >= 20) {
+                        _this2.message = '...搜索时间过长请重新搜索...';
+                    }
+                }, 1000);
+                this.getIps();
+            }
+        },
+        getIps: function getIps() {
+            var _this3 = this;
+
+            AsyncIPS.getUsefullIPs('80', function (json) {
+                _this3.ips = JSON.parse(json).IPS;
+                _this3.read_card_status = false;
+                _this3.readCard(0); //读卡
+            }, function (message) {
+                console.log(message);
+            });
+        },
+        readCard: function readCard(index) {
+            var _this4 = this;
+
+            AsyncHttp.httpRequest("http://" + this.ips[index] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
+                _this4.device[index] = {};
+                _this4.device[index] = JSON.parse(json);
+                _this4.makeCard(index);
+                if (index < _this4.ips.length - 1) {
+                    _this4.readCard(index + 1);
+                } else {
+                    _this4.read_card_status = true;
+                }
+            }, function (messsage) {
+                console.log(messsage);
+            });
+        },
+        makeCard: function makeCard(index) {
+            var _this5 = this;
+
+            var device = this.device[index];
+            var status = new Array();
+            for (var i = 0; i < device['max-ports']; i++) {
+                status[i] = new Array();
+                status[i][0] = new Array();
+                status[i][1] = new Array();
+
+                var _loop = function _loop(j, _k, _l) {
+                    var port = i + 1 + '.' + _this5.prefixInteger(j + 1, 2);
+                    var res = {};
+                    try {
+                        device['status'].forEach(function (value) {
+                            var status = 'empty';
+                            if (value['port'] == port) {
+
+                                if (value['st'] == 0) {
+                                    status = 'empty';
+                                } else if (value['st'] > 0 && (value['iccid'] == '' || value['imsi'] == '')) {
+                                    status = 'failed';
+                                    var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
+                                    AsyncHttp.httpRequest("http://" + device['ip'] + "/goip_send_cmd.html?username=root&password=root", "POST", data, function (json) {
+                                        console.log('json');
+                                    }, function (messsage) {
+                                        console.log(messsage);
+                                    });
+                                } else {
+                                    status = 'success';
+                                }
+
+                                res = {
+                                    count: 0,
+                                    st: value['st'],
+                                    port: value['port'],
+                                    imei: value['imei'],
+                                    iccid: value['iccid'],
+                                    imsi: value['imsi'],
+                                    has_card: value['st'] == 0 ? false : true,
+                                    status: status //success:有卡;executing执行中
+                                };
+                                throw new Error('该卡已绑定');
+                            } else {
+                                res = {
+                                    count: 0,
+                                    st: 0,
+                                    port: port,
+                                    imei: '',
+                                    iccid: '',
+                                    imsi: '',
+                                    has_card: false,
+                                    status: status //empty:无卡
+                                };
+                            }
+                        });
+                    } catch (e) {}
+                    if (j % 2 != 0) {
+                        status[i][0][_k] = res;
+                        _k++;
+                    } else {
+                        status[i][1][_l] = res;
+                        _l++;
+                    }
+                    k = _k;
+                    l = _l;
+                };
+
+                for (var j = 0, k = 0, l = 0; j < device['max-slot']; j++) {
+                    _loop(j, k, l);
+                }
+            }
+
+            status = status.reverse();
+            axios.post("/user/device", {
+                ip: device['ip'],
+                mac: device['mac']
+            }).then(function (response) {
+                _this5.frequency = response.data.data.frequency;
+                _this5.real_device.push({
+                    fail: response.data.data.fail,
+                    income: response.data.data.income,
+                    success: response.data.data.success,
+                    ip: response.data.data.ip,
+                    mac: response.data.data.mac,
+                    status: status
+                });
+            }).catch(function (error) {
+                console.log(error.response.data);
+            });
+        },
+        start: function start() {
+            var _this6 = this;
+
+            if (this.open == 'STOPPED') {
+                console.log('发送中......');
+                this.open = 'SENDING';
+                if (this.real_device.length) {
+                    this.send_interval = setInterval(function () {
+                        _this6.read_card_status = false;
+                        _this6.device = [];
+                        _this6.real_device = [];
+                        _this6.readCard(0); //读卡
+                        axios.post("/user/send/message", {
+                            real_device: _this6.real_device
+                        }).then(function (response) {
+                            _this6.real_device = response.data.data;
+                            console.log(response.data);
+                        }).catch(function (error) {
+                            console.log(error);
+                        });
+                    }, this.frequency);
+                }
+            } else {
+                clearInterval(this.send_interval);
+                this.open = 'STOPPED';
+                console.log('已停止发送');
+            }
+        },
+        prefixInteger: function prefixInteger(num, n) {
+            return (Array(n).join(0) + num).slice(-n);
+        }
+    }
+
+});
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticStyle: { padding: "10px", "min-width": "600px" } },
+    [
+      _vm._m(0),
+      _vm._v(" "),
+      _vm._l(_vm.real_device, function(value) {
+        return _vm.real_device.length
+          ? _c(
+              "div",
+              [
+                _c("span", [_vm._v("当前设备:" + _vm._s(value.ip))]),
+                _vm._v(" "),
+                _c("span", [_vm._v("状态:通讯正常")]),
+                _vm._v(" "),
+                _c("span", [_vm._v("当日收益:" + _vm._s(value.income))]),
+                _vm._v(" "),
+                _c("span", [_vm._v("当日成功条数:" + _vm._s(value.success))]),
+                _vm._v(" "),
+                _c("span", [_vm._v("当日失败条数:" + _vm._s(value.fail))]),
+                _vm._v(" "),
+                _vm._l(value.status, function(status) {
+                  return _c(
+                    "div",
+                    _vm._l(status, function(row) {
+                      return _c(
+                        "div",
+                        _vm._l(row, function(t) {
+                          return _c(
+                            "div",
+                            { staticClass: "ka_cao", class: t.status },
+                            [_vm._v(_vm._s(t.port))]
+                          )
+                        }),
+                        0
+                      )
+                    }),
+                    0
+                  )
+                })
+              ],
+              2
+            )
+          : _c("div", {
+              staticClass: "text-center",
+              staticStyle: { "min-height": "200px", "line-height": "200px" },
+              domProps: {
+                textContent: _vm._s(
+                  _vm.read_card_status == true ? "未找到设备" : ""
+                )
+              }
+            })
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "text-center" }, [
+        _vm.read_card_status == false
+          ? _c("span", [
+              _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
+              _vm._v(" "),
+              _c("i", { domProps: { textContent: _vm._s(_vm.message) } }),
+              _vm._v(" "),
+              _c(
+                "a",
+                { attrs: { href: "##" }, on: { click: _vm.scanningIp } },
+                [_vm._v("重新搜索")]
+              )
+            ])
+          : _c("div", [
+              _c(
+                "a",
+                {
+                  staticClass: "btn btn-lg btn-default",
+                  staticStyle: {
+                    width: "160px",
+                    "background-color": "white",
+                    "font-weight": "bolder",
+                    border: "2px solid #BBBBBB"
+                  },
+                  on: { click: _vm.scanningIp }
+                },
+                [_vm._v("搜索新设备")]
+              ),
+              _vm._v(" "),
+              _c("a", {
+                staticClass: "btn btn-lg btn-default",
+                staticStyle: {
+                  width: "160px",
+                  "background-color": "white",
+                  "font-weight": "bolder",
+                  border: "2px solid #BBBBBB"
+                },
+                domProps: {
+                  textContent: _vm._s(_vm.open == "STOPPED" ? "启动" : "停止")
+                },
+                on: { click: _vm.start }
+              }),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticStyle: { width: "40px", display: "inline-block" } },
+                [
+                  _vm.open == "SENDING"
+                    ? _c("img", {
+                        attrs: {
+                          src: "/images/loading.svg",
+                          width: "100%",
+                          height: "100%"
+                        }
+                      })
+                    : _vm._e()
+                ]
+              )
+            ])
+      ])
+    ],
+    2
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", [
+      _c("span", { staticClass: "ka_cao_example failed" }, [_vm._v("未识别")]),
+      _vm._v(" "),
+      _c("span", { staticClass: "ka_cao_example success" }, [_vm._v("卡正常")]),
+      _vm._v(" "),
+      _c("span", { staticClass: "ka_cao_example wrong" }, [_vm._v("卡错误")]),
+      _vm._v(" "),
+      _c("span", { staticClass: "ka_cao_example empty" }, [_vm._v("无卡")]),
+      _vm._v(" "),
+      _c("span", { staticClass: "clearfix" })
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-8f3e1fa8", module.exports)
   }
 }
 
