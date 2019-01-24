@@ -95,7 +95,7 @@ class TaskController extends ResponseController
         $grid->content('任务内容');
         $grid->amount('任务单价');
         $grid->column('jindu', '进度')->display(function (){
-            $res = round(100/$this->count * $this->finished, 2);
+            $res = round(100-(100/$this->count * $this->unfinished), 2);
 
            return '<div class="progress" style="min-width: 100px"><div class="progress-bar progress-bar-striped active" role="progressbar" style="color: #333;width: '.$res.'%;">'.$res.'%</div></div>';
         });
@@ -125,7 +125,7 @@ class TaskController extends ResponseController
         $show->amount('任务单价');
         $show->status('状态');
         $show->count('任务总数');
-        $show->finished('已完成数');
+        $show->unfinished('未完成数');
         $show->created_at('添加时间');
 
         return $show;

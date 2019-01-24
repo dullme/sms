@@ -12,8 +12,8 @@ class Task extends Model
         'status',
         'running',
         'count',
-        'finished',
-        'finished_mobile',
+        'unfinished',
+        'unfinished_mobile',
         'mobile',
     ];
 

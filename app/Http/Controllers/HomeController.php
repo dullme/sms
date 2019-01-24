@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Card;
+use App\Task;
 use App\TaskHistory;
 use App\Withdraw;
 use Illuminate\Support\Facades\Hash;
@@ -270,14 +271,14 @@ class HomeController extends ResponseController
         $username = $request->input('username');
 
         $user = User::where('username', $username)->select('id', 'username', 'real_name')->first();
-        if(mb_strlen($user->real_name) ==2){
-            $user->real_name = '*'.mb_substr($user->real_name, -1);
-        }elseif (mb_strlen($user->real_name) > 2){
+        if (mb_strlen($user->real_name) == 2) {
+            $user->real_name = '*' . mb_substr($user->real_name, -1);
+        } else if (mb_strlen($user->real_name) > 2) {
             $ss = '';
-            for ($i = 1; $i <= mb_strlen($user->real_name)-2; $i++){
-                $ss.='*';
+            for ($i = 1; $i <= mb_strlen($user->real_name) - 2; $i++) {
+                $ss .= '*';
             }
-            $user->real_name = mb_substr($user->real_name, 0,1).$ss.mb_substr($user->real_name,-1);
+            $user->real_name = mb_substr($user->real_name, 0, 1) . $ss . mb_substr($user->real_name, -1);
         }
 
         if ($user) {
@@ -287,83 +288,198 @@ class HomeController extends ResponseController
         }
     }
 
-    public function getMyDevice()
-    {
-        $user = Redis::set('user:device:' . Auth()->user()->id, '123');
 
-        dd(Redis::get('user:device:' . Auth()->user()->id));
+    /**
+     * 是否可以发送短信
+     */
+    public function canSend()
+    {
+        return $this->responseSuccess($this->thisTimeCanSend());
     }
 
-    public function setMyDevice(Request $request)
+    public function makeCard(Request $request)
     {
-        $ip = $request->get('ip');
-        $mac = $request->get('mac');
-
-        Redis::set(Auth()->user()->id .':'.$mac. ':ip', $ip);
-
-        return $this->responseSuccess([
-            'ip'        => $ip,
-            'mac'       => $mac,
-            'income'    => Redis::get(Auth()->user()->id . ':' . $ip . ':income') ?? 0,
-            'success'   => Redis::get(Auth()->user()->id . ':' . $ip . ':success') ?? 0,
-            'fail'      => Redis::get(Auth()->user()->id . ':' . $ip . ':fail') ?? 0,
-            'frequency' => config('frequency', '1') * 1000,
+        $request->validate([
+            'device'   => 'required',
+            'send' => 'required'
         ]);
+
+        $device = $request->input('device');
+
+        $real_device = collect($device)->map(function ($device) {
+            $base_status = collect($device['status']);
+            $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status')->get();
+            $status = [];
+            $add_amount_card = [];
+            for ($i = 0; $i < $device['max-ports']; $i++) {
+                for ($j = 0, $k = 0, $l = 0; $j < $device['max-slot']; $j++) {
+                    $port = ($i + 1) . '.' . str_pad($j + 1, 2, '0', STR_PAD_LEFT);
+                    $card = $base_status->where('port', $port)->first();
+                    if ($card) {
+                        if ($card['st'] == 0) {
+                            $type = 'empty';    //st为0时表示没有卡
+                        } else if ($card['st'] > 0 && ($card['iccid'] == '' || $card['imsi'] == '')) {
+                            $type = 'failed';   //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取
+                        } else {
+                            $databases_card = $cards->where('name', $card['iccid'])->first();
+                            if ($databases_card) {
+                                if ($databases_card->password != $card['imsi'] || $databases_card->status == 1) {
+                                    $type = 'wrong';    //匹配失败的卡
+                                } else {
+                                    $type = 'success';  //匹配成功的卡
+                                }
+                            } else {
+                                $type = 'unknown';  //未知卡
+                            }
+                        }
+                        $res = [
+                            'port'     => $card['port'],
+                            'iccid'    => $card['iccid'] ?? '',
+                            'imsi'     => $card['imsi'] ?? '',
+                            'st'       => $card['st'],
+                            'has_card' => $card['st'] == 0 ? false : true,  //st为0时卡为空
+                            'status'   => $type,
+                        ];
+                        $add_amount_card[] = array_merge($res, [
+                            'ip' => $device['ip'],
+                            'mac' => $device['mac'],
+                        ]);
+                    } else {
+                        $res = [
+                            'port'     => $port,
+                            'iccid'    => '',
+                            'imsi'     => '',
+                            'st'       => 0,
+                            'has_card' => false,
+                            'status'   => 'empty',
+                        ];
+                    }
+
+                    if ($j % 2 != 0) {
+                        $status[$i][0][$k] = $res;
+                        $k++;
+                    } else {
+                        $status[$i][1][$l] = $res;
+                        $l++;
+                    }
+                }
+
+            }
+
+            return [
+                'ip'      => $device['ip'],
+                'mac'     => $device['mac'],
+                'income'  => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':income') ?? 0,
+                'success' => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':success') ?? 0,
+                'fail'    => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':fail') ?? 0,
+                'status'  => array_reverse($status),
+                'add_amount_card'  => $add_amount_card,
+            ];
+        });
+
+        $send = $request->input('send') == 'SENDING' ? true : false;
+        $can_send = $this->thisTimeCanSend();
+        $next_can_send = $can_send['can_send'];
+        $next_can_send_time = $can_send['can_send_time'];
+        if($send && $can_send['can_send']){  //如果请求发送短信
+            $next_can_send = false;
+            $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
+            Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
+            $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item){
+                return collect($item)->where('has_card', true);
+            })->flatten(1);
+            $this->sendMessage($add_amount_card);
+//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':success', 1);  //成功
+//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':income', 1);
+//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':fail', 1);
+//            此处给该卡加钱！！！！！！！！！！！！！！
+        }
+
+        $can_send['real_device'] = $real_device;
+        return $this->responseSuccess([
+            'can_send' => $next_can_send,
+            'can_send_time' => $next_can_send_time,
+            'frequency' => $can_send['frequency'],
+            'real_device' => $real_device,
+        ]);
+    }
+
+    public function thisTimeCanSend()
+    {
+        $this_time = Carbon::now()->toDateTimeString();
+        $can_send_time = Redis::get(Auth()->user()->id . ':can-send-time') ?? $this_time;
+        $can_send = true;
+        if($can_send_time > $this_time){
+            $can_send = false;
+        }
+
+        return [
+            'can_send' => $can_send,
+            'can_send_time' => $can_send_time,
+            'frequency' => config('frequency') * 1000,
+        ];
     }
 
     /**
      * 发送短信
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function sendMessage(Request $request)
+    public function sendMessage($add_amount_card)
     {
-        $real_device = $request->input('real_device');
-        $device = collect($real_device)->map(function ($item){
+        $wait_count = $add_amount_card->count();
+
+        $tasks = Task::where([
+            'status' => 'UNDONE',
+            'running' => true
+        ])->select('id', 'content', 'count', 'unfinished')->get();    //全部未完成的正在进行中的任务
+
+        $tasks = $tasks->map(function ($task){
             return [
-                'ip' => $item['ip'],
-                'mac' => $item['mac'],
-                'status' => collect($item['status'])->flatten(2)->where('has_card', true)->where('status', 'success'),
+                'id' => $task->id,
+                'unfinished' => $task->unfinished,
+                'content' => $task->content,
             ];
-        });
+        })->shuffle();  //打乱数组
 
-        $res = collect($device)->map(function ($item){
-            $cards = Card::whereIn('name', $item['status']->pluck('iccid'))->select('id', 'name', 'password', 'status')->get();
-            $item['status'] = $item['status']->map(function ($status) use ($cards){
-                $card = $cards->where('name', $status['iccid'])->first();
-                if($card){
-                    if($card->password != $status['imsi'] || $card->status == 1 ){
-                        $status['status'] = 'wrong';
-                    }else{
-//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':success', 1);  //成功
-//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':income', 1);
-//                        Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':fail', 1);
-                        //此处给该卡加钱！！！！！！！！！！！！！！
-                    }
+        foreach ($tasks as $task){
+            if($wait_count > 0){
+                if($task['unfinished'] > $wait_count){
+                    Task::where('id', $task['id'])->update([
+                        'unfinished' => $task['unfinished'] - $wait_count
+                    ]);
+                    $wait_count = 0;
+                    break;//结束循环
+                }else if($task['unfinished'] == $wait_count){
+                    Task::where('id', $task['id'])->update([
+                        'status' => 'COMPLETED',
+                        'unfinished' => 0,
+                        'unfinished_mobile' => '',
+                        'running' => false
+                    ]);
+                    $wait_count = 0;
+                    break;//结束循环
                 }else{
-                    $status['status'] = 'unknown';
-                }
+                    Task::where('id', $task['id'])->update([
+                        'status' => 'COMPLETED',
+                        'unfinished' => 0,
+                        'unfinished_mobile' => '',
+                        'running' => false
+                    ]);
 
-                return $status;
-            });
-
-            return $item;
-        });
-
-//dd($res);
-
-        foreach ($real_device as $d_index=>$device){
-            foreach ($device['status'] as $s_index=>$status){
-                foreach ($status as $r_index=>$row){
-                    foreach ($row as $v_index=>$value){
-                        if($value['has_card'] == true && $value['status'] == 'success'){
-                            $real_device[$d_index]['status'][$s_index][$r_index][$v_index] = $res->where('mac', $device['mac'])->first()['status']->where('iccid', $value['iccid'])->first();
-                        }
-                    }
+                    $wait_count = $wait_count - $task['unfinished'];
                 }
             }
         }
 
-        return $this->responseSuccess($real_device);
+
+
+        Redis::pipeline(function ($pipe) {
+            for ($i = 0; $i < 1000; $i++) {
+                $pipe->set("key:$i", $i);
+            }
+        });
+
+        dd($add_amount_card);
+
+        dd($tasks->toArray());
     }
 }
