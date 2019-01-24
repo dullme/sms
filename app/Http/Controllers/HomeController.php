@@ -300,8 +300,8 @@ class HomeController extends ResponseController
     public function makeCard(Request $request)
     {
         $request->validate([
-            'device'   => 'required',
-            'send' => 'required'
+            'device' => 'required',
+            'send'   => 'required'
         ]);
 
         $device = $request->input('device');
@@ -341,7 +341,7 @@ class HomeController extends ResponseController
                             'status'   => $type,
                         ];
                         $add_amount_card[] = array_merge($res, [
-                            'ip' => $device['ip'],
+                            'ip'  => $device['ip'],
                             'mac' => $device['mac'],
                         ]);
                     } else {
@@ -367,13 +367,13 @@ class HomeController extends ResponseController
             }
 
             return [
-                'ip'      => $device['ip'],
-                'mac'     => $device['mac'],
-                'income'  => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':income') ?? 0,
-                'success' => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':success') ?? 0,
-                'fail'    => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':fail') ?? 0,
-                'status'  => array_reverse($status),
-                'add_amount_card'  => $add_amount_card,
+                'ip'              => $device['ip'],
+                'mac'             => $device['mac'],
+                'income'          => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':income') ?? 0,
+                'success'         => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':success') ?? 0,
+                'fail'            => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':fail') ?? 0,
+                'status'          => array_reverse($status),
+                'add_amount_card' => $add_amount_card,
             ];
         });
 
@@ -381,14 +381,14 @@ class HomeController extends ResponseController
         $can_send = $this->thisTimeCanSend();
         $next_can_send = $can_send['can_send'];
         $next_can_send_time = $can_send['can_send_time'];
-        if($send && $can_send['can_send']){  //如果请求发送短信
+        if ($send && $can_send['can_send']) {  //如果请求发送短信
             $next_can_send = false;
             $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
             Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
-            $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item){
+            $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
                 return collect($item)->where('has_card', true);
             })->flatten(1);
-            $this->sendMessage($add_amount_card);
+            return $this->responseSuccess($this->sendMessage($add_amount_card));
 //            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':success', 1);  //成功
 //            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':income', 1);
 //            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':fail', 1);
@@ -396,11 +396,12 @@ class HomeController extends ResponseController
         }
 
         $can_send['real_device'] = $real_device;
+
         return $this->responseSuccess([
-            'can_send' => $next_can_send,
+            'can_send'      => $next_can_send,
             'can_send_time' => $next_can_send_time,
-            'frequency' => $can_send['frequency'],
-            'real_device' => $real_device,
+            'frequency'     => $can_send['frequency'],
+            'real_device'   => $real_device,
         ]);
     }
 
@@ -409,14 +410,14 @@ class HomeController extends ResponseController
         $this_time = Carbon::now()->toDateTimeString();
         $can_send_time = Redis::get(Auth()->user()->id . ':can-send-time') ?? $this_time;
         $can_send = true;
-        if($can_send_time > $this_time){
+        if ($can_send_time > $this_time) {
             $can_send = false;
         }
 
         return [
-            'can_send' => $can_send,
+            'can_send'      => $can_send,
             'can_send_time' => $can_send_time,
-            'frequency' => config('frequency') * 1000,
+            'frequency'     => config('frequency') * 1000,
         ];
     }
 
@@ -426,60 +427,97 @@ class HomeController extends ResponseController
     public function sendMessage($add_amount_card)
     {
         $wait_count = $add_amount_card->count();
-
-        $tasks = Task::where([
-            'status' => 'UNDONE',
-            'running' => true
-        ])->select('id', 'content', 'count', 'unfinished')->get();    //全部未完成的正在进行中的任务
-
-        $tasks = $tasks->map(function ($task){
-            return [
-                'id' => $task->id,
-                'unfinished' => $task->unfinished,
-                'content' => $task->content,
-            ];
-        })->shuffle();  //打乱数组
-
-        foreach ($tasks as $task){
-            if($wait_count > 0){
-                if($task['unfinished'] > $wait_count){
-                    Task::where('id', $task['id'])->update([
-                        'unfinished' => $task['unfinished'] - $wait_count
-                    ]);
+        $task_list = [];
+        if($wait_count > 0) {
+            do {
+                $task = $this->getRandomTask(); //随机获取一条任务
+                if(!$task){
+                    break;
+                }
+                if ($task->unfinished >= $wait_count) {
+                    if($task->unfinished == $wait_count){
+                        Task::where('id', $task['id'])->update([
+                            'status'            => 'COMPLETED',
+                            'unfinished'        => 0,
+                            'running'           => false
+                        ]);
+                    }else{
+                        Task::where('id', $task['id'])->update([
+                            'unfinished' => $task['unfinished'] - $wait_count
+                        ]);
+                    }
+                    $task_list[] = [
+                        'id'      => $task['id'],
+                        'content' => $task['content'],
+                        'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
+                    ];
                     $wait_count = 0;
-                    break;//结束循环
-                }else if($task['unfinished'] == $wait_count){
-                    Task::where('id', $task['id'])->update([
-                        'status' => 'COMPLETED',
-                        'unfinished' => 0,
-                        'unfinished_mobile' => '',
-                        'running' => false
-                    ]);
-                    $wait_count = 0;
-                    break;//结束循环
                 }else{
                     Task::where('id', $task['id'])->update([
-                        'status' => 'COMPLETED',
-                        'unfinished' => 0,
-                        'unfinished_mobile' => '',
-                        'running' => false
+                        'status'            => 'COMPLETED',
+                        'unfinished'        => 0,
+                        'running'           => false
                     ]);
+                    $task_list[] = [
+                        'id'      => $task['id'],
+                        'content' => $task['content'],
+                        'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
+                    ];
 
                     $wait_count = $wait_count - $task['unfinished'];
                 }
-            }
+
+            } while ($wait_count != 0);
         }
 
+        if(count($task_list) == 0){
+            return false;   //没有任务
+        }
+
+        dd($task_list);
 
 
-        Redis::pipeline(function ($pipe) {
-            for ($i = 0; $i < 1000; $i++) {
-                $pipe->set("key:$i", $i);
-            }
-        });
+//        Redis::pipeline(function ($pipe) use ($task_list) {
+//            需要写文件了;
+//        });
 
-        dd($add_amount_card);
 
-        dd($tasks->toArray());
+    }
+
+    /**
+     * 返回需要处理的电话
+     * @param $mobile
+     * @param $count
+     * @param $unfinished
+     * @param $wait_count
+     * @return bool|string
+     */
+    public function getTaskMobile($mobile, $count, $unfinished, $wait_count)
+    {
+        if($unfinished == 0 || $wait_count > $unfinished || $unfinished > $count){
+            return false;
+        }
+
+        $finished = ($count - $unfinished) * 12;   //已完成的
+
+        if($unfinished == $wait_count){
+            return substr($mobile, $finished);
+        }
+
+        $end_finished = $wait_count * 12 -1;
+
+        return substr($mobile, $finished, $end_finished);
+    }
+
+    /**
+     * 随机获取一条进行中的任务
+     * @return mixed
+     */
+    public function getRandomTask()
+    {
+        return Task::where([
+            'status'  => 'UNDONE',
+            'running' => true
+        ])->select('id', 'content', 'count', 'unfinished', 'mobile')->inRandomOrder()->first();
     }
 }

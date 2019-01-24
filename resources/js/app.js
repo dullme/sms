@@ -21,7 +21,6 @@ window.Vue = require('vue');
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('transfer', require('./components/TransferComponent.vue'));
-Vue.component('home', require('./components/HomeComponent.vue'));
 Vue.component('device', require('./components/DeviceComponent.vue'));
 
 /**

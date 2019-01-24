@@ -11,6 +11,8 @@
 |
 */
 
+Route::get('/tt', 'HomeController@getRandomTask');
+
 Route::get('/', 'HomeController@index');
 
 Auth::routes();

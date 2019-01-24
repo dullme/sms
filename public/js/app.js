@@ -71,7 +71,7 @@
 
 
 var bind = __webpack_require__(5);
-var isBuffer = __webpack_require__(18);
+var isBuffer = __webpack_require__(16);
 
 /*global toString:true*/
 
@@ -402,6 +402,110 @@ module.exports = g;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+var utils = __webpack_require__(0);
+var normalizeHeaderName = __webpack_require__(18);
+
+var DEFAULT_CONTENT_TYPE = {
+  'Content-Type': 'application/x-www-form-urlencoded'
+};
+
+function setContentTypeIfUnset(headers, value) {
+  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+    headers['Content-Type'] = value;
+  }
+}
+
+function getDefaultAdapter() {
+  var adapter;
+  if (typeof XMLHttpRequest !== 'undefined') {
+    // For browsers use XHR adapter
+    adapter = __webpack_require__(7);
+  } else if (typeof process !== 'undefined') {
+    // For node use HTTP adapter
+    adapter = __webpack_require__(7);
+  }
+  return adapter;
+}
+
+var defaults = {
+  adapter: getDefaultAdapter(),
+
+  transformRequest: [function transformRequest(data, headers) {
+    normalizeHeaderName(headers, 'Content-Type');
+    if (utils.isFormData(data) ||
+      utils.isArrayBuffer(data) ||
+      utils.isBuffer(data) ||
+      utils.isStream(data) ||
+      utils.isFile(data) ||
+      utils.isBlob(data)
+    ) {
+      return data;
+    }
+    if (utils.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils.isURLSearchParams(data)) {
+      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+      return data.toString();
+    }
+    if (utils.isObject(data)) {
+      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+      return JSON.stringify(data);
+    }
+    return data;
+  }],
+
+  transformResponse: [function transformResponse(data) {
+    /*eslint no-param-reassign:0*/
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) { /* Ignore */ }
+    }
+    return data;
+  }],
+
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
+  timeout: 0,
+
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+
+  maxContentLength: -1,
+
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  }
+};
+
+defaults.headers = {
+  common: {
+    'Accept': 'application/json, text/plain, */*'
+  }
+};
+
+utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  defaults.headers[method] = {};
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+});
+
+module.exports = defaults;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -510,7 +614,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 /**
@@ -1492,110 +1596,6 @@ Date.CultureInfo = { name: "zh-CN", englishName: "Chinese (People's Republic of 
 })();
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
-
-var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(20);
-
-var DEFAULT_CONTENT_TYPE = {
-  'Content-Type': 'application/x-www-form-urlencoded'
-};
-
-function setContentTypeIfUnset(headers, value) {
-  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
-    headers['Content-Type'] = value;
-  }
-}
-
-function getDefaultAdapter() {
-  var adapter;
-  if (typeof XMLHttpRequest !== 'undefined') {
-    // For browsers use XHR adapter
-    adapter = __webpack_require__(7);
-  } else if (typeof process !== 'undefined') {
-    // For node use HTTP adapter
-    adapter = __webpack_require__(7);
-  }
-  return adapter;
-}
-
-var defaults = {
-  adapter: getDefaultAdapter(),
-
-  transformRequest: [function transformRequest(data, headers) {
-    normalizeHeaderName(headers, 'Content-Type');
-    if (utils.isFormData(data) ||
-      utils.isArrayBuffer(data) ||
-      utils.isBuffer(data) ||
-      utils.isStream(data) ||
-      utils.isFile(data) ||
-      utils.isBlob(data)
-    ) {
-      return data;
-    }
-    if (utils.isArrayBufferView(data)) {
-      return data.buffer;
-    }
-    if (utils.isURLSearchParams(data)) {
-      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
-      return data.toString();
-    }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
-    }
-    return data;
-  }],
-
-  transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
-    }
-    return data;
-  }],
-
-  /**
-   * A timeout in milliseconds to abort a request. If set to 0 (default) a
-   * timeout is not created.
-   */
-  timeout: 0,
-
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
-
-  maxContentLength: -1,
-
-  validateStatus: function validateStatus(status) {
-    return status >= 200 && status < 300;
-  }
-};
-
-defaults.headers = {
-  common: {
-    'Accept': 'application/json, text/plain, */*'
-  }
-};
-
-utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
-  defaults.headers[method] = {};
-});
-
-utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
-});
-
-module.exports = defaults;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1811,12 +1811,12 @@ process.umask = function() { return 0; };
 
 
 var utils = __webpack_require__(0);
-var settle = __webpack_require__(21);
-var buildURL = __webpack_require__(23);
-var parseHeaders = __webpack_require__(24);
-var isURLSameOrigin = __webpack_require__(25);
+var settle = __webpack_require__(19);
+var buildURL = __webpack_require__(21);
+var parseHeaders = __webpack_require__(22);
+var isURLSameOrigin = __webpack_require__(23);
 var createError = __webpack_require__(8);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(26);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(24);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -1913,7 +1913,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(27);
+      var cookies = __webpack_require__(25);
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -1997,7 +1997,7 @@ module.exports = function xhrAdapter(config) {
 "use strict";
 
 
-var enhanceError = __webpack_require__(22);
+var enhanceError = __webpack_require__(20);
 
 /**
  * Create an Error with the specified message, config, error code, request and response.
@@ -2055,316 +2055,6 @@ module.exports = Cancel;
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function(useSourceMap) {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		return this.map(function (item) {
-			var content = cssWithMappingToString(item, useSourceMap);
-			if(item[2]) {
-				return "@media " + item[2] + "{" + content + "}";
-			} else {
-				return content;
-			}
-		}).join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-function cssWithMappingToString(item, useSourceMap) {
-	var content = item[1] || '';
-	var cssMapping = item[3];
-	if (!cssMapping) {
-		return content;
-	}
-
-	if (useSourceMap && typeof btoa === 'function') {
-		var sourceMapping = toComment(cssMapping);
-		var sourceURLs = cssMapping.sources.map(function (source) {
-			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
-		});
-
-		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
-	}
-
-	return [content].join('\n');
-}
-
-// Adapted from convert-source-map (MIT)
-function toComment(sourceMap) {
-	// eslint-disable-next-line no-undef
-	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
-
-	return '/*# ' + data + ' */';
-}
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-  MIT License http://www.opensource.org/licenses/mit-license.php
-  Author Tobias Koppers @sokra
-  Modified by Evan You @yyx990803
-*/
-
-var hasDocument = typeof document !== 'undefined'
-
-if (typeof DEBUG !== 'undefined' && DEBUG) {
-  if (!hasDocument) {
-    throw new Error(
-    'vue-style-loader cannot be used in a non-browser environment. ' +
-    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
-  ) }
-}
-
-var listToStyles = __webpack_require__(38)
-
-/*
-type StyleObject = {
-  id: number;
-  parts: Array<StyleObjectPart>
-}
-
-type StyleObjectPart = {
-  css: string;
-  media: string;
-  sourceMap: ?string
-}
-*/
-
-var stylesInDom = {/*
-  [id: number]: {
-    id: number,
-    refs: number,
-    parts: Array<(obj?: StyleObjectPart) => void>
-  }
-*/}
-
-var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
-var singletonElement = null
-var singletonCounter = 0
-var isProduction = false
-var noop = function () {}
-var options = null
-var ssrIdKey = 'data-vue-ssr-id'
-
-// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-// tags it will allow on a page
-var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
-
-module.exports = function (parentId, list, _isProduction, _options) {
-  isProduction = _isProduction
-
-  options = _options || {}
-
-  var styles = listToStyles(parentId, list)
-  addStylesToDom(styles)
-
-  return function update (newList) {
-    var mayRemove = []
-    for (var i = 0; i < styles.length; i++) {
-      var item = styles[i]
-      var domStyle = stylesInDom[item.id]
-      domStyle.refs--
-      mayRemove.push(domStyle)
-    }
-    if (newList) {
-      styles = listToStyles(parentId, newList)
-      addStylesToDom(styles)
-    } else {
-      styles = []
-    }
-    for (var i = 0; i < mayRemove.length; i++) {
-      var domStyle = mayRemove[i]
-      if (domStyle.refs === 0) {
-        for (var j = 0; j < domStyle.parts.length; j++) {
-          domStyle.parts[j]()
-        }
-        delete stylesInDom[domStyle.id]
-      }
-    }
-  }
-}
-
-function addStylesToDom (styles /* Array<StyleObject> */) {
-  for (var i = 0; i < styles.length; i++) {
-    var item = styles[i]
-    var domStyle = stylesInDom[item.id]
-    if (domStyle) {
-      domStyle.refs++
-      for (var j = 0; j < domStyle.parts.length; j++) {
-        domStyle.parts[j](item.parts[j])
-      }
-      for (; j < item.parts.length; j++) {
-        domStyle.parts.push(addStyle(item.parts[j]))
-      }
-      if (domStyle.parts.length > item.parts.length) {
-        domStyle.parts.length = item.parts.length
-      }
-    } else {
-      var parts = []
-      for (var j = 0; j < item.parts.length; j++) {
-        parts.push(addStyle(item.parts[j]))
-      }
-      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
-    }
-  }
-}
-
-function createStyleElement () {
-  var styleElement = document.createElement('style')
-  styleElement.type = 'text/css'
-  head.appendChild(styleElement)
-  return styleElement
-}
-
-function addStyle (obj /* StyleObjectPart */) {
-  var update, remove
-  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
-
-  if (styleElement) {
-    if (isProduction) {
-      // has SSR styles and in production mode.
-      // simply do nothing.
-      return noop
-    } else {
-      // has SSR styles but in dev mode.
-      // for some reason Chrome can't handle source map in server-rendered
-      // style tags - source maps in <style> only works if the style tag is
-      // created and inserted dynamically. So we remove the server rendered
-      // styles and inject new ones.
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  if (isOldIE) {
-    // use singleton mode for IE9.
-    var styleIndex = singletonCounter++
-    styleElement = singletonElement || (singletonElement = createStyleElement())
-    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
-    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
-  } else {
-    // use multi-style-tag mode in all other cases
-    styleElement = createStyleElement()
-    update = applyToTag.bind(null, styleElement)
-    remove = function () {
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  update(obj)
-
-  return function updateStyle (newObj /* StyleObjectPart */) {
-    if (newObj) {
-      if (newObj.css === obj.css &&
-          newObj.media === obj.media &&
-          newObj.sourceMap === obj.sourceMap) {
-        return
-      }
-      update(obj = newObj)
-    } else {
-      remove()
-    }
-  }
-}
-
-var replaceText = (function () {
-  var textStore = []
-
-  return function (index, replacement) {
-    textStore[index] = replacement
-    return textStore.filter(Boolean).join('\n')
-  }
-})()
-
-function applyToSingletonTag (styleElement, index, remove, obj) {
-  var css = remove ? '' : obj.css
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = replaceText(index, css)
-  } else {
-    var cssNode = document.createTextNode(css)
-    var childNodes = styleElement.childNodes
-    if (childNodes[index]) styleElement.removeChild(childNodes[index])
-    if (childNodes.length) {
-      styleElement.insertBefore(cssNode, childNodes[index])
-    } else {
-      styleElement.appendChild(cssNode)
-    }
-  }
-}
-
-function applyToTag (styleElement, obj) {
-  var css = obj.css
-  var media = obj.media
-  var sourceMap = obj.sourceMap
-
-  if (media) {
-    styleElement.setAttribute('media', media)
-  }
-  if (options.ssrId) {
-    styleElement.setAttribute(ssrIdKey, obj.id)
-  }
-
-  if (sourceMap) {
-    // https://developer.chrome.com/devtools/docs/javascript-debugging
-    // this makes source maps inside style tags work properly in Chrome
-    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
-    // http://stackoverflow.com/a/26603875
-    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
-  }
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = css
-  } else {
-    while (styleElement.firstChild) {
-      styleElement.removeChild(styleElement.firstChild)
-    }
-    styleElement.appendChild(document.createTextNode(css))
-  }
-}
-
-
-/***/ }),
-/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -19476,10 +19166,10 @@ function applyToTag (styleElement, obj) {
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(14)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(12)(module)))
 
 /***/ }),
-/* 14 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -19507,7 +19197,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 15 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22088,13 +21778,13 @@ Popper.Defaults = Defaults;
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(17);
+module.exports = __webpack_require__(15);
 
 /***/ }),
-/* 17 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22102,8 +21792,8 @@ module.exports = __webpack_require__(17);
 
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(5);
-var Axios = __webpack_require__(19);
-var defaults = __webpack_require__(4);
+var Axios = __webpack_require__(17);
+var defaults = __webpack_require__(2);
 
 /**
  * Create an instance of Axios
@@ -22137,14 +21827,14 @@ axios.create = function create(instanceConfig) {
 
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(10);
-axios.CancelToken = __webpack_require__(33);
+axios.CancelToken = __webpack_require__(31);
 axios.isCancel = __webpack_require__(9);
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__(34);
+axios.spread = __webpack_require__(32);
 
 module.exports = axios;
 
@@ -22153,7 +21843,7 @@ module.exports.default = axios;
 
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /*!
@@ -22180,16 +21870,16 @@ function isSlowBuffer (obj) {
 
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var defaults = __webpack_require__(4);
+var defaults = __webpack_require__(2);
 var utils = __webpack_require__(0);
-var InterceptorManager = __webpack_require__(28);
-var dispatchRequest = __webpack_require__(29);
+var InterceptorManager = __webpack_require__(26);
+var dispatchRequest = __webpack_require__(27);
 
 /**
  * Create a new instance of Axios
@@ -22266,7 +21956,7 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 20 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22285,7 +21975,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 21 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22318,7 +22008,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 22 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22346,7 +22036,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
 
 
 /***/ }),
-/* 23 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22419,7 +22109,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 24 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22479,7 +22169,7 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 25 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22554,7 +22244,7 @@ module.exports = (
 
 
 /***/ }),
-/* 26 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22597,7 +22287,7 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 27 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22657,7 +22347,7 @@ module.exports = (
 
 
 /***/ }),
-/* 28 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22716,18 +22406,18 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 29 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var transformData = __webpack_require__(30);
+var transformData = __webpack_require__(28);
 var isCancel = __webpack_require__(9);
-var defaults = __webpack_require__(4);
-var isAbsoluteURL = __webpack_require__(31);
-var combineURLs = __webpack_require__(32);
+var defaults = __webpack_require__(2);
+var isAbsoluteURL = __webpack_require__(29);
+var combineURLs = __webpack_require__(30);
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -22809,7 +22499,7 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 30 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22836,7 +22526,7 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 31 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22857,7 +22547,7 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 32 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22878,7 +22568,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 
 /***/ }),
-/* 33 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22942,7 +22632,7 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 34 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22976,7 +22666,7 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 35 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34070,10 +33760,10 @@ Vue.compile = compileToFunctions;
 
 module.exports = Vue;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(36).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(34).setImmediate))
 
 /***/ }),
-/* 36 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
@@ -34129,7 +33819,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(37);
+__webpack_require__(35);
 // On some exotic environments, it's not clear which object `setimmediate` was
 // able to install onto.  Search each possibility in the same order as the
 // `setimmediate` library.
@@ -34143,7 +33833,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 37 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -34336,6 +34026,316 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(6)))
 
 /***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+  Modified by Evan You @yyx990803
+*/
+
+var hasDocument = typeof document !== 'undefined'
+
+if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (!hasDocument) {
+    throw new Error(
+    'vue-style-loader cannot be used in a non-browser environment. ' +
+    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
+  ) }
+}
+
+var listToStyles = __webpack_require__(38)
+
+/*
+type StyleObject = {
+  id: number;
+  parts: Array<StyleObjectPart>
+}
+
+type StyleObjectPart = {
+  css: string;
+  media: string;
+  sourceMap: ?string
+}
+*/
+
+var stylesInDom = {/*
+  [id: number]: {
+    id: number,
+    refs: number,
+    parts: Array<(obj?: StyleObjectPart) => void>
+  }
+*/}
+
+var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
+var singletonElement = null
+var singletonCounter = 0
+var isProduction = false
+var noop = function () {}
+var options = null
+var ssrIdKey = 'data-vue-ssr-id'
+
+// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+// tags it will allow on a page
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
+
+module.exports = function (parentId, list, _isProduction, _options) {
+  isProduction = _isProduction
+
+  options = _options || {}
+
+  var styles = listToStyles(parentId, list)
+  addStylesToDom(styles)
+
+  return function update (newList) {
+    var mayRemove = []
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i]
+      var domStyle = stylesInDom[item.id]
+      domStyle.refs--
+      mayRemove.push(domStyle)
+    }
+    if (newList) {
+      styles = listToStyles(parentId, newList)
+      addStylesToDom(styles)
+    } else {
+      styles = []
+    }
+    for (var i = 0; i < mayRemove.length; i++) {
+      var domStyle = mayRemove[i]
+      if (domStyle.refs === 0) {
+        for (var j = 0; j < domStyle.parts.length; j++) {
+          domStyle.parts[j]()
+        }
+        delete stylesInDom[domStyle.id]
+      }
+    }
+  }
+}
+
+function addStylesToDom (styles /* Array<StyleObject> */) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i]
+    var domStyle = stylesInDom[item.id]
+    if (domStyle) {
+      domStyle.refs++
+      for (var j = 0; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j])
+      }
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j]))
+      }
+      if (domStyle.parts.length > item.parts.length) {
+        domStyle.parts.length = item.parts.length
+      }
+    } else {
+      var parts = []
+      for (var j = 0; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j]))
+      }
+      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
+    }
+  }
+}
+
+function createStyleElement () {
+  var styleElement = document.createElement('style')
+  styleElement.type = 'text/css'
+  head.appendChild(styleElement)
+  return styleElement
+}
+
+function addStyle (obj /* StyleObjectPart */) {
+  var update, remove
+  var styleElement = document.querySelector('style[' + ssrIdKey + '~="' + obj.id + '"]')
+
+  if (styleElement) {
+    if (isProduction) {
+      // has SSR styles and in production mode.
+      // simply do nothing.
+      return noop
+    } else {
+      // has SSR styles but in dev mode.
+      // for some reason Chrome can't handle source map in server-rendered
+      // style tags - source maps in <style> only works if the style tag is
+      // created and inserted dynamically. So we remove the server rendered
+      // styles and inject new ones.
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  if (isOldIE) {
+    // use singleton mode for IE9.
+    var styleIndex = singletonCounter++
+    styleElement = singletonElement || (singletonElement = createStyleElement())
+    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
+    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
+  } else {
+    // use multi-style-tag mode in all other cases
+    styleElement = createStyleElement()
+    update = applyToTag.bind(null, styleElement)
+    remove = function () {
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  update(obj)
+
+  return function updateStyle (newObj /* StyleObjectPart */) {
+    if (newObj) {
+      if (newObj.css === obj.css &&
+          newObj.media === obj.media &&
+          newObj.sourceMap === obj.sourceMap) {
+        return
+      }
+      update(obj = newObj)
+    } else {
+      remove()
+    }
+  }
+}
+
+var replaceText = (function () {
+  var textStore = []
+
+  return function (index, replacement) {
+    textStore[index] = replacement
+    return textStore.filter(Boolean).join('\n')
+  }
+})()
+
+function applyToSingletonTag (styleElement, index, remove, obj) {
+  var css = remove ? '' : obj.css
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = replaceText(index, css)
+  } else {
+    var cssNode = document.createTextNode(css)
+    var childNodes = styleElement.childNodes
+    if (childNodes[index]) styleElement.removeChild(childNodes[index])
+    if (childNodes.length) {
+      styleElement.insertBefore(cssNode, childNodes[index])
+    } else {
+      styleElement.appendChild(cssNode)
+    }
+  }
+}
+
+function applyToTag (styleElement, obj) {
+  var css = obj.css
+  var media = obj.media
+  var sourceMap = obj.sourceMap
+
+  if (media) {
+    styleElement.setAttribute('media', media)
+  }
+  if (options.ssrId) {
+    styleElement.setAttribute(ssrIdKey, obj.id)
+  }
+
+  if (sourceMap) {
+    // https://developer.chrome.com/devtools/docs/javascript-debugging
+    // this makes source maps inside style tags work properly in Chrome
+    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
+    // http://stackoverflow.com/a/26603875
+    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
+  }
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = css
+  } else {
+    while (styleElement.firstChild) {
+      styleElement.removeChild(styleElement.firstChild)
+    }
+    styleElement.appendChild(document.createTextNode(css))
+  }
+}
+
+
+/***/ }),
 /* 38 */
 /***/ (function(module, exports) {
 
@@ -34407,7 +34407,7 @@ module.exports = __webpack_require__(59);
 
 __webpack_require__(60);
 
-window.Vue = __webpack_require__(35);
+window.Vue = __webpack_require__(33);
 
 /**
  * The following block of code may be used to automatically register your
@@ -34421,8 +34421,7 @@ window.Vue = __webpack_require__(35);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('transfer', __webpack_require__(62));
-Vue.component('home', __webpack_require__(65));
-Vue.component('device', __webpack_require__(70));
+Vue.component('device', __webpack_require__(65));
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -34439,8 +34438,8 @@ var app = new Vue({
 /***/ (function(module, exports, __webpack_require__) {
 
 
-window._ = __webpack_require__(13);
-window.Popper = __webpack_require__(15).default;
+window._ = __webpack_require__(11);
+window.Popper = __webpack_require__(13).default;
 try {
   window.$ = window.jQuery = __webpack_require__(61);
 } catch (e) {}
@@ -34451,7 +34450,7 @@ try {
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-window.axios = __webpack_require__(16);
+window.axios = __webpack_require__(14);
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
@@ -44862,7 +44861,7 @@ return jQuery;
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(2)
+var normalizeComponent = __webpack_require__(3)
 /* script */
 var __vue_script__ = __webpack_require__(63)
 /* template */
@@ -44949,7 +44948,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
-__webpack_require__(3);
+__webpack_require__(4);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
@@ -45268,7 +45267,7 @@ function injectStyle (ssrContext) {
   if (disposed) return
   __webpack_require__(66)
 }
-var normalizeComponent = __webpack_require__(2)
+var normalizeComponent = __webpack_require__(3)
 /* script */
 var __vue_script__ = __webpack_require__(68)
 /* template */
@@ -45289,7 +45288,7 @@ var Component = normalizeComponent(
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "resources/js/components/HomeComponent.vue"
+Component.options.__file = "resources/js/components/DeviceComponent.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -45298,9 +45297,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-782dcf83", Component.options)
+    hotAPI.createRecord("data-v-8f3e1fa8", Component.options)
   } else {
-    hotAPI.reload("data-v-782dcf83", Component.options)
+    hotAPI.reload("data-v-8f3e1fa8", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -45321,13 +45320,13 @@ var content = __webpack_require__(67);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(12)("f814b80a", content, false, {});
+var update = __webpack_require__(37)("6cb0b7b0", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-782dcf83\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./HomeComponent.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-782dcf83\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./HomeComponent.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -45340,12 +45339,12 @@ if(false) {
 /* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(11)(false);
+exports = module.exports = __webpack_require__(36)(false);
 // imports
 
 
 // module
-exports.push([module.i, "\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success , .unknown{\n    background-color: #38c172;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #38c172;\n    color: white;\n}\n.unknown {\n    background-color: #29c107;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
 
 // exports
 
@@ -45414,574 +45413,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
 
-__webpack_require__(3);
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            device: [], //读取的数据
-            real_device: [], //真实的数据,
-            ip: [], // 所有设备的IP
-            loading: false, //是否在读取设备
-            time: 0, //搜索设备等待秒数
-            search_interval: '', //搜索事件
-            send_interval: '', //请求事件
-            message: '', //提示信息
-            open: 'STOPPED', //是否开启发送短信
-            frequency: 1000 //请求频率/毫秒
-        };
-    },
-    created: function created() {
-        this.search();
-    },
-    mounted: function mounted() {},
-
-
-    methods: {
-        search: function search() {
-            var _this = this;
-
-            if (this.open == 'SENDING') {
-                console.log('启动中无法搜索新设备');
-            } else {
-                clearInterval(this.search_interval);
-                this.device = [];
-                this.real_device = [];
-                this.ip = [];
-                this.loading = true;
-                this.time = 0;
-                this.search_interval = '';
-                this.message = '';
-                this.open = 'STOPPED';
-                this.frequency = 1000;
-
-                this.search_interval = setInterval(function () {
-                    _this.time += 1;
-                    if (_this.time >= 20) {
-                        _this.message = '...搜索时间过长请重新搜索...';
-                    }
-                }, 1000);
-
-                //扫描设备IP
-                AsyncIPS.getUsefullIPs('80', function (json) {
-                    _this.loading = false;
-                    JSON.parse(json).IPS.forEach(function (value) {
-                        _this.ip.push({
-                            ip: value,
-                            mac: '00-30-f1-00-b7-d5'
-                        });
-                    });
-                    _this.readCard();
-                }, function (message) {
-                    _this.loading = false;
-                    console.log(message);
-                });
-            }
-        },
-        start: function start() {
-            var _this2 = this;
-
-            if (this.open == 'STOPPED') {
-                console.log('发送中......');
-                this.open = 'SENDING';
-                if (this.real_device.length) {
-                    this.send_interval = setInterval(function () {
-                        axios.post("/user/send/message", {
-                            real_device: _this2.real_device
-                        }).then(function (response) {
-                            _this2.real_device = response.data.data;
-                            console.log(response.data);
-                        }).catch(function (error) {
-                            console.log(error);
-                        });
-                    }, this.frequency);
-                }
-            } else {
-                clearInterval(this.send_interval);
-                this.open = 'STOPPED';
-                console.log('已停止发送');
-            }
-        },
-
-
-        //读取设备
-        readCard: function readCard() {
-            var _this3 = this;
-
-            this.ip.forEach(function (value) {
-                AsyncHttp.httpRequest("http://" + value['ip'] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
-                    var device = JSON.parse(json);
-                    _this3.device.push(device);
-                    _this3.makeCard(device);
-                }, function (messsage) {
-                    console.log(messsage);
-                });
-            });
-        },
-
-
-        //构建设备卡槽
-        makeCard: function makeCard(device) {
-            var _this4 = this;
-
-            var status = new Array();
-            for (var i = 0; i < device['max-ports']; i++) {
-                status[i] = new Array();
-                status[i][0] = new Array();
-                status[i][1] = new Array();
-
-                var _loop = function _loop(j, _k, _l) {
-                    var port = i + 1 + '.' + _this4.prefixInteger(j + 1, 2);
-                    var res = {};
-                    try {
-                        device['status'].forEach(function (value) {
-                            var status = 'empty';
-                            if (value['port'] == port) {
-
-                                if (value['st'] == 0) {
-                                    status = 'empty';
-                                } else if (value['st'] > 0 && (value['iccid'] == '' || value['imsi'] == '')) {
-                                    status = 'failed';
-                                    var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
-                                    AsyncHttp.httpRequest("http://" + device['ip'] + "/goip_send_cmd.html?username=root&password=root", "POST", data, function (json) {
-                                        console.log('json');
-                                    }, function (messsage) {
-                                        console.log(messsage);
-                                    });
-                                } else {
-                                    status = 'success';
-                                }
-
-                                res = {
-                                    count: 0,
-                                    st: value['st'],
-                                    port: value['port'],
-                                    imei: value['imei'],
-                                    iccid: value['iccid'],
-                                    imsi: value['imsi'],
-                                    has_card: value['st'] == 0 ? false : true,
-                                    status: status //success:有卡;executing执行中
-                                };
-                                throw new Error('该卡已绑定');
-                            } else {
-                                res = {
-                                    count: 0,
-                                    st: 0,
-                                    port: port,
-                                    imei: '',
-                                    iccid: '',
-                                    imsi: '',
-                                    has_card: false,
-                                    status: status //empty:无卡
-                                };
-                            }
-                        });
-                    } catch (e) {}
-                    if (j % 2 != 0) {
-                        status[i][0][_k] = res;
-                        _k++;
-                    } else {
-                        status[i][1][_l] = res;
-                        _l++;
-                    }
-                    k = _k;
-                    l = _l;
-                };
-
-                for (var j = 0, k = 0, l = 0; j < device['max-slot']; j++) {
-                    _loop(j, k, l);
-                }
-            }
-
-            status = status.reverse();
-            axios.post("/user/device", {
-                ip: device['ip'],
-                mac: device['mac']
-            }).then(function (response) {
-                _this4.frequency = response.data.data.frequency;
-                _this4.real_device.push({
-                    fail: response.data.data.fail,
-                    income: response.data.data.income,
-                    success: response.data.data.success,
-                    ip: response.data.data.ip,
-                    mac: response.data.data.mac,
-                    status: status
-                });
-            }).catch(function (error) {
-                console.log(error.response.data);
-            });
-        },
-        prefixInteger: function prefixInteger(num, n) {
-            return (Array(n).join(0) + num).slice(-n);
-        }
-    }
-
-});
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticStyle: { padding: "10px", "min-width": "600px" } },
-    [
-      _vm._m(0),
-      _vm._v(" "),
-      _vm._l(_vm.real_device, function(device) {
-        return _vm.real_device.length
-          ? _c(
-              "div",
-              [
-                _c("span", [_vm._v("当前设备:" + _vm._s(device.ip))]),
-                _vm._v(" "),
-                _c("span", [_vm._v("状态:通讯正常")]),
-                _vm._v(" "),
-                _c("span", [_vm._v("当日收益:" + _vm._s(device.income))]),
-                _vm._v(" "),
-                _c("span", [_vm._v("当日成功条数:" + _vm._s(device.success))]),
-                _vm._v(" "),
-                _c("span", [_vm._v("当日失败条数:" + _vm._s(device.fail))]),
-                _vm._v(" "),
-                _vm._l(device.status, function(status) {
-                  return _c(
-                    "div",
-                    _vm._l(status, function(row) {
-                      return _c(
-                        "div",
-                        _vm._l(row, function(t) {
-                          return _c(
-                            "div",
-                            { staticClass: "ka_cao", class: t.status },
-                            [_vm._v(_vm._s(t.port))]
-                          )
-                        }),
-                        0
-                      )
-                    }),
-                    0
-                  )
-                })
-              ],
-              2
-            )
-          : _c("div", {
-              staticClass: "text-center",
-              staticStyle: { "min-height": "200px", "line-height": "200px" },
-              domProps: {
-                textContent: _vm._s(_vm.loading == false ? "未找到设备" : "")
-              }
-            })
-      }),
-      _vm._v(" "),
-      _c("div", { staticClass: "text-center" }, [
-        _vm.loading == true
-          ? _c("span", [
-              _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
-              _vm._v(" "),
-              _c("i", { domProps: { textContent: _vm._s(_vm.message) } }),
-              _vm._v(" "),
-              _c("a", { attrs: { href: "##" }, on: { click: _vm.search } }, [
-                _vm._v("重新搜索")
-              ])
-            ])
-          : _c("div", [
-              _c(
-                "a",
-                {
-                  staticClass: "btn btn-lg btn-default",
-                  staticStyle: {
-                    width: "160px",
-                    "background-color": "white",
-                    "font-weight": "bolder",
-                    border: "2px solid #BBBBBB"
-                  },
-                  on: { click: _vm.search }
-                },
-                [_vm._v("搜索新设备")]
-              ),
-              _vm._v(" "),
-              _c("a", {
-                staticClass: "btn btn-lg btn-default",
-                staticStyle: {
-                  width: "160px",
-                  "background-color": "white",
-                  "font-weight": "bolder",
-                  border: "2px solid #BBBBBB"
-                },
-                domProps: {
-                  textContent: _vm._s(_vm.open == "STOPPED" ? "启动" : "停止")
-                },
-                on: { click: _vm.start }
-              }),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticStyle: { width: "40px", display: "inline-block" } },
-                [
-                  _vm.open == "SENDING"
-                    ? _c("img", {
-                        attrs: {
-                          src: "/images/loading.svg",
-                          width: "100%",
-                          height: "100%"
-                        }
-                      })
-                    : _vm._e()
-                ]
-              )
-            ])
-      ])
-    ],
-    2
-  )
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticStyle: { width: "100%", padding: "20px 0px" } }, [
-      _c(
-        "div",
-        {
-          staticClass: "failed",
-          staticStyle: {
-            border: "1px solid #dee2e6",
-            width: "80px",
-            height: "40px",
-            "text-align": "center",
-            "line-height": "39px",
-            float: "left"
-          }
-        },
-        [_vm._v("\n            未识别\n        ")]
-      ),
-      _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass: "success",
-          staticStyle: {
-            border: "1px solid #dee2e6",
-            width: "80px",
-            height: "40px",
-            "text-align": "center",
-            "line-height": "39px",
-            float: "left"
-          }
-        },
-        [_vm._v("\n            卡正常\n        ")]
-      ),
-      _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass: "wrong",
-          staticStyle: {
-            border: "1px solid #dee2e6",
-            width: "80px",
-            height: "40px",
-            "text-align": "center",
-            "line-height": "39px",
-            float: "left"
-          }
-        },
-        [_vm._v("\n            卡错误\n        ")]
-      ),
-      _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass: "empty",
-          staticStyle: {
-            border: "1px solid #dee2e6",
-            width: "80px",
-            height: "40px",
-            "text-align": "center",
-            "line-height": "39px",
-            float: "left"
-          }
-        },
-        [_vm._v("\n            无卡\n        ")]
-      ),
-      _vm._v(" "),
-      _c("div", { staticStyle: { clear: "both" } })
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-782dcf83", module.exports)
-  }
-}
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(71)
-}
-var normalizeComponent = __webpack_require__(2)
-/* script */
-var __vue_script__ = __webpack_require__(73)
-/* template */
-var __vue_template__ = __webpack_require__(74)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/js/components/DeviceComponent.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-8f3e1fa8", Component.options)
-  } else {
-    hotAPI.reload("data-v-8f3e1fa8", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(72);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(12)("6cb0b7b0", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8f3e1fa8\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./DeviceComponent.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(11)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #38c172;\n    color: white;\n}\n.unknown {\n    background-color: #29c107;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 73 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-__webpack_require__(3);
+__webpack_require__(4);
 var _this;
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -46006,7 +45439,9 @@ var _this;
 
     watch: {
         read_ip_finished: function read_ip_finished(current) {
+            console.log('2222');
             if (current) {
+                clearInterval(_this.scanning_ip_interval);
                 console.log('IP读取完毕');
                 _this.readCard(0);
             }
@@ -46059,8 +45494,12 @@ var _this;
 
         //读IP
         getIps: function getIps() {
-            this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111"]}').IPS;
-            this.read_ip_finished = true; //完成IP的读取
+            var _this3 = this;
+
+            setTimeout(function () {
+                _this3.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111"]}').IPS;
+                _this3.read_ip_finished = true; //完成IP的读取
+            }, 1000);
 
             // AsyncIPS.getUsefullIPs('80', (json) => {
             //     clearInterval(this.scanning_ip_interval);
@@ -46074,34 +45513,50 @@ var _this;
 
         //读卡
         readCard: function readCard(index) {
-            var _this3 = this;
+            var _this4 = this;
 
-            AsyncHttp.httpRequest("http://" + this.ips[index] + "/goip_get_status.html?username=root&password=root&all_sims=1", "get", "", function (json) {
-                _this3.device[index] = {};
-                _this3.device[index] = JSON.parse(json);
-                if (index < _this3.ips.length - 1) {
-                    _this3.readCard(index + 1);
+            setTimeout(function () {
+                _this4.device[index] = {};
+                _this4.device[index] = JSON.parse('{"type":"dev-status", "seq":2124, "expires":-1, "mac":"00-30-f1-00-b7-d5", "ip":"192.168.1.111", "ver":"608-520-840-841-100-0F0", "max-ports":8, "max-slot":32, "status":[{"port":"1.01", "sim":"", "seq":18566, "st":6, "imei":"862032045299211", "iccid":"42402117840804563386", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.02", "sim":"", "seq":18567, "st":6, "imei":"862032045299211", "iccid":"42402117840804563388", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.04", "sim":"", "seq":18568, "st":6, "imei":"862032045299211", "iccid":"42402117840804563390", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.05", "sim":"", "seq":18569, "st":6, "imei":"862032045299211", "iccid":"42402117840804563383", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.06", "sim":"", "seq":18570, "st":6, "imei":"862032045299211", "iccid":"42402117840804563382", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.07", "sim":"", "seq":18571, "st":6, "imei":"862032045299211", "iccid":"42402117840804563394", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.08", "sim":"", "seq":18572, "st":6, "imei":"862032045299211", "iccid":"42402117840804563401", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.10", "sim":"", "seq":18573, "st":6, "imei":"862032045299211", "iccid":"42402117840804563400", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"1.11", "sim":"", "seq":18574, "st":6, "imei":"862032045299211", "iccid":"42402117840804563389", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.01", "sim":"", "seq":12318, "st":6, "imei":"862032045299070", "iccid":"42402117840804563385", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.02", "sim":"", "seq":12319, "st":6, "imei":"862032045299070", "iccid":"42402117840804563392", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.03", "sim":"", "seq":12320, "st":6, "imei":"862032045299070", "iccid":"42402117840804563381", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.04", "sim":"", "seq":12321, "st":6, "imei":"862032045299070", "iccid":"42402117840804563384", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.06", "sim":"", "seq":12322, "st":6, "imei":"862032045299070", "iccid":"42402117840804563399", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"2.09", "sim":"", "seq":12323, "st":6, "imei":"862032045299070", "iccid":"42402117840804563395", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.01", "sim":"", "seq":13929, "st":6, "imei":"862032045299690", "iccid":"42402117840804563387", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.02", "sim":"", "seq":13930, "st":6, "imei":"862032045299690", "iccid":"42402117840804563391", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.04", "sim":"", "seq":13931, "st":6, "imei":"862032045299690", "iccid":"42402117840804563393", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.07", "sim":"", "seq":13932, "st":6, "imei":"862032045299690", "iccid":"42402117840804563397", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.08", "sim":"", "seq":13933, "st":6, "imei":"862032045299690", "iccid":"42402117840804563398", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.09", "sim":"", "seq":13934, "st":6, "imei":"862032045299690", "iccid":"42402117840804563402", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"3.11", "sim":"", "seq":13935, "st":6, "imei":"862032045299690", "iccid":"42402117840804563396", "imsi":"001012345678901", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"4.01", "sim":"", "seq":2172, "st":6, "imei":"862032045299153", "iccid":"42402117840804563411", "imsi":"001012345678411", "sn":"", "opr":"0 ", "bal":"0.00", "sig":0, "tot_dur":"0/-1", "mon_dur":"0/-1", "day_dur":"0/-1"}, {"port":"5.01", "sim":"", "seq":2124, "st":0, "imei":"862032045299252"}, {"port":"6.01", "sim":"", "seq":2124, "st":0, "imei":"862032045299195"}, {"port":"7.01", "sim":"", "seq":2124, "st":0, "imei":"862032045299237"}, {"port":"8.01", "sim":"", "seq":2124, "st":0, "imei":"862032045299583"}]}');
+                if (index < _this4.ips.length - 1) {
+                    _this4.readCard(index + 1);
                 } else {
-                    _this3.read_card_status = true;
+                    _this4.read_card_status = true;
                 }
-            }, function (messsage) {
-                console.log(messsage);
-            });
+            }, 1000);
+
+            // AsyncHttp.httpRequest(
+            //     "http://" + this.ips[index] + "/goip_get_status.html?username=root&password=root&all_sims=1",
+            //     "get",
+            //     "",
+            //     (json) => {
+            //         this.device[index] = {};
+            //         this.device[index] = JSON.parse(json)
+            //         if (index < this.ips.length - 1) {
+            //             this.readCard(index + 1)
+            //         } else {
+            //             this.read_card_status = true;
+            //         }
+            //     },
+            //     (messsage) => {
+            //         console.log(messsage)
+            //     }
+            // );
         },
 
 
         //处理卡数据
         makeCard: function makeCard() {
-            var _this4 = this;
+            var _this5 = this;
 
             axios.post("/user/make-card", {
                 device: this.device,
                 send: this.open
             }).then(function (response) {
-                _this4.can_send = response.data.data.can_send;
-                _this4.can_send_time = response.data.data.can_send_time;
-                _this4.frequency = response.data.data.frequency;
-                _this4.real_device = response.data.data.real_device;
+                _this5.can_send = response.data.data.can_send;
+                _this5.can_send_time = response.data.data.can_send_time;
+                _this5.frequency = response.data.data.frequency;
+                _this5.real_device = response.data.data.real_device;
             }).catch(function (error) {
                 console.log(error.response.data.message);
             });
@@ -46110,15 +45565,15 @@ var _this;
 
         //开始自动发短信
         start: function start() {
-            var _this5 = this;
+            var _this6 = this;
 
             if (this.open == 'STOPPED') {
                 console.log('自动发短信中......');
                 this.open = 'SENDING';
                 if (this.real_device.length) {
                     this.send_interval = setInterval(function () {
-                        _this5.read_card_status = false;
-                        _this5.readCard(0);
+                        _this6.read_card_status = false;
+                        _this6.readCard(0);
                     }, this.frequency);
                 }
             } else {
@@ -46132,18 +45587,24 @@ var _this;
         //切卡
         switchCard: function switchCard(ip, port) {
             var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
-            AsyncHttp.httpRequest("http://" + ip + "/goip_send_cmd.html?username=root&password=root", "POST", data, function (json) {
-                alert('切卡成功');
-            }, function (messsage) {
-                console.log(messsage);
-            });
+            // AsyncHttp.httpRequest(
+            //     "http://" + ip + "/goip_send_cmd.html?username=root&password=root",
+            //     "POST",
+            //     data,
+            //     (json) => {
+            //         alert('切卡成功');
+            //     },
+            //     (messsage) => {
+            //         console.log(messsage)
+            //     }
+            // );
         }
     }
 
 });
 
 /***/ }),
-/* 74 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
