@@ -6,6 +6,7 @@ use App\Card;
 use App\Task;
 use App\TaskHistory;
 use App\Withdraw;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use DB;
 use Session;
@@ -495,6 +496,7 @@ class HomeController extends ResponseController
             $income_price = $income_price >= 0 ? $income_price : 0;
             Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
             $success = $mobiles->where('status', 'success');
+            User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
             Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $income_price);    //扣除卡上的钱
 
             return [
