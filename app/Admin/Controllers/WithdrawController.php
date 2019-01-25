@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers;
 
+use Carbon\Carbon;
 use DB;
 use App\User;
 use App\Withdraw;
@@ -74,6 +75,7 @@ class WithdrawController extends Controller
         $data = [
             'status' => $request->get('status'),
             'remark' => $request->get('remark', ''),
+            'payment_at' => $request->get('payment_at', Carbon::now()),
         ];
 
         DB::transaction(function () use ($id, $data) {
