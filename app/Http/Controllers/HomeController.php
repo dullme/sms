@@ -491,13 +491,13 @@ class HomeController extends ResponseController
             $date_string = ':' . date('Y-m-d', time());
             Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count+$unknown_count);  //成功
             Redis::incrby(Auth()->user()->id . $date_string . ':fail', $fail_count);   //失败
-            $cost_price = config('cost_price');
-            $income_price = intval($item['amount'] * 10000) - intval($cost_price * 10000);
-            $income_price = $income_price >= 0 ? $income_price : 0;
+            $decrement_price = intval(config('cost_price') * 10000);    //需要扣除iccid的钱
+            $income_price = intval($item['amount'] * 10000);    //用户增加的钱
+
             Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
             $success = $mobiles->where('status', 'success');
             User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
-            Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $item['amount'] * 10000);    //扣除卡上的钱
+            Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $decrement_price);    //扣除卡上的钱
 
             return [
                 'id'           => $item['id'],
