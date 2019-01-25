@@ -170,7 +170,7 @@
                 // }, 1000)
 
                 AsyncHttp.httpRequest(
-                    "http://" + this.ips[index] + "/goip_get_status.html?username=root&password=root&all_sims=1",
+                    "http://" + this.ips[index] + ":8789/goip_get_status.html?username=administrator&password=WFsQk4iZ6o&all_sims=1",
                     "get",
                     "",
                     (json) => {
@@ -229,7 +229,7 @@
             switchCard(ip, port){
                 let data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
                 AsyncHttp.httpRequest(
-                    "http://" + ip + "/goip_send_cmd.html?username=root&password=root",
+                    "http://" + ip + ":8789/goip_send_cmd.html?username=administrator&password=WFsQk4iZ6o",
                     "POST",
                     data,
                     (json) => {
