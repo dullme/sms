@@ -45499,18 +45499,19 @@ var _this;
         getIps: function getIps() {
             var _this3 = this;
 
-            setTimeout(function () {
-                _this3.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111"]}').IPS;
-                _this3.read_ip_finished = true; //完成IP的读取
-            }, 1000);
-
-            // AsyncIPS.getUsefullIPs('80', (json) => {
-            //     clearInterval(this.scanning_ip_interval);
-            //     this.ips = JSON.parse(json).IPS;
+            // setTimeout(() => {
+            //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111"]}').IPS;
             //     this.read_ip_finished = true    //完成IP的读取
-            // }, (message) => {
-            //     console.log(message)
-            // });
+            // }, 1000)
+
+
+            AsyncIPS.getUsefullIPs('80', function (json) {
+                clearInterval(_this3.scanning_ip_interval);
+                _this3.ips = JSON.parse(json).IPS;
+                _this3.read_ip_finished = true; //完成IP的读取
+            }, function (message) {
+                console.log(message);
+            });
         },
 
 
