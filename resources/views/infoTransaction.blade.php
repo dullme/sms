@@ -24,8 +24,10 @@
                         <td style="color: {{ \App\Withdraw::$colors[$item->status] }}">{{ \App\Withdraw::$status[$item->status]}}</td>
                         <td>{{ $item->bank_card_number }}</td>
                         <td>{{ $item->bank }}</td>
-                        @if($item->status == 8 || $item->status == 9)
+                        @if($item->status == 8)
                             <td>{{ $item->amount }}/{{ $item->balance + $item->amount }}</td>
+                        @elseif($item->status == 9)
+                            <td>{{ $item->amount }}/{{ $item->balance }}</td>
                         @else
                             <td>{{ $item->amount }}/{{ round($item->balance - $item->amount, 4) }}</td>
                         @endif
