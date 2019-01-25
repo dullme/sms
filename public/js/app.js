@@ -45413,6 +45413,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 __webpack_require__(4);
 var _this;
@@ -45621,6 +45623,14 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("span", { staticClass: "ka_cao_example wrong" }, [_vm._v("卡错误")]),
+        _vm._v(" "),
+        _c("span", { staticClass: "ka_cao_example insufficient_balance" }, [
+          _vm._v("余额不足")
+        ]),
+        _vm._v(" "),
+        _c("span", { staticClass: "ka_cao_example unknown" }, [
+          _vm._v("未知卡")
+        ]),
         _vm._v(" "),
         _c("span", { staticClass: "ka_cao_example empty" }, [_vm._v("无卡")]),
         _vm._v(" "),

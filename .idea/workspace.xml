@@ -32,8 +32,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/resources/js/components/DeviceComponent.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="554">
-              <caret line="148" selection-start-line="148" selection-end-line="154" selection-end-column="19" />
+            <state relative-caret-position="259">
+              <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
             </state>
           </provider>
         </entry>
@@ -363,12 +363,12 @@
       <workItem from="1548290264544" duration="23855000" />
       <workItem from="1548329384073" duration="5791000" />
       <workItem from="1548336336163" duration="2520000" />
-      <workItem from="1548377376878" duration="16600000" />
+      <workItem from="1548377376878" duration="16692000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="272564000" />
+    <option name="totallyTimeSpent" value="272656000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1920" y="0" width="1920" height="1080" extended-state="0" />
@@ -712,8 +712,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/resources/js/components/DeviceComponent.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="554">
-          <caret line="148" selection-start-line="148" selection-end-line="154" selection-end-column="19" />
+        <state relative-caret-position="259">
+          <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
         </state>
       </provider>
     </entry>

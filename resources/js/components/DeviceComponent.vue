@@ -4,6 +4,8 @@
             <span class="ka_cao_example failed">未识别</span>
             <span class="ka_cao_example success">卡正常</span>
             <span class="ka_cao_example wrong">卡错误</span>
+            <span class="ka_cao_example insufficient_balance">余额不足</span>
+            <span class="ka_cao_example unknown">未知卡</span>
             <span class="ka_cao_example empty">无卡</span>
             <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
                 <span v-if="can_send == false">下一次请求时间：{{ can_send_time }}</span>
