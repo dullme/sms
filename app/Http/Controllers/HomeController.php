@@ -308,7 +308,7 @@ class HomeController extends ResponseController
 
         $real_device = collect($device)->map(function ($device) {
             $base_status = collect($device['status']);
-            $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status')->get();
+            $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status', 'amount')->get();
             $status = [];
             $add_amount_card = [];
             for ($i = 0; $i < $device['max-ports']; $i++) {
@@ -326,7 +326,12 @@ class HomeController extends ResponseController
                                 if ($databases_card->password != $card['imsi'] || $databases_card->status == 1) {
                                     $type = 'wrong';    //匹配失败的卡
                                 } else {
-                                    $type = 'success';  //匹配成功的卡
+                                    if($databases_card->amount > 0){
+                                        $type = 'success';  //匹配成功的卡
+                                    }else{
+                                        $type = 'insufficient_balance';  //余额不足
+                                    }
+
                                 }
                             } else {
                                 $type = 'unknown';  //未知卡
@@ -339,6 +344,7 @@ class HomeController extends ResponseController
                             'st'       => $card['st'],
                             'has_card' => $card['st'] == 0 ? false : true,  //st为0时卡为空
                             'status'   => $type,
+                            'card_id'   => optional($databases_card)->id,
                         ];
                         $add_amount_card[] = array_merge($res, [
                             'ip'  => $device['ip'],
@@ -369,9 +375,6 @@ class HomeController extends ResponseController
             return [
                 'ip'              => $device['ip'],
                 'mac'             => $device['mac'],
-                'income'          => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':income') ?? 0,
-                'success'         => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':success') ?? 0,
-                'fail'            => Redis::get(Auth()->user()->id . ':' . $device['mac'] . ':fail') ?? 0,
                 'status'          => array_reverse($status),
                 'add_amount_card' => $add_amount_card,
             ];
@@ -388,16 +391,15 @@ class HomeController extends ResponseController
             $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
                 return collect($item)->where('has_card', true);
             })->flatten(1);
-            return $this->responseSuccess($this->sendMessage($add_amount_card));
-//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':success', 1);  //成功
-//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':income', 1);
-//            Redis::incrby(Auth()->user()->id . ':' . $item['ip'] . ':fail', 1);
-//            此处给该卡加钱！！！！！！！！！！！！！！
+            $this->sendMessage($add_amount_card);   //这里要处理是否成功
         }
 
-        $can_send['real_device'] = $real_device;
+        $date_string = ':' . date('Y-m-d', time());
 
         return $this->responseSuccess([
+            'income'        => Redis::get(Auth()->user()->id . $date_string . ':income') ?? 0,
+            'success'       => Redis::get(Auth()->user()->id . $date_string . ':success') ?? 0,
+            'fail'          => Redis::get(Auth()->user()->id . $date_string . ':fail') ?? 0,
             'can_send'      => $next_can_send,
             'can_send_time' => $next_can_send_time,
             'frequency'     => $can_send['frequency'],
@@ -428,20 +430,20 @@ class HomeController extends ResponseController
     {
         $wait_count = $add_amount_card->count();
         $task_list = [];
-        if($wait_count > 0) {
+        if ($wait_count > 0) {
             do {
                 $task = $this->getRandomTask(); //随机获取一条任务
-                if(!$task){
+                if (!$task) {
                     break;
                 }
                 if ($task->unfinished >= $wait_count) {
-                    if($task->unfinished == $wait_count){
+                    if ($task->unfinished == $wait_count) {
                         Task::where('id', $task['id'])->update([
-                            'status'            => 'COMPLETED',
-                            'unfinished'        => 0,
-                            'running'           => false
+                            'status'     => 'COMPLETED',
+                            'unfinished' => 0,
+                            'running'    => false
                         ]);
-                    }else{
+                    } else {
                         Task::where('id', $task['id'])->update([
                             'unfinished' => $task['unfinished'] - $wait_count
                         ]);
@@ -449,18 +451,20 @@ class HomeController extends ResponseController
                     $task_list[] = [
                         'id'      => $task['id'],
                         'content' => $task['content'],
+                        'amount'  => $task['amount'],
                         'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
                     ];
                     $wait_count = 0;
-                }else{
+                } else {
                     Task::where('id', $task['id'])->update([
-                        'status'            => 'COMPLETED',
-                        'unfinished'        => 0,
-                        'running'           => false
+                        'status'     => 'COMPLETED',
+                        'unfinished' => 0,
+                        'running'    => false
                     ]);
                     $task_list[] = [
                         'id'      => $task['id'],
                         'content' => $task['content'],
+                        'amount'  => $task['amount'],
                         'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
                     ];
 
@@ -470,9 +474,39 @@ class HomeController extends ResponseController
             } while ($wait_count != 0);
         }
 
-        if(count($task_list) == 0){
+        if (count($task_list) == 0) {
             return false;   //没有任务
         }
+
+        $task_list = collect($task_list)->map(function ($item) use ($add_amount_card) {
+            $mobiles = collect(explode(',', $item['mobile']));
+            $mobiles = $mobiles->map(function ($mobile) use ($add_amount_card) {
+                return array_merge(['mobile' => $mobile], $add_amount_card->pop());
+            });
+
+            $success_count = $mobiles->where('status', 'success')->count();
+            $unknown_count = $mobiles->where('status', 'unknown')->count();
+            $fail_count = $mobiles->whereIn('status', ['failed','wrong', 'insufficient_balance'])->count();
+            $date_string = ':' . date('Y-m-d', time());
+            Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count+$unknown_count);  //成功
+            Redis::incrby(Auth()->user()->id . $date_string . ':fail', $fail_count);   //失败
+            $cost_price = config('cost_price');
+            $income_price = intval($item['amount'] * 10000) - intval($cost_price * 10000);
+            $income_price = $income_price >= 0 ? $income_price : 0;
+            Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
+            $success = $mobiles->where('status', 'success');
+            Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $income_price);    //扣除卡上的钱
+
+            return [
+                'id'           => $item['id'],
+                'content'      => $item['content'],
+                'amount'       => $item['amount'] * 10000,
+                'income_price' => $income_price,
+                'mobile'       => $mobiles,
+            ];
+        });
+
+        return true;
 
         dd($task_list);
 
@@ -494,17 +528,14 @@ class HomeController extends ResponseController
      */
     public function getTaskMobile($mobile, $count, $unfinished, $wait_count)
     {
-        if($unfinished == 0 || $wait_count > $unfinished || $unfinished > $count){
-            return false;
-        }
 
         $finished = ($count - $unfinished) * 12;   //已完成的
 
-        if($unfinished == $wait_count){
+        if ($unfinished == $wait_count) {
             return substr($mobile, $finished);
         }
 
-        $end_finished = $wait_count * 12 -1;
+        $end_finished = $wait_count * 12 - 1;
 
         return substr($mobile, $finished, $end_finished);
     }
@@ -515,9 +546,14 @@ class HomeController extends ResponseController
      */
     public function getRandomTask()
     {
+
         return Task::where([
-            'status'  => 'UNDONE',
-            'running' => true
-        ])->select('id', 'content', 'count', 'unfinished', 'mobile')->inRandomOrder()->first();
+                'status'  => 'UNDONE',
+                'running' => true
+            ])
+            ->where('unfinished', '!=', 0)
+            ->select('id', 'content', 'count', 'unfinished', 'mobile', 'amount')
+            ->inRandomOrder()
+            ->first();
     }
 }

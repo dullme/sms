@@ -13,7 +13,6 @@ class Task extends Model
         'running',
         'count',
         'unfinished',
-        'unfinished_mobile',
         'mobile',
     ];
 

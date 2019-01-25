@@ -178,6 +178,7 @@ class TaskController extends ResponseController
             'content' => $request->input('content'),
             'amount' => $request->input('price'),
             'count' => (strlen($res) + 1)/12,
+            'unfinished' => (strlen($res) + 1)/12,
             'mobile' => $res,
         ]);
 
