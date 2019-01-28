@@ -23,6 +23,7 @@ class CreateTaskHistoriesTable extends Migration
             $table->string('status')->comment('扣费状态0:失败;1:成功');
             $table->unsignedBigInteger('amount')->comment('金额');
             $table->string('mobile')->comment('发送手机号');
+            $table->string('remark')->nullable()->comment('备注');
             $table->timestamps();
         });
     }

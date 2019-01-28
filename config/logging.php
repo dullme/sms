@@ -88,6 +88,20 @@ return [
             'driver' => 'errorlog',
             'level' => 'debug',
         ],
+
+        'task_history' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/history/task_history.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        'money_error' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/money/money_error.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
     ],
 
 ];

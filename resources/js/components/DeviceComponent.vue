@@ -6,6 +6,7 @@
             <span class="ka_cao_example wrong">卡错误</span>
             <span class="ka_cao_example insufficient_balance">余额不足</span>
             <span class="ka_cao_example unknown">未知卡</span>
+            <span class="ka_cao_example too_much_money">余额过多</span>
             <span class="ka_cao_example empty">无卡</span>
             <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
                 <span v-if="can_send == false">下一次请求时间：{{ can_send_time }}</span>
@@ -194,7 +195,6 @@
                     device: this.device,
                     send:this.open
                 }).then(response => {
-                    console.log(response.data.data);
                     this.can_send = response.data.data.can_send;
                     this.can_send_time = response.data.data.can_send_time;
                     this.frequency = response.data.data.frequency;
@@ -202,6 +202,16 @@
                     this.income = response.data.data.income;
                     this.success = response.data.data.success;
                     this.fail = response.data.data.fail;
+
+                    // this.real_device.forEach((device) =>{
+                    //     device.add_amount_card.forEach((card) => {
+                    //         if(card.status == 'unknown'){
+                    //             this.switchCard(card.ip,card.port)
+                    //
+                    //             console.log(card.port)
+                    //         }
+                    //     })
+                    // })
                 }).catch(error => {
                     console.log(error.response.data.message)
                 });
@@ -233,13 +243,28 @@
                     "POST",
                     data,
                     (json) => {
-                        alert('切卡成功');
+                        console.log('切卡成功');
                     },
                     (messsage) => {
                         console.log(messsage)
                     }
                 );
             },
+
+            // sendMessage(ip,tid, from, to, sms){
+            //     let data = '{"type":"send-sms","task_num":"1","tasks ":[{"tid":'+tid+',"from":'+from+',"to":"'+to+'","sms":"'+sms+'"}]}';
+            //     AsyncHttp.httpRequest(
+            //         "http://" + ip + ":8789/goip_post_sms.html?username=administrator&password=WFsQk4iZ6o",
+            //         "POST",
+            //         data,
+            //         (json) => {
+            //             console.log(json)
+            //         },
+            //         (messsage) => {
+            //             console.log(messsage)
+            //         }
+            //     );
+            // }
 
         }
 
@@ -278,6 +303,11 @@
         color: white;
     }
 
+    .too_much_money {
+        background-color: #0202c1;
+        color: white;
+    }
+
     .insufficient_balance {
         background-color: #10b6c1;
         color: white;
@@ -293,7 +323,7 @@
         color: white;
     }
 
-    .wrong {
+    .wrong, .seal {
         background-color: #6cb2eb;
         color: white;
     }

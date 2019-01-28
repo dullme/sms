@@ -9,6 +9,7 @@ use App\Withdraw;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use DB;
+use Illuminate\Support\Facades\Log;
 use Session;
 use Validator;
 use App\User;
@@ -44,6 +45,7 @@ class HomeController extends ResponseController
         $task_histories = TaskHistory::with(['task' => function ($query) {
             $query->select('id', 'content', 'amount');
         }])
+            ->orderBy('created_at', 'DESC')
             ->where('user_id', Auth()->user()->id);
 
         if ($request->input('status') == 'fail') {
@@ -59,6 +61,7 @@ class HomeController extends ResponseController
             ->where('user_id', Auth()->user()->id)
             ->select('id', 'status')
             ->get();
+
         $fail = $task_histories_count->where('status', 0)->count();
         $success = $task_histories_count->where('status', 1)->count();
 
@@ -324,11 +327,17 @@ class HomeController extends ResponseController
                         } else {
                             $databases_card = $cards->where('name', $card['iccid'])->first();
                             if ($databases_card) {
-                                if ($databases_card->password != $card['imsi'] || $databases_card->status == 1) {
+                                if ($databases_card->password != $card['imsi']) {
                                     $type = 'wrong';    //匹配失败的卡
-                                } else {
+                                }elseif ($databases_card->status == 1){
+                                    $type = 'seal';    //匹配失败的卡
+                                }else {
                                     if($databases_card->amount > 0){
-                                        $type = 'success';  //匹配成功的卡
+                                        if($databases_card->amount > config('more_amount')){
+                                            $type = 'too_much_money';    //余额大于N元的，系统不给该卡排任务
+                                        }else{
+                                            $type = 'success';  //匹配成功的卡
+                                        }
                                     }else{
                                         $type = 'insufficient_balance';  //余额不足
                                     }
@@ -496,28 +505,55 @@ class HomeController extends ResponseController
 
             Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
             $success = $mobiles->where('status', 'success');
-            User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
-            Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $decrement_price);    //扣除卡上的钱
+
+            if(count($success->pluck('card_id')->unique())){
+                $save_card = Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $decrement_price);    //扣除卡上的钱
+                if(!$save_card){
+                    Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'扣除'.$decrement_price.'失败！'.json_encode($success->pluck('card_id')->unique()).($income_price * $success_count));
+                }
+            }
+
+            if($income_price * $success_count > 0){
+                $save_user = User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
+                if(!$save_user){
+                    Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'增加'.($income_price * $success_count) .'失败！');
+                }
+            }
+
 
             return [
                 'id'           => $item['id'],
                 'content'      => $item['content'],
-                'amount'       => $item['amount'] * 10000,
                 'income_price' => $income_price,
                 'mobile'       => $mobiles,
             ];
         });
 
+        $task_list->map(function ($task){
+            $task_histories = $task['mobile']->map(function ($mobile) use ($task){
+                $created_at = Carbon::now()->toDateTimeString();
+                $status = in_array($mobile['status'], ['success', 'unknown']) ? true : false;
+                return [
+                    'user_id' => Auth()->user()->id,
+                    'task_id' => $task['id'],
+                    'ip' => $mobile['ip'],
+                    'iccid' => $mobile['iccid'],
+                    'imsi' => $mobile['imsi'],
+                    'status' => $status,
+                    'mobile' => $mobile['mobile'],
+                    'amount' => $task['income_price'],
+                    'remark' => TaskHistory::$remark[$mobile['status']],
+                    'created_at' => $created_at,
+                    'updated_at' => $created_at,
+                ];
+            });
+            $res = TaskHistory::insert($task_histories->toArray());
+            if(!$res){
+                Log::channel('task_history')->info('这些日志保存到数据库失败------>'.json_encode($task_histories->toArray()));
+            }
+        });
+
         return true;
-
-        dd($task_list);
-
-
-//        Redis::pipeline(function ($pipe) use ($task_list) {
-//            需要写文件了;
-//        });
-
-
     }
 
     /**

@@ -26,9 +26,9 @@
                 @foreach($task_histories as $history)
                     <tr>
                         <th style="min-width: 180px;" scope="row">{{ $history->created_at }}</th>
-                        <td style="min-width: 100px;" class="text-{{ $history->status ? 'success' :'danger' }}">{{ $history->status ? '成功' :'失败' }}</td>
+                        <td style="min-width: 100px;" class="text-{{ $history->status ? 'success' :'danger' }}">{{ $history->status ? '成功' :'失败-'.$history->remark }}</td>
                         <td>{{ $history->iccid }}</td>
-                        <td>{{ $history->mobile }}</td>
+                        <td>{{ substr_replace($history->mobile,'****',3,4) }}</td>
                         <td style="max-width: 200px; min-width: 200px;">{{ $history->task->content }}</td>
                         <td>{{ $history->task->amount }}</td>
                     </tr>
