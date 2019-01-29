@@ -154,6 +154,7 @@
                 AsyncIPS.getUsefullIPs('80', (json) => {
                     clearInterval(this.scanning_ip_interval);
                     this.ips = JSON.parse(json).IPS;
+                    console.log(json)
                     this.read_ip_finished = true    //完成IP的读取
                 }, (message) => {
                     console.log(message)
