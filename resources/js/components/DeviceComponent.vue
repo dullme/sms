@@ -5,6 +5,7 @@
             <span class="ka_cao_example success">卡正常</span>
             <span class="ka_cao_example wrong">卡错误</span>
             <span class="ka_cao_example insufficient_balance">余额不足</span>
+            <span class="ka_cao_example daily_send_amount">单日上限</span>
             <span class="ka_cao_example unknown">未知卡</span>
             <span class="ka_cao_example too_much_money">余额过多</span>
             <span class="ka_cao_example empty">无卡</span>
@@ -15,6 +16,7 @@
                 <span>当日收益:{{ income / 10000 }}</span>
                 <span>当日成功条数:{{ success }}</span>
                 <span>当日失败条数:{{ fail }}</span>
+                <span class="text-danger" v-text="switch_message"></span>
             </span>
             <span class="clearfix"></span>
         </div>
@@ -82,12 +84,12 @@
                 fail: 0,
                 income: 0,
                 success: 0,
+                switch_message: '',
             }
         },
 
         watch: {
             read_ip_finished: (current) => {
-                console.log('2222');
                 if (current) {
                     clearInterval(_this.scanning_ip_interval);
                     console.log('IP读取完毕');
@@ -202,16 +204,18 @@
                     this.income = response.data.data.income;
                     this.success = response.data.data.success;
                     this.fail = response.data.data.fail;
+                    if(response.data.data.add_amount_card.length > 0){
+                        response.data.data.add_amount_card.forEach((card) => {
+                            card.mobile.forEach((mobile) => {
+                                if(mobile.status == 'unknown'){
+                                    this.switchCard2(mobile.ip, mobile.port)
+                                    this.sleep(60000);
+                                    this.sendMessage(mobile.ip,this.rndNum(6),mobile.port.split('.')[0], mobile.mobile, card.content)
+                                }
+                            })
+                        });
+                    }
 
-                    // this.real_device.forEach((device) =>{
-                    //     device.add_amount_card.forEach((card) => {
-                    //         if(card.status == 'unknown'){
-                    //             this.switchCard(card.ip,card.port)
-                    //
-                    //             console.log(card.port)
-                    //         }
-                    //     })
-                    // })
                 }).catch(error => {
                     console.log(error.response.data.message)
                 });
@@ -243,6 +247,25 @@
                     "POST",
                     data,
                     (json) => {
+                        this.switch_message = '切卡成功'
+                        setTimeout(() => {
+                            this.switch_message = ''
+                        }, 2000)
+                    },
+                    (messsage) => {
+                        console.log(messsage)
+                    }
+                );
+            },
+
+            //切卡
+            switchCard2(ip, port){
+                let data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
+                AsyncHttp.httpRequest(
+                    "http://" + ip + ":8789/goip_send_cmd.html?username=administrator&password=WFsQk4iZ6o",
+                    "POST",
+                    data,
+                    (json) => {
                         console.log('切卡成功');
                     },
                     (messsage) => {
@@ -251,20 +274,42 @@
                 );
             },
 
-            // sendMessage(ip,tid, from, to, sms){
-            //     let data = '{"type":"send-sms","task_num":"1","tasks ":[{"tid":'+tid+',"from":'+from+',"to":"'+to+'","sms":"'+sms+'"}]}';
-            //     AsyncHttp.httpRequest(
-            //         "http://" + ip + ":8789/goip_post_sms.html?username=administrator&password=WFsQk4iZ6o",
-            //         "POST",
-            //         data,
-            //         (json) => {
-            //             console.log(json)
-            //         },
-            //         (messsage) => {
-            //             console.log(messsage)
-            //         }
-            //     );
-            // }
+            sendMessage(ip,tid, from, to, sms){
+                let data = '{"type":"send-sms","task_num":"1","tasks ":[{"tid":'+tid+',"from":'+from+',"to":"'+to+'","sms":"'+sms+'"}]}';
+                AsyncHttp.httpRequest(
+                    "http://" + ip + ":8789/goip_post_sms.html?username=administrator&password=WFsQk4iZ6o",
+                    "POST",
+                    data,
+                    (json) => {
+                        console.log(json)
+                    },
+                    (messsage) => {
+                        console.log(messsage)
+                    }
+                );
+            },
+
+            rndNum(n){
+                var rnd="";
+                for(var i=0;i<n;i++)
+                    rnd+=Math.floor(Math.random()*10);
+                return rnd;
+            },
+
+            //参数n为休眠时间，单位为毫秒
+            sleep(n) {
+                var start = new Date().getTime();
+                //  console.log('休眠前：' + start);
+                while (true) {
+                    if (new Date().getTime() - start > n) {
+                        break;
+                    }
+                }
+                // console.log('休眠后：' + new Date().getTime());
+            },
+
+
+
 
         }
 
@@ -299,7 +344,7 @@
     }
 
     .success {
-        background-color: #38c172;
+        background-color: #18c106;
         color: white;
     }
 
@@ -314,7 +359,7 @@
     }
 
     .unknown {
-        background-color: #29c107;
+        background-color: #99c190;
         color: white;
     }
 
@@ -323,8 +368,13 @@
         color: white;
     }
 
-    .wrong, .seal {
+    .wrong {
         background-color: #6cb2eb;
+        color: white;
+    }
+
+    .daily_send_amount {
+        background-color: #eb02eb;
         color: white;
     }
 </style>

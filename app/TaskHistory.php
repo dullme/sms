@@ -18,10 +18,11 @@ class TaskHistory extends Model
 
     static $remark = [
         'success' => '发送成功！',
-        'unknown' => '发送成功！',   //不是系统中的卡
+        'unknown' => 'SIM卡注册失败！',   //不是系统中的卡但是卡没注册成功
         'empty' => '未插入SIM卡！',  //卡槽中没有卡
         'failed' => 'SIM卡识别失败！',    //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取
         'wrong' => 'SIM存在问题！',  //该卡的IMSI错误与系统中的不匹配
+        'daily_send_amount' => '发送次数过多！',  //单日单卡发送上限
         'seal' => '该卡已失效',  //被封卡了
         'insufficient_balance' => '该卡余额不足！',
         'too_much_money' => '余额过多！',

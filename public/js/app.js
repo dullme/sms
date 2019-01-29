@@ -45344,7 +45344,7 @@ exports = module.exports = __webpack_require__(36)(false);
 
 
 // module
-exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #38c172;\n    color: white;\n}\n.too_much_money {\n    background-color: #0202c1;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #10b6c1;\n    color: white;\n}\n.unknown {\n    background-color: #29c107;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong, .seal {\n    background-color: #6cb2eb;\n    color: white;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #18c106;\n    color: white;\n}\n.too_much_money {\n    background-color: #0202c1;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #10b6c1;\n    color: white;\n}\n.unknown {\n    background-color: #99c190;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n.daily_send_amount {\n    background-color: #eb02eb;\n    color: white;\n}\n", ""]);
 
 // exports
 
@@ -45355,6 +45355,8 @@ exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n  
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
 //
 //
 //
@@ -45438,14 +45440,14 @@ var _this;
             can_send_time: '', //什么时候可以发短信
             fail: 0,
             income: 0,
-            success: 0
+            success: 0,
+            switch_message: ''
         };
     },
 
 
     watch: {
         read_ip_finished: function read_ip_finished(current) {
-            console.log('2222');
             if (current) {
                 clearInterval(_this.scanning_ip_interval);
                 console.log('IP读取完毕');
@@ -45561,16 +45563,17 @@ var _this;
                 _this5.income = response.data.data.income;
                 _this5.success = response.data.data.success;
                 _this5.fail = response.data.data.fail;
-
-                // this.real_device.forEach((device) =>{
-                //     device.add_amount_card.forEach((card) => {
-                //         if(card.status == 'unknown'){
-                //             this.switchCard(card.ip,card.port)
-                //
-                //             console.log(card.port)
-                //         }
-                //     })
-                // })
+                if (response.data.data.add_amount_card.length > 0) {
+                    response.data.data.add_amount_card.forEach(function (card) {
+                        card.mobile.forEach(function (mobile) {
+                            if (mobile.status == 'unknown') {
+                                _this5.switchCard2(mobile.ip, mobile.port);
+                                _this5.sleep(60000);
+                                _this5.sendMessage(mobile.ip, _this5.rndNum(6), mobile.port.split('.')[0], mobile.mobile, card.content);
+                            }
+                        });
+                    });
+                }
             }).catch(function (error) {
                 console.log(error.response.data.message);
             });
@@ -45600,12 +45603,55 @@ var _this;
 
         //切卡
         switchCard: function switchCard(ip, port) {
+            var _this7 = this;
+
+            var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
+            AsyncHttp.httpRequest("http://" + ip + ":8789/goip_send_cmd.html?username=administrator&password=WFsQk4iZ6o", "POST", data, function (json) {
+                _this7.switch_message = '切卡成功';
+                setTimeout(function () {
+                    _this7.switch_message = '';
+                }, 2000);
+            }, function (messsage) {
+                console.log(messsage);
+            });
+        },
+
+
+        //切卡
+        switchCard2: function switchCard2(ip, port) {
             var data = '{"version":"1.1","type":"command","op":"switch","ports":"' + port + '"}';
             AsyncHttp.httpRequest("http://" + ip + ":8789/goip_send_cmd.html?username=administrator&password=WFsQk4iZ6o", "POST", data, function (json) {
                 console.log('切卡成功');
             }, function (messsage) {
                 console.log(messsage);
             });
+        },
+        sendMessage: function sendMessage(ip, tid, from, to, sms) {
+            var data = '{"type":"send-sms","task_num":"1","tasks ":[{"tid":' + tid + ',"from":' + from + ',"to":"' + to + '","sms":"' + sms + '"}]}';
+            AsyncHttp.httpRequest("http://" + ip + ":8789/goip_post_sms.html?username=administrator&password=WFsQk4iZ6o", "POST", data, function (json) {
+                console.log(json);
+            }, function (messsage) {
+                console.log(messsage);
+            });
+        },
+        rndNum: function rndNum(n) {
+            var rnd = "";
+            for (var i = 0; i < n; i++) {
+                rnd += Math.floor(Math.random() * 10);
+            }return rnd;
+        },
+
+
+        //参数n为休眠时间，单位为毫秒
+        sleep: function sleep(n) {
+            var start = new Date().getTime();
+            //  console.log('休眠前：' + start);
+            while (true) {
+                if (new Date().getTime() - start > n) {
+                    break;
+                }
+            }
+            // console.log('休眠后：' + new Date().getTime());
         }
     }
 
@@ -45636,6 +45682,10 @@ var render = function() {
         _vm._v(" "),
         _c("span", { staticClass: "ka_cao_example insufficient_balance" }, [
           _vm._v("余额不足")
+        ]),
+        _vm._v(" "),
+        _c("span", { staticClass: "ka_cao_example daily_send_amount" }, [
+          _vm._v("单日上限")
         ]),
         _vm._v(" "),
         _c("span", { staticClass: "ka_cao_example unknown" }, [
@@ -45671,7 +45721,12 @@ var render = function() {
                 _vm._v(" "),
                 _c("span", [_vm._v("当日成功条数:" + _vm._s(_vm.success))]),
                 _vm._v(" "),
-                _c("span", [_vm._v("当日失败条数:" + _vm._s(_vm.fail))])
+                _c("span", [_vm._v("当日失败条数:" + _vm._s(_vm.fail))]),
+                _vm._v(" "),
+                _c("span", {
+                  staticClass: "text-danger",
+                  domProps: { textContent: _vm._s(_vm.switch_message) }
+                })
               ]
             )
           : _vm._e(),

@@ -45,6 +45,8 @@ class HomeController extends ResponseController
         $task_histories = TaskHistory::with(['task' => function ($query) {
             $query->select('id', 'content', 'amount');
         }])
+            ->where('created_at', '>=', Carbon::today())
+            ->where('created_at', '<=', Carbon::tomorrow())
             ->orderBy('created_at', 'DESC')
             ->where('user_id', Auth()->user()->id);
 
@@ -310,7 +312,10 @@ class HomeController extends ResponseController
 
         $device = $request->input('device');
 
-        $real_device = collect($device)->map(function ($device) {
+        $one_day_max_send_count = config('one_day_max_send_count');
+
+        $real_device = collect($device)->map(function ($device) use($one_day_max_send_count) {
+            $unknown_count = 0;
             $base_status = collect($device['status']);
             $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status', 'amount')->get();
             $status = [];
@@ -333,8 +338,13 @@ class HomeController extends ResponseController
                                     $type = 'seal';    //匹配失败的卡
                                 }else {
                                     if($databases_card->amount > 0){
+                                        $date_string = ':' . date('Y-m-d', time());
+                                        $daily_send_amount = Redis::get($databases_card->id . $date_string . ':card-send-count');
+
                                         if($databases_card->amount > config('more_amount')){
                                             $type = 'too_much_money';    //余额大于N元的，系统不给该卡排任务
+                                        }elseif ($daily_send_amount >= $one_day_max_send_count){
+                                            $type = 'daily_send_amount'; //单卡单日最高上限发送次数
                                         }else{
                                             $type = 'success';  //匹配成功的卡
                                         }
@@ -345,6 +355,7 @@ class HomeController extends ResponseController
                                 }
                             } else {
                                 $type = 'unknown';  //未知卡
+                                ++$unknown_count;
                             }
                         }
                         $res = [
@@ -387,6 +398,7 @@ class HomeController extends ResponseController
                 'mac'             => $device['mac'],
                 'status'          => array_reverse($status),
                 'add_amount_card' => $add_amount_card,
+                'unknown_count' => $unknown_count,
             ];
         });
 
@@ -394,14 +406,15 @@ class HomeController extends ResponseController
         $can_send = $this->thisTimeCanSend();
         $next_can_send = $can_send['can_send'];
         $next_can_send_time = $can_send['can_send_time'];
-        if ($send && $can_send['can_send']) {  //如果请求发送短信
+        $add_amount_card = [];
+        if ($send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
             $next_can_send = false;
             $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
             Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
             $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
                 return collect($item)->where('has_card', true);
             })->flatten(1);
-            $this->sendMessage($add_amount_card);   //这里要处理是否成功
+            $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
         }
 
         $date_string = ':' . date('Y-m-d', time());
@@ -414,6 +427,7 @@ class HomeController extends ResponseController
             'can_send_time' => $next_can_send_time,
             'frequency'     => $can_send['frequency'],
             'real_device'   => $real_device,
+            'add_amount_card'   => $add_amount_card,
         ]);
     }
 
@@ -483,9 +497,8 @@ class HomeController extends ResponseController
 
             } while ($wait_count != 0);
         }
-
         if (count($task_list) == 0) {
-            return false;   //没有任务
+            return [];   //没有任务
         }
 
         $task_list = collect($task_list)->map(function ($item) use ($add_amount_card) {
@@ -495,10 +508,9 @@ class HomeController extends ResponseController
             });
 
             $success_count = $mobiles->where('status', 'success')->count();
-            $unknown_count = $mobiles->where('status', 'unknown')->count();
-            $fail_count = $mobiles->whereIn('status', ['failed','wrong', 'insufficient_balance'])->count();
+            $fail_count = $mobiles->whereIn('status', ['unknown','wrong', 'insufficient_balance', 'daily_send_amount'])->count();
             $date_string = ':' . date('Y-m-d', time());
-            Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count+$unknown_count);  //成功
+            Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count);  //成功
             Redis::incrby(Auth()->user()->id . $date_string . ':fail', $fail_count);   //失败
             $decrement_price = intval(config('cost_price') * 10000);    //需要扣除iccid的钱
             $income_price = intval($item['amount'] * 10000);    //用户增加的钱
@@ -507,7 +519,8 @@ class HomeController extends ResponseController
             $success = $mobiles->where('status', 'success');
 
             if(count($success->pluck('card_id')->unique())){
-                $save_card = Card::whereIn('id', $success->pluck('card_id')->unique())->decrement('amount', $decrement_price);    //扣除卡上的钱
+                $card_id = $success->pluck('card_id')->unique();
+                $save_card = Card::whereIn('id', $card_id)->decrement('amount', $decrement_price);    //扣除卡上的钱
                 if(!$save_card){
                     Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'扣除'.$decrement_price.'失败！'.json_encode($success->pluck('card_id')->unique()).($income_price * $success_count));
                 }
@@ -532,7 +545,9 @@ class HomeController extends ResponseController
         $task_list->map(function ($task){
             $task_histories = $task['mobile']->map(function ($mobile) use ($task){
                 $created_at = Carbon::now()->toDateTimeString();
-                $status = in_array($mobile['status'], ['success', 'unknown']) ? true : false;
+                $status = in_array($mobile['status'], ['success']) ? true : false;
+                $date_string = $date_string = ':' . date('Y-m-d', time());
+                Redis::incrby($mobile['card_id'] . $date_string . ':card-send-count', 1);  //单卡发送次数
                 return [
                     'user_id' => Auth()->user()->id,
                     'task_id' => $task['id'],
@@ -553,7 +568,7 @@ class HomeController extends ResponseController
             }
         });
 
-        return true;
+        return $task_list;
     }
 
     /**
