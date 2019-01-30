@@ -30,7 +30,7 @@
                     </div>
                     <div style="margin-top: 18px">
                         <label>密保答案 ： &nbsp;</label>
-                        <input type="password" style="width: 200px;" name="classified_answer" value="{{ old('classified_answer') }}">
+                        <input type="text" style="width: 200px;" name="classified_answer" value="{{ old('classified_answer') }}">
                         <label style="font-size: 16px;font-weight: normal;">&nbsp;&nbsp;* 请输入一个自定义答案，并牢记</label>
                     </div>
                     <div style="margin-top: 18px">

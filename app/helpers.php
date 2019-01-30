@@ -47,15 +47,7 @@ function getBank(){
 }
 
 function oneDayMaxSendCount(){
-    return [
-        10,
-        20,
-        30,
-        50,
-        100,
-        200,
-        300,
-        500,
-        1000,
-    ];
+    $list = config('one_day_max_send_count_list');
+
+    return explode(',', $list);
 }

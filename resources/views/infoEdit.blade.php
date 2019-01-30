@@ -8,6 +8,10 @@
             <form method="POST" action="{{ route('info_edit') }}" style="margin-left: 150px;font-size: 18px; font-weight: bolder;">
                 @csrf
                 <div style="margin-top: 100px">
+                    <label>当前账号 ： &nbsp;</label>
+                    <span>{{ Auth()->user()->username }}</span>
+                </div>
+                <div style="margin-top: 18px">
                     <label>邀&nbsp;&nbsp;请&nbsp;&nbsp;码 ： &nbsp;</label>
                     <span>{{ Auth()->user()->code }}</span>
                 </div>
