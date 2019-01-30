@@ -28,7 +28,7 @@ class LoginController extends Controller
      */
     protected $redirectTo = '/home';
 
-    protected $maxAttempts = 1;
+    protected $maxAttempts = 5;
 
     protected $decayMinutes = 60;
 
