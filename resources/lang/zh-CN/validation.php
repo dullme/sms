@@ -115,6 +115,7 @@ return [
     'uploaded' => 'The :attribute failed to upload.',
     'url' => 'The :attribute format is invalid.',
     'uuid' => 'The :attribute must be a valid UUID.',
+    'captcha'                  => ':attribute 不正确。',
 
     /*
     |--------------------------------------------------------------------------
@@ -211,6 +212,11 @@ return [
             'required' => '请输入转账金额',
             'integer' => '金额必须为整数',
             'hundred' => '转账金额有误',
+        ],
+
+        'captcha' => [
+            'required' => '请输入验证码',
+            'captcha' => '验证码错误',
         ],
     ],
 

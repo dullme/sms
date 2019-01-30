@@ -31,13 +31,12 @@
                 </div>
                 <div style="margin-top: 18px">
                     <label>资金密码 ： &nbsp;</label>
-                    <input type="password" style="width: 250px;" name="withdraw_password" value="{{ Auth()->user()->withdraw_password }}">
-                    <label style="font-size: 16px;font-weight: normal;">&nbsp;&nbsp;* 资金密码修改后24小时内不可提现</label>
+                    <input type="password" style="width: 250px;" name="withdraw_password" value="">
+                    <label style="font-size: 16px;font-weight: normal;">&nbsp;&nbsp;* 提款账户修改后 24小时内不可提现</label>
                 </div>
                 <div style="margin-top: 18px">
                     <label>登陆密码 ： &nbsp;</label>
-                    <input type="password" style="width: 250px;" name="password" value="{{ old('password') }}">
-                    <label class="text-danger" style="font-size: 16px;font-weight: normal;">&nbsp;&nbsp;* 凭登陆密码修改以上信息</label>
+                    <input type="password" style="width: 250px;" name="password" value="">
                 </div>
                 <div class="text-danger" style="height: 24px; font-size: 16px;margin-left: 110px">
                     @if(Session::has('editInfo'))

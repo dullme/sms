@@ -32,6 +32,8 @@ class CreateUsersTable extends Migration
             $table->string('classified_answer')->comment('密保答案');
             $table->string('code')->comment('邀请码');
             $table->string('baud_rate')->default('1200')->comment('波特率');
+            $table->integer('wrong_password')->default(0)->comment('密码错误次数');
+            $table->nullableTimestamps('can_login')->comment('是否可以登陆');
             $table->nullableTimestamps('withdraw_time')->comment('在此时间之前无法提现');
             $table->rememberToken();
             $table->timestamps();

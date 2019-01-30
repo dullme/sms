@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -27,6 +28,10 @@ class LoginController extends Controller
      */
     protected $redirectTo = '/home';
 
+    protected $maxAttempts = 1;
+
+    protected $decayMinutes = 60;
+
     /**
      * Create a new controller instance.
      *
@@ -45,5 +50,14 @@ class LoginController extends Controller
     public function username()
     {
         return 'username';
+    }
+
+    protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string',
+            'password' => 'required|string',
+            'captcha' => 'required|captcha',
+        ]);
     }
 }

@@ -81,25 +81,24 @@ class HomeController extends ResponseController
             'real_name'         => 'required',
             'bank'              => 'required',
             'bank_card_number'  => 'required',
-            'withdraw_password' => 'required|min:6|max:20',
-            'password'          => 'required'
+            'withdraw_password' => 'nullable|min:6|max:20',
+            'password'          => 'nullable|string|min:6|max:20'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
-        if (!Hash::check($request->input('password'), $user->password)) {
-            Session::flash('editInfo', '修改失败，登陆密码错误！');
-        } else {
-            $user->real_name = $request->input('real_name');
-            $user->bank = $request->input('bank');
-            $user->bank_card_number = $request->input('bank_card_number');
-            if ($user->withdraw_password != $request->input('withdraw_password')) {
-                $user->withdraw_password = $request->input('withdraw_password');
-                $user->withdraw_time = Carbon::now()->addDay();
-            }
-            $user->save();
-
-            Session::flash('editInfo', '信息修改成功！');
+        $user->real_name = $request->input('real_name');
+        $user->bank = $request->input('bank');
+        $user->bank_card_number = $request->input('bank_card_number');
+        if($request->input('password')){
+            $user->password = bcrypt($request->input('password'));
         }
+        if($request->input('withdraw_password')){
+            $user->withdraw_password = $request->input('withdraw_password');
+        }
+        $user->withdraw_time = Carbon::now()->addDay();
+        $user->save();
+
+        Session::flash('editInfo', '信息修改成功！');
 
         return back();
     }

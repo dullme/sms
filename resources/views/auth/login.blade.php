@@ -8,19 +8,26 @@
             <form method="POST" action="{{ route('login') }}" style="font-size: 18px; font-weight: bolder; text-align: center">
                 @csrf
                 <div style="margin-top: 100px">
-                    <label>账 号 ： &nbsp;</label>
+                    <label>账&nbsp;&nbsp;&nbsp;号 ： &nbsp;</label>
                     <input type="text" style="width: 300px" name="username" value="{{ old('username') }}">
                 </div>
 
                 <div style="margin-top: 18px">
-                    <label>密 码 ： &nbsp;</label>
+                    <label>密&nbsp;&nbsp;&nbsp;码 ： &nbsp;</label>
                     <input type="password" style="width: 300px;" name="password">
+                </div>
+                <div style="margin-top: 18px">
+                    <label>验证码 ： &nbsp;</label>
+                    <img src="{{captcha_src()}}" style="cursor: pointer;margin-top: -5px;" onclick="this.src='{{captcha_src()}}'+Math.random()">
+                    <input type="text" style="width: 176px;" name="captcha">
                 </div>
                 <div class="text-danger" style="height: 24px; font-size: 16px">
                     @if ($errors->has('username'))
                         {{ $errors->first('username') }}
                     @elseif($errors->has('password'))
                         {{ $errors->first('password') }}
+                    @elseif($errors->has('captcha'))
+                        {{ $errors->first('captcha') }}
                     @endif
                 </div>
 
