@@ -21,18 +21,25 @@
             <span class="clearfix"></span>
         </div>
 
-        <div v-if="real_device.length" v-for="value in real_device">
-            <span>当前设备:{{ value.ip }}</span>
-            <span>状态:通讯正常</span>
-            <div v-for="status in value.status">
-                <div v-for="row in status">
-                    <div v-for="t in row">
-                        <a v-if="t.has_card && t.status == 'failed'" href="##" class="ka_cao" :class="t.status" v-on:click="switchCard(value.ip, t.port, t.has_card, t.status)">{{ t.port }}</a>
-                        <span v-else class="ka_cao" :class="t.status" :title="t.iccid + ':' + t.imsi">{{ t.port }}</span>
+        <div class="bd-example bd-example-tabs" style="margin-top: 20px" v-if="real_device.length">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" v-for="(value,index) in real_device">
+                    <a class="nav-link" :class="index == 0 ? 'active':''" data-toggle="tab" :href="'#tab-' +index">{{value.ip}}</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade" style="margin-top: 10px" :class="index == 0 ? 'show active':''" :id="'tab-' + index" v-for="(value,index) in real_device">
+                    <div v-for="status in real_device[index]['status']">
+                        <div v-for="row in status">
+                            <div v-for="t in row">
+                                <a v-if="t.has_card && t.status == 'failed'" href="##" class="ka_cao"
+                                   :class="t.status"
+                                   v-on:click="switchCard(value.ip, t.port, t.has_card, t.status)">{{ t.port }}</a>
+                                <span v-else class="ka_cao" :class="t.status" :title="t.iccid + ':' + t.imsi">{{ t.port }}</span>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
-
             </div>
         </div>
 
@@ -146,7 +153,7 @@
             //读IP
             getIps() {
                 // setTimeout(() => {
-                //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.111"]}').IPS;
+                //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.112"]}').IPS;
                 //     this.read_ip_finished = true    //完成IP的读取
                 // }, 1000)
 

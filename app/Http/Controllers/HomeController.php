@@ -320,6 +320,7 @@ class HomeController extends ResponseController
             $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status', 'amount')->get();
             $status = [];
             $add_amount_card = [];
+            $databases_card = [];
             for ($i = 0; $i < $device['max-ports']; $i++) {
                 for ($j = 0, $k = 0, $l = 0; $j < $device['max-slot']; $j++) {
                     $port = ($i + 1) . '.' . str_pad($j + 1, 2, '0', STR_PAD_LEFT);
