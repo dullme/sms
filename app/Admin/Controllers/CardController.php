@@ -120,11 +120,11 @@ class CardController extends ResponseController
             $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/account-amount-search').'">会员卡批量查询</a>');
         });
 
-        $grid->actions(function ($actions){
-            $actions->disableDelete();
-        });
+//        $grid->actions(function ($actions){
+//            $actions->disableDelete();
+//        });
         $grid->disableExport();
-        $grid->disableRowSelector();
+//        $grid->disableRowSelector();
 
         $excel = new CardExpoter();
         $excel->setAttr(
@@ -198,7 +198,75 @@ class CardController extends ResponseController
         return $content
             ->header('会员卡批量充值')
             ->description('')
-            ->body('<add-account-amount></add-account-amount>');
+            ->body('<add-account-amount2></add-account-amount2>');
+    }
+
+    public function importAccountAmount2(Request $request)
+    {
+        $file = $request->file('file');
+        if (!in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
+            return $this->setStatusCode(422)->responseError('上传文件格式错误');
+        }
+
+        $data = collect(Excel::load($file)->get()->toArray())->map(function ($item){
+            return [
+                'name' => $item[0],
+            ];
+        });
+        $data->shift();
+
+        $cards = Card::whereIn('name', $data->pluck('name')->toArray())->get();
+        if(!$cards->count()){
+            return $this->setStatusCode(422)->responseError('即将充值的卡不存在');
+        }
+
+        $same_count = $data->count() - $cards->count();
+
+        $data = $data->whereIn('name', $cards->pluck('name'));
+
+        $res = [
+            'count' => $data->count(),
+            'same_count' => $same_count,
+            'data' => $data->values(),
+        ];
+
+        return $this->responseSuccess($res);
+    }
+
+    /**
+     * 新的账号充值
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function saveAccountAmount2(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'adds' => 'required',
+            'amount' => 'required|numeric|min:1|integer',
+        ]);
+
+        if($validator->fails()){
+            return $this->setStatusCode(422)->responseError($validator->errors()->first());
+        }
+
+        $names = collect($request->input('adds'))->pluck('name')->unique()->toArray();
+        $amount = intval($request->input('amount') * 10000);
+        $now = Carbon::now()->toDateTimeString();
+        $cards = Card::whereIn('name', $names)->get();
+
+        DB::beginTransaction(); //开启事务
+        $res = Card::whereIn('id', $cards->pluck('id'))->increment("amount",$amount);
+        $recharge = $cards->map(function ($card) use($amount, $now){
+            return [
+                'card_id' => $card->id,
+                'amount' => $amount,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        });
+        Recharge::insert($recharge->toArray());
+        DB::commit();   //保存
+        return $this->responseSuccess('对'.$res.'条记录各增加了'.($amount / 10000).'元');
     }
 
     public function saveAccountAmount(Request $request)
@@ -275,7 +343,8 @@ class CardController extends ResponseController
         $adds_count = $adds->count();
         $adds_unique = $adds->pluck('name')->unique()->count();
         if($adds_count != $adds_unique){
-            return $this->setStatusCode(422)->responseError('存在重复的卡号请修改后重新上传！');
+            $count =  $adds_count - $adds_unique;
+            return $this->setStatusCode(422)->responseError('存在'.$count.'个重复的卡号请修改后重新上传！');
         }
 
         $date = date('Y-m-d H:i:s', time());

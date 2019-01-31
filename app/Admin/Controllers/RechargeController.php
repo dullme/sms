@@ -80,11 +80,11 @@ class RechargeController extends Controller
     protected function grid()
     {
         $grid = new Grid(new Recharge);
-
+        $grid->model()->orderBy('created_at', 'desc');
         $grid->id('ID');
         $grid->column('card.name', '卡号');
         $grid->amount('金额');
-        $grid->created_at('充值时间');
+        $grid->created_at('充值时间')->sortable();
 
         $grid->disableActions();
         $grid->disableCreateButton();

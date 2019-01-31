@@ -66,5 +66,6 @@ window.Vue = require('vue');
 
 Vue.component('import-cards', require('./components/ImportCardsComponent.vue'));
 Vue.component('add-account-amount', require('./components/AddAccountAmountComponent.vue'));
+Vue.component('add-account-amount2', require('./components/AddAccountAmountComponent2.vue'));
 Vue.component('account-amount-search', require('./components/AccountAmountSearchComponent.vue'));
 Vue.component('add-task', require('./components/AddTaskComponent.vue'));

@@ -15,6 +15,8 @@ Route::group([
     $router->get('add-account', 'CardController@addAccount');
     $router->get('add-account-amount', 'CardController@addAccountAmount');
     $router->post('add-account-amount', 'CardController@saveAccountAmount');
+    $router->post('save-account-amount2', 'CardController@saveAccountAmount2');
+    $router->post('import-account-amount2', 'CardController@importAccountAmount2');
     $router->post('import-cards', 'CardController@importCards');
     $router->post('save-import-cards', 'CardController@saveImportCards');
     $router->resource('recharge', RechargeController::class);

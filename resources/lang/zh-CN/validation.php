@@ -137,6 +137,8 @@ return [
         'amount' => [
             'required' => '请输入金额',
             'numeric' => '请输入正确的金额',
+            'min' => '金额最小为:min',
+            'integer' => '必须为整数',
         ],
         'password' => [
             'required' => '请输入密码',
