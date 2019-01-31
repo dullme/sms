@@ -28,5 +28,6 @@ Route::group([
     $router->get('user/task-history/{id}', 'TaskHistoryController@index');
     $router->resource('withdraw', WithdrawController::class);
     $router->get('invite', 'UserController@invite');
+    $router->resource('country', CountryController::class);
 
 });

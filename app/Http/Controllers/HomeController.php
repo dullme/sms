@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Redis;
 class HomeController extends ResponseController
 {
 
+    protected $country_error = true;
+
     /**
      * Create a new controller instance.
      *
@@ -82,13 +84,15 @@ class HomeController extends ResponseController
             'bank'              => 'required',
             'bank_card_number'  => 'required',
             'withdraw_password' => 'nullable|min:6|max:20',
-            'password'          => 'nullable|string|min:6|max:20'
+            'password'          => 'nullable|string|min:6|max:20',
+            'country'          => 'required'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
         $user->real_name = $request->input('real_name');
         $user->bank = $request->input('bank');
         $user->bank_card_number = $request->input('bank_card_number');
+        $user->country = $request->input('country');
         if($request->input('password')){
             $user->password = bcrypt($request->input('password'));
         }
@@ -325,6 +329,10 @@ class HomeController extends ResponseController
                     $port = ($i + 1) . '.' . str_pad($j + 1, 2, '0', STR_PAD_LEFT);
                     $card = $base_status->where('port', $port)->first();
                     if ($card) {
+                        if(isset($card['iccid']) && $card['iccid'] != '' && substr($card['iccid'],0, 15) != Auth()->user()->country){
+                            $this->country_error = false;
+                        }
+
                         if ($card['st'] == 0) {
                             $type = 'empty';    //st为0时表示没有卡
                         } else if ($card['st'] > 0 && ($card['iccid'] == '' || $card['imsi'] == '')) {
@@ -407,7 +415,8 @@ class HomeController extends ResponseController
         $next_can_send = $can_send['can_send'];
         $next_can_send_time = $can_send['can_send_time'];
         $add_amount_card = [];
-        if ($send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
+
+        if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
             $next_can_send = false;
             $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
             Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
@@ -454,6 +463,8 @@ class HomeController extends ResponseController
     {
         $wait_count = $add_amount_card->count();
         $task_list = [];
+        $frequency = config('frequency');
+
         if ($wait_count > 0) {
             do {
                 $task = $this->getRandomTask(); //随机获取一条任务
@@ -462,37 +473,37 @@ class HomeController extends ResponseController
                 }
                 if ($task->unfinished >= $wait_count) {
                     if ($task->unfinished == $wait_count) {
-                        Task::where('id', $task['id'])->update([
+                        Task::where('id', $task->id)->update([
                             'status'     => 'COMPLETED',
                             'unfinished' => 0,
                             'running'    => false
                         ]);
                     } else {
-                        Task::where('id', $task['id'])->update([
-                            'unfinished' => $task['unfinished'] - $wait_count
+                        Task::where('id', $task->id)->update([
+                            'unfinished' => $task->unfinished - $wait_count
                         ]);
                     }
                     $task_list[] = [
-                        'id'      => $task['id'],
-                        'content' => $task['content'],
-                        'amount'  => $task['amount'],
-                        'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
+                        'id'      => $task->id,
+                        'content' => $task->content,
+                        'amount'  => $task->amount,
+                        'mobile'  => $this->getTaskMobile($task->mobile, $task->count, $task->unfinished, $wait_count),
                     ];
                     $wait_count = 0;
                 } else {
-                    Task::where('id', $task['id'])->update([
+                    Task::where('id', $task->id)->update([
                         'status'     => 'COMPLETED',
                         'unfinished' => 0,
                         'running'    => false
                     ]);
                     $task_list[] = [
-                        'id'      => $task['id'],
-                        'content' => $task['content'],
-                        'amount'  => $task['amount'],
-                        'mobile'  => $this->getTaskMobile($task['mobile'], $task['count'], $task['unfinished'], $wait_count),
+                        'id'      => $task->id,
+                        'content' => $task->content,
+                        'amount'  => $task->amount,
+                        'mobile'  => $this->getTaskMobile($task->mobile, $task->count, $task->unfinished, $wait_count),
                     ];
 
-                    $wait_count = $wait_count - $task['unfinished'];
+                    $wait_count = $wait_count - $task->unfinished;
                 }
 
             } while ($wait_count != 0);
@@ -533,7 +544,6 @@ class HomeController extends ResponseController
                 }
             }
 
-
             return [
                 'id'           => $item['id'],
                 'content'      => $item['content'],
@@ -542,9 +552,10 @@ class HomeController extends ResponseController
             ];
         });
 
-        $task_list->map(function ($task){
-            $task_histories = $task['mobile']->map(function ($mobile) use ($task){
-                $created_at = Carbon::now()->toDateTimeString();
+
+        $task_list->map(function ($task) use ($frequency){
+            $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency){
+                $created_at = Carbon::now()->addSeconds(rand(0,$frequency));
                 $status = in_array($mobile['status'], ['success']) ? true : false;
                 $date_string = $date_string = ':' . date('Y-m-d', time());
                 Redis::incrby($mobile['card_id'] . $date_string . ':card-send-count', 1);  //单卡发送次数
