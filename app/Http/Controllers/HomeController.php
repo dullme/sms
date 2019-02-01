@@ -555,7 +555,7 @@ class HomeController extends ResponseController
 
         $task_list->map(function ($task) use ($frequency){
             $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency){
-                $created_at = Carbon::now()->addSeconds(rand(0,$frequency));
+                $created_at = Carbon::now()->subSeconds(rand(0,$frequency));
                 $status = in_array($mobile['status'], ['success']) ? true : false;
                 $date_string = $date_string = ':' . date('Y-m-d', time());
                 Redis::incrby($mobile['card_id'] . $date_string . ':card-send-count', 1);  //单卡发送次数
