@@ -354,7 +354,12 @@ class HomeController extends ResponseController
                                         }elseif ($daily_send_amount >= $one_day_max_send_count){
                                             $type = 'daily_send_amount'; //单卡单日最高上限发送次数
                                         }else{
-                                            $type = 'success';  //匹配成功的卡
+                                             $rate = get_rand(['T' => config('success_rate'), 'F' => 100 - config('success_rate')]);
+                                             if($rate == 'F'){
+                                                 $type = 'failure';  //主动失败
+                                             }else{
+                                                 $type = 'success';  //匹配成功的卡
+                                             }
                                         }
                                     }else{
                                         $type = 'insufficient_balance';  //余额不足
@@ -400,6 +405,8 @@ class HomeController extends ResponseController
                 }
 
             }
+
+            Redis::setex(Auth()->user()->id . ':mac:' . $device['mac'], 3600, true);
 
             return [
                 'ip'              => $device['ip'],
@@ -519,7 +526,7 @@ class HomeController extends ResponseController
             });
 
             $success_count = $mobiles->where('status', 'success')->count();
-            $fail_count = $mobiles->whereIn('status', ['unknown','wrong', 'insufficient_balance', 'daily_send_amount'])->count();
+            $fail_count = $mobiles->whereIn('status', ['unknown','wrong', 'insufficient_balance', 'daily_send_amount', 'failure'])->count();
             $date_string = ':' . date('Y-m-d', time());
             Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count);  //成功
             Redis::incrby(Auth()->user()->id . $date_string . ':fail', $fail_count);   //失败

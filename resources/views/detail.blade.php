@@ -30,7 +30,7 @@
                         <td>{{ $history->iccid }}</td>
                         <td>{{ substr_replace($history->mobile,'****',3,4) }}</td>
                         <td style="max-width: 200px; min-width: 200px;">{{ $history->task->content }}</td>
-                        <td>{{ $history->task->amount }}</td>
+                        <td>{{ $history->status?$history->task->amount:0 }}</td>
                     </tr>
                 @endforeach
                 </tbody>

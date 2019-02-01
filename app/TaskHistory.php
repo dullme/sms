@@ -18,6 +18,7 @@ class TaskHistory extends Model
 
     static $remark = [
         'success' => '发送成功！',
+        'failure' => '发送失败！',   //概率导致的失败
         'unknown' => 'SIM卡注册失败！',   //不是系统中的卡但是卡没注册成功
         'empty' => '未插入SIM卡！',  //卡槽中没有卡
         'failed' => 'SIM卡识别失败！',    //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取

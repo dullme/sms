@@ -11,6 +11,7 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
 {
@@ -91,6 +92,13 @@ class UserController extends Controller
         $grid->column('dyyq', '当月邀请人数')->display(function (){
             return User::where('pid', $this->id)->where('created_at', '>=', Carbon::today()->firstOfMonth())
                 ->where('created_at', '<=', Carbon::today()->lastOfMonth())->count();
+        });
+        $grid->column('device', '设备')->display(function (){
+            $device = count(Redis::keys($this->id . ':mac:*'));
+            if($device){
+                return "<span class='badge bg-green'>在线({$device})</span>";
+            }
+            return "<span class='badge bg-gray'>离线</span>";
         });
         $grid->username('账号');
         $grid->real_name('姓名');

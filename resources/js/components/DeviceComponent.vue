@@ -4,6 +4,7 @@
             <span class="ka_cao_example failed">未识别</span>
             <span class="ka_cao_example success">卡正常</span>
             <span class="ka_cao_example wrong">卡错误</span>
+            <span class="ka_cao_example failure">概率失败</span>
             <span class="ka_cao_example insufficient_balance">余额不足</span>
             <span class="ka_cao_example daily_send_amount">单日上限</span>
             <span class="ka_cao_example unknown">未知卡</span>
@@ -383,6 +384,11 @@
 
     .daily_send_amount {
         background-color: #eb02eb;
+        color: white;
+    }
+
+    .failure {
+        background-color: #ebe604;
         color: white;
     }
 </style>
