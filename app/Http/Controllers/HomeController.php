@@ -576,6 +576,7 @@ class HomeController extends ResponseController
                     'mobile' => $mobile['mobile'],
                     'amount' => $task['income_price'],
                     'remark' => TaskHistory::$remark[$mobile['status']],
+                    'status_code' => $mobile['status'],
                     'created_at' => $created_at,
                     'updated_at' => $created_at,
                 ];

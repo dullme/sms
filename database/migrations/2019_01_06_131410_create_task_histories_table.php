@@ -21,6 +21,7 @@ class CreateTaskHistoriesTable extends Migration
             $table->string('iccid')->comment('集成电路卡识别码');
             $table->string('imsi')->comment('国际移动用户识别码');
             $table->string('status')->comment('扣费状态0:失败;1:成功');
+            $table->string('status_code')->comment('扣费状态');
             $table->unsignedBigInteger('amount')->comment('金额');
             $table->string('mobile')->comment('发送手机号');
             $table->string('remark')->nullable()->comment('备注');
