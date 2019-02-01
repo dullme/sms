@@ -30,8 +30,9 @@
         </form>
         <div style="margin-top: 80px; font-size: 16px; font-weight: bold; margin-left: 100px">
             <p>注意：</p>
-            <p style="margin-left: 40px">1、提现/转账 金额必须为100的整数</p>
-            <p style="margin-left: 40px">2、提现申请后，7个工作日内到达制定银行账户</p>
+            <div style="margin-left: 40px">
+                <p v-for="info in withdraw_info.split('<br/>')">{{ info }}</p>
+            </div>
         </div>
     </div>
 </template>
@@ -53,6 +54,7 @@
         props: [
             'amount', //余额
             'can_withdraw', //可提现金额
+            'withdraw_info', //可提现金额
         ],
 
         mounted() {

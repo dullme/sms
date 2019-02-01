@@ -13,15 +13,25 @@
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">波特率 ： &nbsp;</label>
-                    <select style="width: 180px" name="baud_rate">
+                    <select style="width: 180px; height: 34px" name="baud_rate">
                         <option {{ Auth()->user()->baud_rate == 1200 ? 'selected="selected"' :'' }}>1200</option>
                         <option {{ Auth()->user()->baud_rate == 2400 ? 'selected="selected"' :'' }}>2400</option>
                     </select>
                 </div>
 
+                <div style="margin-top: 18px;">
+                    <label style="width: 200px">SIM卡类别 ： &nbsp;</label>
+                    <select style="width: 180px; height: 34px" name="country">
+                        <option value="">请选择</option>
+                        @foreach( \App\Country::all() as $item)
+                            <option value="{{ $item->country_iccid }}" {{ Auth()->user()->country == $item->country_iccid ? 'selected="selected"':'' }}>{{ $item->country_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div style="margin-top: 18px">
                     <label style="width: 200px">单卡单日发送上限 ： &nbsp;</label>
-                    <select style="width: 180px" name="one_day_max_send_count">
+                    <select style="width: 180px; height: 34px" name="one_day_max_send_count">
                         <option value="0">请选择</option>
                         @foreach(oneDayMaxSendCount() as $item)
                             <option value="{{ $item }}" {{ Auth()->user()->one_day_max_send_count == $item ? 'selected="selected"' :'' }}>{{ $item }}</option>
@@ -31,7 +41,7 @@
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">是否开启防封模式 ： &nbsp;</label>
-                    <select style="width: 180px" name="mode">
+                    <select style="width: 180px; height: 34px" name="mode">
                         <option value="0" {{ Auth()->user()->mode == 0 ? 'selected="selected"' :'' }}>关闭</option>
                         <option value="1" {{ Auth()->user()->mode == 1 ? 'selected="selected"' :'' }}>开启</option>
                     </select>
@@ -39,7 +49,7 @@
 
                 <div style="margin-top: 18px">
                     <label style="width: 200px">通道加密选择 ： &nbsp;</label>
-                    <select style="width: 180px" name="encryption">
+                    <select style="width: 180px; height: 34px" name="encryption">
                         <option value="0" {{ Auth()->user()->encryption == 0 ? 'selected="selected"' :'' }}>不加密</option>
                         <option value="1" {{ Auth()->user()->encryption == 1 ? 'selected="selected"' :'' }}>加密</option>
                     </select>
@@ -48,6 +58,8 @@
                 <div class="text-danger" style="height: 24px; font-size: 16px;margin-left: 110px">
                     @if(Session::has('saveConfig'))
                         {{ Session::get('saveConfig') }}
+                    @elseif($errors->has('country'))
+                        {{ $errors->first('country') }}
                     @endif
                 </div>
 

@@ -34,16 +34,6 @@
                     <input type="text" style="width: 250px;" name="bank_card_number" value="{{ Auth()->user()->bank_card_number }}">
                 </div>
 
-                <div style="margin-top: 18px;">
-                    <label>国&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;家 ： &nbsp;</label>
-                    <select style="width: 250px; height: 34px" name="country">
-                        <option value="">请选择</option>
-                        @foreach( \App\Country::all() as $item)
-                            <option value="{{ $item->country_iccid }}" {{ Auth()->user()->country == $item->country_iccid ? 'selected="selected"':'' }}>{{ $item->country_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
                 <div style="margin-top: 18px">
                     <label>资金密码 ： &nbsp;</label>
                     <input type="password" style="width: 250px;" name="withdraw_password" value="">
@@ -66,8 +56,6 @@
                         {{ $errors->first('withdraw_password') }}
                     @elseif($errors->has('password'))
                         {{ $errors->first('password') }}
-                    @elseif($errors->has('country'))
-                        {{ $errors->first('country') }}
                     @endif
                 </div>
 

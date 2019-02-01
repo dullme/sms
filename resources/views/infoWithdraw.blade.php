@@ -36,8 +36,11 @@
             </form>
             <div style="margin-top: 80px; font-size: 16px; font-weight: bold; margin-left: 100px">
                 <p>注意：</p>
-                <p style="margin-left: 40px">1、提现/转账 金额必须为100的整数</p>
-                <p style="margin-left: 40px">2、提现申请后，7个工作日内到达制定银行账户</p>
+                <div style="margin-left: 40px">
+                    @foreach(explode('<br/>', config('withdraw_info')) as $info)
+                        <p>{{ $info }}</p>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>

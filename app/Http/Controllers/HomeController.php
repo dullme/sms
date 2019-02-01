@@ -85,14 +85,12 @@ class HomeController extends ResponseController
             'bank_card_number'  => 'required',
             'withdraw_password' => 'nullable|min:6|max:20',
             'password'          => 'nullable|string|min:6|max:20',
-            'country'          => 'required'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
         $user->real_name = $request->input('real_name');
         $user->bank = $request->input('bank');
         $user->bank_card_number = $request->input('bank_card_number');
-        $user->country = $request->input('country');
         if($request->input('password')){
             $user->password = bcrypt($request->input('password'));
         }
@@ -253,6 +251,7 @@ class HomeController extends ResponseController
             'baud_rate'  => 'required',
             'mode'       => 'required',
             'encryption' => 'required',
+            'country'    => 'required'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
@@ -260,6 +259,7 @@ class HomeController extends ResponseController
         $user->one_day_max_send_count = $request->input('one_day_max_send_count');
         $user->mode = $request->input('mode');
         $user->encryption = $request->input('encryption');
+        $user->country = $request->input('country');
         $res = $user->save();
 
         if ($res) {
