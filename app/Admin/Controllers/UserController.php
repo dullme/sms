@@ -107,7 +107,8 @@ class UserController extends Controller
         $grid->amount('余额');
         $grid->column('amount','当日收益')->display(function (){
             $date_string = ':' . date('Y-m-d', time());
-            return Redis::get($this->id . $date_string . ':income');
+            $income = round(Redis::get($this->id . $date_string . ':income'),2);
+            return $income;
         });
         $grid->one_day_max_send_count('当日最大发送数');
         $grid->mode('防封模式')->switch([
