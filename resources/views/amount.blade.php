@@ -24,7 +24,7 @@
                 <tr>
                     <td width="120px">{{ $amount['username'] }}</td>
                     <td>{{ $amount['real_name'] }}</td>
-                    <td>{{ $amount['amount'] }}</td>
+                    <td>{{ round($amount['amount'], 2) }}</td>
                 </tr>
                 @endforeach
             </table>
