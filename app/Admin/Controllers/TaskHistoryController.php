@@ -82,7 +82,7 @@ class TaskHistoryController extends Controller
     protected function grid($id)
     {
         $grid = new Grid(new TaskHistory);
-        $grid->model()->where('user_id', $id);
+        $grid->model()->where('user_id', $id)->orderBy('created_at', 'DESC');
         $grid->id('ID');
         $grid->ip('IP');
         $grid->iccid('ICCID');
