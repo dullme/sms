@@ -92,6 +92,10 @@ class TaskHistoryController extends Controller
             $status = array_get(TaskHistory::$status,$status);
             return "<span class='badge bg-$color'>$status</span>";
         });
+
+        $grid->status_code('备注')->display(function ($status_code){
+            return array_get(TaskHistory::$status_code, $status_code);
+        });
         $grid->mobile('接收号码');
         $grid->column('task.content', '接收内容');
         $grid->created_at('接收时间');
