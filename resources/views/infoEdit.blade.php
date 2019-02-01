@@ -23,7 +23,7 @@
                 <div style="margin-top: 18px;">
                     <label>提款银行 ： &nbsp;</label>
                     <select style="width: 250px; height: 34px" name="bank">
-                        <option>请选择</option>
+                        <option value="">请选择</option>
                         @foreach( getBank() as $item)
                             <option value="{{ $item }}" {{ Auth()->user()->bank == $item ? 'selected="selected"':'' }}>{{ $item }}</option>
                         @endforeach
