@@ -221,10 +221,10 @@ return [
             'captcha' => '验证码错误',
         ],
 
-        'company_name' => [
+        'country_name' => [
             'required' => '请输入国家名称',
         ],
-        'company_iccid' => [
+        'country_iccid' => [
             'required' => '请输入国家编码',
             'max' => '国家编码为:max位',
             'min' => '国家编码为:min位',

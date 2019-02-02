@@ -329,8 +329,11 @@ class HomeController extends ResponseController
                     $port = ($i + 1) . '.' . str_pad($j + 1, 2, '0', STR_PAD_LEFT);
                     $card = $base_status->where('port', $port)->first();
                     if ($card) {
-                        if(isset($card['iccid']) && $card['iccid'] != '' && substr($card['iccid'],0, 15) != Auth()->user()->country){
-                            $this->country_error = false;
+                        if(isset($card['iccid']) && $card['iccid'] != ''){
+
+                            if(substr($card['iccid'],0, strlen(Auth()->user()->country)) != Auth()->user()->country){
+                                $this->country_error = false;
+                            }
                         }
 
                         if ($card['st'] == 0) {
@@ -422,6 +425,15 @@ class HomeController extends ResponseController
         $next_can_send = $can_send['can_send'];
         $next_can_send_time = $can_send['can_send_time'];
         $add_amount_card = [];
+        $messages = '';
+        if(!$this->country_error){
+            $messages='国家不匹配不发送';
+        }elseif(!$send || !$can_send['can_send']){
+            $messages='请求不发送';
+        }elseif ($real_device->sum('unknown_count') > 5){
+            $messages='未知卡过多不发送';
+        }
+
 
         if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
             $next_can_send = false;
@@ -444,6 +456,7 @@ class HomeController extends ResponseController
             'frequency'     => $can_send['frequency'],
             'real_device'   => $real_device,
             'add_amount_card'   => $add_amount_card,
+            'messages'   => $messages,
         ]);
     }
 

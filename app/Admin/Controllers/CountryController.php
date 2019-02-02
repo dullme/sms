@@ -119,7 +119,7 @@ class CountryController extends Controller
         $form = new Form(new Country);
 
         $form->text('country_name', '国家名称')->rules('required');
-        $form->text('country_iccid', '国家编码')->rules('required|string|max:15|min:15');
+        $form->text('country_iccid', '国家编码')->rules('required|string|max:15|min:4');
 
         return $form;
     }

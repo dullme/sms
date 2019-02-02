@@ -1,71 +1,71 @@
 <template>
-    <div style="padding: 10px; min-width: 600px">
-        <div>
-            <span class="ka_cao_example failed">未识别</span>
-            <span class="ka_cao_example success">卡正常</span>
-            <span class="ka_cao_example wrong">卡错误</span>
-            <span class="ka_cao_example failure">概率失败</span>
-            <span class="ka_cao_example insufficient_balance">余额不足</span>
-            <span class="ka_cao_example daily_send_amount">单日上限</span>
-            <span class="ka_cao_example unknown">未知卡</span>
-            <span class="ka_cao_example too_much_money">余额过多</span>
-            <span class="ka_cao_example empty">无卡</span>
-            <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
-                <span v-if="can_send == false">下一次请求时间：{{ can_send_time }}</span>
-                <span v-if="can_send == true">当前可以请求</span>
-                请求频率：{{ frequency / 1000 }}秒/次
-                <span>当日收益:{{ income / 10000 }}</span>
-                <span>当日成功条数:{{ success }}</span>
-                <span>当日失败条数:{{ fail }}</span>
-                <span class="text-danger" v-text="switch_message"></span>
-            </span>
-            <span class="clearfix"></span>
-        </div>
+    <div>
+    <div style="background-color: rgb(153, 153, 153); width: 100%; padding: 10px; color: white;">如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！</div>
+        <div style="padding: 10px; min-width: 600px">
+            <div>
+                <span class="ka_cao_example failed">未识别</span>
+                <span class="ka_cao_example success">卡正常</span>
+                <span class="ka_cao_example wrong">卡错误</span>
+                <span class="ka_cao_example daily_send_amount">单日上限</span>
+                <span class="ka_cao_example unknown">未知卡</span>
+                <span class="ka_cao_example empty">无卡</span>
+                <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
+                    <span v-if="can_send == false">下一次请求时间：{{ can_send_time }}</span>
+                    <span v-if="can_send == true">当前可以请求</span>
+                    请求频率：{{ frequency / 1000 }}秒/次
+                    <span>当日收益:{{ income / 10000 }}</span>
+                    <span>当日成功条数:{{ success }}</span>
+                    <span>当日失败条数:{{ fail }}</span>
+                    <span class="text-danger" v-text="switch_message"></span>
+                </span>
+                <span class="clearfix"></span>
+            </div>
 
-        <div class="bd-example bd-example-tabs" style="margin-top: 20px" v-if="real_device.length">
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" v-for="(value,index) in real_device">
-                    <a class="nav-link" :class="index == 0 ? 'active':''" data-toggle="tab" :href="'#tab-' +index">{{value.ip}}</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade" style="margin-top: 10px" :class="index == 0 ? 'show active':''" :id="'tab-' + index" v-for="(value,index) in real_device">
-                    <div v-for="status in real_device[index]['status']">
-                        <div v-for="row in status">
-                            <div v-for="t in row">
-                                <a v-if="t.has_card && t.status == 'failed'" href="##" class="ka_cao"
-                                   :class="t.status"
-                                   v-on:click="switchCard(value.ip, t.port, t.has_card, t.status)">{{ t.port }}</a>
-                                <span v-else class="ka_cao" :class="t.status" :title="t.iccid + ':' + t.imsi">{{ t.port }}</span>
+            <div class="bd-example bd-example-tabs" style="margin-top: 20px" v-if="real_device.length">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" v-for="(value,index) in real_device">
+                        <a class="nav-link" :class="index == 0 ? 'active':''" data-toggle="tab" :href="'#tab-' +index">{{value.ip}}</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade" style="margin-top: 10px" :class="index == 0 ? 'show active':''" :id="'tab-' + index" v-for="(value,index) in real_device">
+                        <div v-for="status in real_device[index]['status']">
+                            <div v-for="row in status">
+                                <div v-for="t in row">
+                                    <a v-if="t.has_card && t.status == 'failed'" href="##" class="ka_cao"
+                                       :class="t.status"
+                                       v-on:click="switchCard(value.ip, t.port, t.has_card, t.status)">{{ t.port }}</a>
+                                    <span v-else class="ka_cao" :class="t.status" :title="t.iccid + ':' + t.imsi">{{ t.port }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="text-center" v-else v-text="read_card_status == true ? '未找到设备':''"
-             style="min-height: 200px; line-height: 200px"></div>
+            <div class="text-center" v-else v-text="read_card_status == true ? '未找到设备':''"
+                 style="min-height: 200px; line-height: 200px"></div>
 
-        <div class="text-center">
-            <span v-if="read_card_status == false">
-                <i>搜索中({{ this.time }})</i>
-                <i v-text="message"></i>
-                <a href="##" v-on:click="scanningIp">重新搜索</a>
-            </span>
-            <div v-else>
-                <a class="btn btn-lg btn-default" :class="open == 'SENDING' ? 'disabled' : ''"
-                   style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
-                   v-on:click="scanningIp">重新扫描设备</a>
-                <a class="btn btn-lg btn-default"
-                   style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
-                   v-on:click="start" v-text="open == 'STOPPED' ? '启动':'停止' "></a>
-                <div style="width: 40px;display: inline-block"><img v-if="open == 'SENDING'" src="/images/loading.svg"
-                                                                    width="100%" height="100%"></div>
+            <div class="text-center">
+                <span v-if="read_card_status == false">
+                    <i>搜索中({{ this.time }})</i>
+                    <i v-text="message"></i>
+                    <a href="##" v-on:click="scanningIp">重新搜索</a>
+                </span>
+                <div v-else>
+                    <a class="btn btn-lg btn-default" :class="open == 'SENDING' ? 'disabled' : ''"
+                       style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
+                       v-on:click="scanningIp">重新扫描设备</a>
+                    <a class="btn btn-lg btn-default"
+                       style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
+                       v-on:click="start" v-text="open == 'STOPPED' ? '启动':'停止' "></a>
+                    <div style="width: 40px;display: inline-block"><img v-if="open == 'SENDING'" src="/images/loading.svg"
+                                                                        width="100%" height="100%"></div>
 
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
 </template>
 
@@ -290,6 +290,7 @@
                     "POST",
                     data,
                     (json) => {
+                        console.log('短信发送返回')
                         console.log(json)
                     },
                     (messsage) => {
@@ -358,12 +359,12 @@
     }
 
     .too_much_money {
-        background-color: #0202c1;
+        background-color: #18c106;
         color: white;
     }
 
     .insufficient_balance {
-        background-color: #10b6c1;
+        background-color: #18c106;
         color: white;
     }
 
@@ -388,7 +389,7 @@
     }
 
     .failure {
-        background-color: #ebe604;
+        background-color: #18c106;
         color: white;
     }
 </style>
