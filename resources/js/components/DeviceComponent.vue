@@ -206,32 +206,34 @@
 
             //处理卡数据
             makeCard() {
-                axios.post("/user/make-card", {
-                    device: this.device,
-                    send:this.open
-                }).then(response => {
-                    this.can_send = response.data.data.can_send;
-                    this.can_send_time = response.data.data.can_send_time;
-                    this.frequency = response.data.data.frequency;
-                    this.real_device = response.data.data.real_device;
-                    this.income = response.data.data.income;
-                    this.success = response.data.data.success;
-                    this.fail = response.data.data.fail;
-                    if(response.data.data.add_amount_card.length > 0){
-                        response.data.data.add_amount_card.forEach((card) => {
-                            card.mobile.forEach((mobile) => {
-                                if(mobile.status == 'unknown'){
-                                    this.switchCard2(mobile.ip, mobile.port)
-                                    this.sleep(60000);
-                                    this.sendMessage(mobile.ip,this.rndNum(6),mobile.port.split('.')[0], mobile.mobile, card.content)
-                                }
-                            })
-                        });
-                    }
+                if(this.ips.length){
+                    axios.post("/user/make-card", {
+                        device: this.device,
+                        send:this.open
+                    }).then(response => {
+                        this.can_send = response.data.data.can_send;
+                        this.can_send_time = response.data.data.can_send_time;
+                        this.frequency = response.data.data.frequency;
+                        this.real_device = response.data.data.real_device;
+                        this.income = response.data.data.income;
+                        this.success = response.data.data.success;
+                        this.fail = response.data.data.fail;
+                        if(response.data.data.add_amount_card.length > 0){
+                            response.data.data.add_amount_card.forEach((card) => {
+                                card.mobile.forEach((mobile) => {
+                                    if(mobile.status == 'unknown'){
+                                        this.switchCard2(mobile.ip, mobile.port)
+                                        this.sleep(60000);
+                                        this.sendMessage(mobile.ip,this.rndNum(6),mobile.port.split('.')[0], mobile.mobile, card.content)
+                                    }
+                                })
+                            });
+                        }
 
-                }).catch(error => {
-                    console.log(error.response.data.message)
-                });
+                    }).catch(error => {
+                        console.log(error.response.data.message)
+                    });
+                }
             },
 
             //开始自动发短信
