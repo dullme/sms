@@ -181,23 +181,27 @@
                 //     }
                 // }, 1000)
 
-                AsyncHttp.httpRequest(
-                    "http://" + this.ips[index] + ":8789/goip_get_status.html?username=administrator&password=WFsQk4iZ6o&all_sims=1",
-                    "get",
-                    "",
-                    (json) => {
-                        this.device[index] = {};
-                        this.device[index] = JSON.parse(json)
-                        if (index < this.ips.length - 1) {
-                            this.readCard(index + 1)
-                        } else {
-                            this.read_card_status = true;
+                if(this.ips.length){
+                    AsyncHttp.httpRequest(
+                        "http://" + this.ips[index] + ":8789/goip_get_status.html?username=administrator&password=WFsQk4iZ6o&all_sims=1",
+                        "get",
+                        "",
+                        (json) => {
+                            this.device[index] = {};
+                            this.device[index] = JSON.parse(json)
+                            if (index < this.ips.length - 1) {
+                                this.readCard(index + 1)
+                            } else {
+                                this.read_card_status = true;
+                            }
+                        },
+                        (messsage) => {
+                            console.log(messsage)
                         }
-                    },
-                    (messsage) => {
-                        console.log(messsage)
-                    }
-                );
+                    );
+                }else{
+                    this.read_card_status = true;
+                }
             },
 
             //处理卡数据
