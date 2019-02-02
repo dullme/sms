@@ -35,3 +35,5 @@ Route::post('/user/info', 'HomeController@searchUser');
 
 Route::post('/user/make-card', 'HomeController@makeCard');  //生成卡数据
 Route::get('/user/can-send', 'HomeController@canSend');  //是否可以发送短信
+
+Route::get('/info/help', 'HomeController@help')->name('help');

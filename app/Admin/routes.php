@@ -29,5 +29,6 @@ Route::group([
     $router->resource('withdraw', WithdrawController::class);
     $router->get('invite', 'UserController@invite');
     $router->resource('country', CountryController::class);
+    $router->resource('help', HelpController::class);
 
 });

@@ -232,6 +232,12 @@ return [
         'country' => [
             'required' => '请选择国家',
         ],
+        'title' => [
+            'required' => '请选输入标题',
+        ],
+        'content' => [
+            'required' => '请选输入内容',
+        ],
     ],
 
     /*

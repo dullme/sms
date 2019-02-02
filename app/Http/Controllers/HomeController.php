@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Card;
+use App\Help;
 use App\Task;
 use App\TaskHistory;
 use App\Withdraw;
@@ -640,5 +641,11 @@ class HomeController extends ResponseController
             ->select('id', 'content', 'count', 'unfinished', 'mobile', 'amount')
             ->inRandomOrder()
             ->first();
+    }
+
+    public function help()
+    {
+        $helps = Help::all();
+        return view('help', compact('helps'));
     }
 }
