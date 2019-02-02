@@ -29,8 +29,8 @@
                         <td style="min-width: 100px;" class="text-{{ $history->status ? 'success' :'danger' }}">{{ $history->status ? '成功' :'失败-'.$history->remark }}</td>
                         <td>{{ $history->iccid }}</td>
                         <td>{{ substr_replace($history->mobile,'****',3,4) }}</td>
-                        <td style="max-width: 200px; min-width: 200px;">{{ $history->task->content }}</td>
-                        <td>{{ $history->status?$history->task->amount:0 }}</td>
+                        <td style="max-width: 200px; min-width: 200px;">{{ optional($history->task)->content }}</td>
+                        <td>{{ $history->status?optional($history->task)->amount:0 }}</td>
                     </tr>
                 @endforeach
                 </tbody>
