@@ -225,6 +225,7 @@
                                         this.switchCard2(mobile.ip, mobile.port)
                                         this.sleep(60000);
                                         this.sendMessage(mobile.ip,this.rndNum(6),mobile.port.split('.')[0], mobile.mobile, card.content)
+                                        this.sleep(10000);
                                     }
                                 })
                             });
