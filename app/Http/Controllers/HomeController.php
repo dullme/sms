@@ -332,7 +332,7 @@ class HomeController extends ResponseController
                     if ($card) {
                         if(isset($card['iccid']) && $card['iccid'] != ''){
 
-                            if(substr($card['iccid'],0, strlen(Auth()->user()->country)) != Auth()->user()->country){
+                            if(substr($card['iccid'],0, strlen(Auth()->user()->country)) != Auth()->user()->country || is_null(Auth()->user()->country)){
                                 $this->country_error = false;
                             }
                         }
