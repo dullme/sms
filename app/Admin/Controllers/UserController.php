@@ -144,6 +144,18 @@ class UserController extends Controller
         $grid->disableExport();
         $grid->disableRowSelector();
 
+        $grid->footer(function ($query) {
+            $ids = $query->pluck('id')->toArray();
+            $income = 0;
+            foreach ($ids as $id){
+                $date_string = ':' . date('Y-m-d', time());
+                $income += round(Redis::get($id . $date_string . ':income')/10000,2);
+            }
+            $total = round($query->sum('amount') / 10000, 2);
+
+            return view('userFooter', compact('total', 'income'));
+        });
+
         return $grid;
     }
 

@@ -97,6 +97,12 @@ class RechargeController extends Controller
             $filter->between('created_at', '充值时间')->datetime();
         });
 
+        $grid->footer(function ($query) {
+            $total = round($query->sum('amount') / 10000, 2);
+
+            return view('rechargeFooter', compact('total'));
+        });
+
         return $grid;
     }
 
