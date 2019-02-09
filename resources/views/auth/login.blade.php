@@ -4,7 +4,7 @@
 <div class="container" style="width: 600px; min-width: 600px; height: 100%">
     <div style="display: flex;justify-content: center;align-items: center; height: 100%">
         <div>
-            <div style="font-size: 40px; font-weight: bolder; text-align: center;background-color: #D7D7D7">欢迎使用SMS融云平台</div>
+            <div style="font-size: 40px; font-weight: bolder; text-align: center;background-color: #D7D7D7">欢迎使用SMS平台</div>
             <form method="POST" action="{{ route('login') }}" style="font-size: 18px; font-weight: bolder; text-align: center">
                 @csrf
                 <div style="margin-top: 100px">
