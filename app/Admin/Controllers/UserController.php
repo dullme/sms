@@ -105,7 +105,7 @@ class UserController extends Controller
         $grid->bank_card_number('银行卡');
         $grid->bank('开户行');
         $grid->amount('余额');
-        $grid->column('amount','当日收益')->display(function (){
+        $grid->column('amounts','当日收益')->display(function (){
             $date_string = ':' . date('Y-m-d', time());
             $income = round(Redis::get($this->id . $date_string . ':income')/10000,2);
             return $income;
