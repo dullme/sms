@@ -30,7 +30,7 @@ class HomeController extends ResponseController
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['maintain','auth']);
     }
 
     /**

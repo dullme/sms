@@ -11,7 +11,7 @@
 |
 */
 
-Route::get('/tt', 'HomeController@getRandomTask');
+Route::get('/maintain', 'MaintainController@index');
 
 Route::get('/', 'HomeController@index');
 
