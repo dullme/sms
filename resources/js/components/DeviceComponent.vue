@@ -10,8 +10,6 @@
                 <span class="ka_cao_example unknown">未知卡</span>
                 <span class="ka_cao_example empty">无卡</span>
                 <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
-                    <span v-if="can_send == false">下一次请求时间：{{ can_send_time }}</span>
-                    <span v-if="can_send == true">当前可以请求</span>
                     请求频率：{{ frequency / 1000 }}秒/次
                     <span>当日收益:{{ income / 10000 }}</span>
                     <span>当日成功条数:{{ success }}</span>
