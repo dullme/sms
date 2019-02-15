@@ -435,15 +435,19 @@ class HomeController extends ResponseController
             $messages='未知卡过多不发送';
         }
 
-
-        if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
-            $next_can_send = false;
-            $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
-            Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
-            $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
-                return collect($item)->where('has_card', true);
-            })->flatten(1);
-            $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
+        $carbon_now = Carbon::now();
+        $start_time = Carbon::createFromTimeString(config('start_time'));
+        $end_time = Carbon::createFromTimeString(config('end_time'));
+        if ($carbon_now->gt($end_time) || $carbon_now->lt($start_time)) {
+            if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
+                $next_can_send = false;
+                $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
+                Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
+                $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
+                    return collect($item)->where('has_card', true);
+                })->flatten(1);
+                $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
+            }
         }
 
         $date_string = ':' . date('Y-m-d', time());
