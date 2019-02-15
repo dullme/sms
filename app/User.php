@@ -25,6 +25,7 @@ class User extends Authenticatable
         'bank_card_number',
         'bank',
         'amount',
+        'total_income_amount',
         'one_day_max_send_count',
         'mode',
         'encryption',
@@ -72,5 +73,15 @@ class User extends Authenticatable
     public function setAmountAttribute($value)
     {
         $this->attributes['amount'] = $value * 10000;
+    }
+
+    public function getTotalIncomeAmountAttribute($value)
+    {
+        return $value / 10000;
+    }
+
+    public function setTotalIncomeAmountAttribute($value)
+    {
+        $this->attributes['total_income_amount'] = $value * 10000;
     }
 }

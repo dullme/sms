@@ -114,7 +114,7 @@ class WithdrawController extends Controller
     protected function grid()
     {
         $grid = new Grid(new Withdraw);
-        $grid->model()->orderBy('status');
+        $grid->model()->orderBy('status')->orderBy('id', 'DESC');
         $grid->id('ID')->sortable();
         $grid->column('user.username', '用户账号');
         $grid->column('user.real_name', '用户姓名');
@@ -180,6 +180,8 @@ class WithdrawController extends Controller
         $form->display('user.username', '用户账号');
         $form->display('user.real_name', '用户姓名');
         $form->display('amount', '提现金额');
+        $form->display('bank', '银行名称');
+        $form->display('bank_card_number', '银行卡号');
         $form->radio('status', '提现状态')->options([0 => '待处理', 1 => '提现成功', 9 => '提现失败']);
         $form->text('remark', '备注')->rules('required_if:status,9');
         $form->datetime('payment_at', '提现时间')->default(date('Y-m-d H:i:s'));

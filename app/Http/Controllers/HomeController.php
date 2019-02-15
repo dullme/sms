@@ -560,6 +560,7 @@ class HomeController extends ResponseController
 
             if($income_price * $success_count > 0){
                 $save_user = User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
+                User::where('id', Auth()->user()->id)->increment('total_income_amount', $income_price * $success_count);
                 if(!$save_user){
                     Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'增加'.($income_price * $success_count) .'失败！');
                 }

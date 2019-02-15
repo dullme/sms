@@ -85,9 +85,6 @@ class UserController extends Controller
         $grid = new Grid(new User);
 
         $grid->id('ID');
-        $grid->column('user.username', '邀请人账号')->display(function (){
-            return $this->user ? $this->user->username : '-';
-        });
         $grid->invite('已邀请人数')->sortable();
         $grid->column('dyyq', '当月邀请人数')->display(function (){
             return User::where('pid', $this->id)->where('created_at', '>=', Carbon::today()->firstOfMonth())
@@ -102,8 +99,6 @@ class UserController extends Controller
         });
         $grid->username('账号');
         $grid->real_name('姓名');
-        $grid->bank_card_number('银行卡');
-        $grid->bank('开户行');
         $grid->amount('余额');
         $grid->column('amounts','当日收益')->display(function (){
             $date_string = ':' . date('Y-m-d', time());
@@ -111,18 +106,6 @@ class UserController extends Controller
             return $income;
         });
         $grid->one_day_max_send_count('当日最大发送数');
-        $grid->mode('防封模式')->switch([
-            'on' => ['text' => '开启'],
-            'off' => ['text' => '关闭'],
-        ]);
-        $grid->encryption('通道加密')->switch([
-            'on' => ['text' => '加密'],
-            'off' => ['text' => '关闭'],
-        ]);
-        $grid->status('冻结')->switch([
-            'on' => ['text' => '冻结'],
-            'off' => ['text' => '关闭'],
-        ]);
         $grid->created_at('添加时间');
 
         $grid->filter(function ($filter){
@@ -169,22 +152,21 @@ class UserController extends Controller
     {
         $show = new Show(User::findOrFail($id));
 
-        $show->id('Id');
-        $show->pid('Pid');
-        $show->invite('Invite');
-        $show->username('Username');
-        $show->real_name('Real name');
-        $show->password('Password');
-        $show->bank_card_number('Bank card number');
-        $show->bank('Bank');
-        $show->amount('Amount');
-        $show->one_day_max_send_count('One day max send count');
-        $show->mode('Mode');
-        $show->encryption('Encryption');
-        $show->status('Status');
-        $show->remember_token('Remember token');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
+        $show->inviteName('邀请人账号')->as(function (){
+            return $this->user ? $this->user->username : '-';
+        });
+        $show->bank_card_number('银行卡');
+        $show->bank('开户行');
+        $show->mode('防封模式')->as(function ($mode){
+            return $mode ? '开启': '关闭';
+        });
+        $show->encryption('通道加密')->as(function ($encryption){
+            return $encryption ? '加密': '关闭';
+        });
+        $show->status('冻结')->as(function ($status){
+            return $status ? '冻结': '关闭';
+        });
+        $show->total_income_amount('总收益');
 
         return $show;
     }

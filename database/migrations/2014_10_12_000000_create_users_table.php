@@ -24,6 +24,7 @@ class CreateUsersTable extends Migration
             $table->string('bank_card_number')->nullable()->comment('银行卡卡号');
             $table->string('bank')->nullable()->comment('开户行');
             $table->unsignedBigInteger('amount')->default(0)->comment('余额10000');
+            $table->unsignedBigInteger('total_income_amount')->default(0)->comment('总收益');
             $table->integer('one_day_max_send_count')->default(0)->comment('当日最大发送条数，为0时取配置表里的数据');
             $table->boolean('mode')->default(0)->comment('开启防封模式0:关闭;1:开启');
             $table->boolean('encryption')->default(0)->comment('通道加密0:不加密;1:加密');
