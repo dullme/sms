@@ -125,6 +125,8 @@ class WithdrawController extends Controller
 
             return "<span class='badge bg-$color'>$status</span>";
         })->sortable();
+        $grid->bank('银行名称');
+        $grid->bank_card_number('银行卡号');
         $grid->remark('备注');
         $grid->payment_at('提现时间')->sortable();
         $grid->created_at('申请时间')->sortable();
