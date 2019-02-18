@@ -5,6 +5,6 @@
     <title>当前版本需要升级</title>
 </head>
 <body style="display: flex;justify-content: center;align-items: center; height: 100%; margin: 0 auto">
-<h1>当前版本需要升级</h1>
+<h1>当前版本较低，请升级为新的客户端在使用！</h1>
 </body>
 </html>

@@ -81,7 +81,6 @@ class HomeController extends ResponseController
     public function saveInfoEdit(Request $request)
     {
         $request->validate([
-            'real_name'         => 'required',
             'bank'              => 'required',
             'bank_card_number'  => 'required',
             'withdraw_password' => 'nullable|min:6|max:20',
@@ -89,7 +88,9 @@ class HomeController extends ResponseController
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
-        $user->real_name = $request->input('real_name');
+        if($request->input('real_name') && $user->real_name == ''){
+            $user->real_name = $request->input('real_name');
+        }
         $user->bank = $request->input('bank');
         $user->bank_card_number = $request->input('bank_card_number');
         if ($request->input('password')) {

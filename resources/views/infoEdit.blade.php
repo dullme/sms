@@ -17,7 +17,12 @@
                 </div>
                 <div style="margin-top: 18px">
                     <label>真实姓名 ： &nbsp;</label>
-                    <input type="text" style="width: 250px" name="real_name" value="{{ Auth()->user()->real_name }}">
+                    @if(Auth()->user()->real_name)
+                        <span>{{ Auth()->user()->real_name }}</span>
+                        @else
+                        <input type="text" style="width: 250px" name="real_name" value="{{ Auth()->user()->real_name }}">
+                    @endif
+
                 </div>
 
                 <div style="margin-top: 18px;">
