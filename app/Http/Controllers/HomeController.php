@@ -30,7 +30,7 @@ class HomeController extends ResponseController
      */
     public function __construct()
     {
-        $this->middleware(['maintain','auth']);
+        $this->middleware(['maintain', 'auth']);
     }
 
     /**
@@ -92,10 +92,10 @@ class HomeController extends ResponseController
         $user->real_name = $request->input('real_name');
         $user->bank = $request->input('bank');
         $user->bank_card_number = $request->input('bank_card_number');
-        if($request->input('password')){
+        if ($request->input('password')) {
             $user->password = bcrypt($request->input('password'));
         }
-        if($request->input('withdraw_password')){
+        if ($request->input('withdraw_password')) {
             $user->withdraw_password = $request->input('withdraw_password');
         }
         $user->withdraw_time = Carbon::now()->addDay();
@@ -133,18 +133,26 @@ class HomeController extends ResponseController
 
         $has_amount = intval($user->amount * 100) / 100;
         $amount = $request->input('withdraw_amount');
+        $withdraw_rate = $this->getWithdrawRate($amount);
+        if ($withdraw_rate == false) {
+            return $this->setStatusCode(422)->responseError("转账失败，请联系管理员");
+        }
+        $handing_fee = $amount * ($withdraw_rate / 100);
+
 
         if ($has_amount >= $amount) {
-            DB::transaction(function () use ($user, $amount) {
+            DB::transaction(function () use ($user, $amount, $handing_fee, $withdraw_rate) {
                 Withdraw::create([
                     'user_id'          => Auth()->user()->id,
                     'amount'           => $amount,
+                    'handling_fee'     => $handing_fee,
+                    'withdraw_rate'    => $withdraw_rate,
                     'status'           => 0,
                     'balance'          => $user->amount,
                     'bank_card_number' => $user->bank_card_number,
                     'bank'             => $user->bank,
                 ]);
-                $user->decrement('amount', $amount * 10000);
+                $user->decrement('amount', ($amount + $handing_fee) * 10000);
             });
 
             Session::flash('withdrawInfo', '提现成功！');
@@ -192,46 +200,66 @@ class HomeController extends ResponseController
 
         $has_amount = intval($user->amount * 100) / 100;
         $amount = $request->input('transfer_amount');
-
-        if ($has_amount >= $amount) {
-            $res = DB::transaction(function () use ($user, $transfer_user, $amount) {
-                //转出
-                Withdraw::create([
-                    'user_id'          => Auth()->user()->id,
-                    'amount'           => $amount,
-                    'status'           => 7,
-                    'balance'          => $user->amount,
-                    'bank_card_number' => $transfer_user->username,
-                    'bank'             => '内部转出',
-                    'remark'           => '成功',
-                    'payment_at'       => Carbon::now(),
-                ]);
-                $user->decrement('amount', $amount * 10000);
-
-                //转入
-                Withdraw::create([
-                    'user_id'          => $transfer_user->id,
-                    'amount'           => $amount,
-                    'status'           => 8,
-                    'balance'          => $transfer_user->amount,
-                    'bank_card_number' => $user->username,
-                    'bank'             => '内部转入',
-                    'remark'           => '成功',
-                    'payment_at'       => Carbon::now(),
-                ]);
-
-                return $transfer_user->increment('amount', $amount * 10000);
-
-            });
-
-            if ($res) {
-                return $this->responseSuccess("转账成功！");
-            } else {
-                return $this->setStatusCode(422)->responseError("转账失败");
-            }
-        } else {
-            return $this->setStatusCode(422)->responseError("转账金额不足");
+        $withdraw_rate = $this->getWithdrawRate($amount);
+        if ($withdraw_rate == false) {
+            return $this->setStatusCode(422)->responseError("转账失败，请联系管理员");
         }
+        $handing_fee = $amount * ($withdraw_rate / 100);
+        if($user->amount >= $amount + $handing_fee){
+            if ($has_amount >= $amount) {
+                $res = DB::transaction(function () use ($user, $transfer_user, $amount, $handing_fee, $withdraw_rate) {
+                    //转出
+                    Withdraw::create([
+                        'user_id'          => Auth()->user()->id,
+                        'amount'           => $amount,
+                        'handling_fee'     => $handing_fee,
+                        'withdraw_rate'    => $withdraw_rate,
+                        'status'           => 7,
+                        'balance'          => $user->amount,
+                        'bank_card_number' => $transfer_user->username,
+                        'bank'             => '内部转出',
+                        'remark'           => '成功',
+                        'payment_at'       => Carbon::now(),
+                    ]);
+
+                    $user->decrement('amount', ($amount + $handing_fee) * 10000);
+
+                    //转入
+                    Withdraw::create([
+                        'user_id'          => $transfer_user->id,
+                        'amount'           => $amount,
+                        'handling_fee'     => $handing_fee,
+                        'withdraw_rate'    => $withdraw_rate,
+                        'status'           => 8,
+                        'balance'          => $transfer_user->amount,
+                        'bank_card_number' => $user->username,
+                        'bank'             => '内部转入',
+                        'remark'           => '成功',
+                        'payment_at'       => Carbon::now(),
+                    ]);
+
+                    return $transfer_user->increment('amount', $amount * 10000);
+
+                });
+
+                if ($res) {
+                    $now_amount = Auth()->user()->amount - $amount - $handing_fee;
+                    return $this->responseSuccess([
+                        'amount' => $now_amount,
+                        'can_withdraw' => intval($now_amount / 100) * 100
+                    ]);
+                } else {
+                    return $this->setStatusCode(422)->responseError("转账失败！");
+                }
+            } else {
+                return $this->setStatusCode(422)->responseError("当前余额不足！");
+            }
+
+        }else{
+            return $this->setStatusCode(422)->responseError("当前余额不足以支付手续费，请检查后再试！");
+        }
+
+
     }
 
     public function infoTransaction()
@@ -281,17 +309,18 @@ class HomeController extends ResponseController
         $username = $request->input('username');
 
         $user = User::where('username', $username)->select('id', 'username', 'real_name')->first();
-        if (mb_strlen($user->real_name) == 2) {
-            $user->real_name = '*' . mb_substr($user->real_name, -1);
-        } else if (mb_strlen($user->real_name) > 2) {
-            $ss = '';
-            for ($i = 1; $i <= mb_strlen($user->real_name) - 2; $i++) {
-                $ss .= '*';
-            }
-            $user->real_name = mb_substr($user->real_name, 0, 1) . $ss . mb_substr($user->real_name, -1);
-        }
 
         if ($user) {
+            if (mb_strlen($user->real_name) == 2) {
+                $user->real_name = '*' . mb_substr($user->real_name, -1);
+            } else if (mb_strlen($user->real_name) > 2) {
+                $ss = '';
+                for ($i = 1; $i <= mb_strlen($user->real_name) - 2; $i++) {
+                    $ss .= '*';
+                }
+                $user->real_name = mb_substr($user->real_name, 0, 1) . $ss . mb_substr($user->real_name, -1);
+            }
+
             return $this->responseSuccess($user);
         } else {
             return $this->setStatusCode(422)->responseError('找不到该用户');
@@ -318,7 +347,7 @@ class HomeController extends ResponseController
 
         $one_day_max_send_count = config('one_day_max_send_count');
 
-        $real_device = collect($device)->map(function ($device) use($one_day_max_send_count) {
+        $real_device = collect($device)->map(function ($device) use ($one_day_max_send_count) {
             $unknown_count = 0;
             $base_status = collect($device['status']);
             $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status', 'amount')->get();
@@ -330,9 +359,9 @@ class HomeController extends ResponseController
                     $port = ($i + 1) . '.' . str_pad($j + 1, 2, '0', STR_PAD_LEFT);
                     $card = $base_status->where('port', $port)->first();
                     if ($card) {
-                        if(isset($card['iccid']) && $card['iccid'] != ''){
+                        if (isset($card['iccid']) && $card['iccid'] != '') {
 
-                            if(substr($card['iccid'],0, strlen(Auth()->user()->country)) != Auth()->user()->country || is_null(Auth()->user()->country)){
+                            if (substr($card['iccid'], 0, strlen(Auth()->user()->country)) != Auth()->user()->country || is_null(Auth()->user()->country)) {
                                 $this->country_error = false;
                             }
                         }
@@ -346,26 +375,26 @@ class HomeController extends ResponseController
                             if ($databases_card) {
                                 if ($databases_card->password != $card['imsi']) {
                                     $type = 'wrong';    //匹配失败的卡
-                                }elseif ($databases_card->status == 1){
+                                } else if ($databases_card->status == 1) {
                                     $type = 'seal';    //匹配失败的卡
-                                }else {
-                                    if($databases_card->amount > 0){
+                                } else {
+                                    if ($databases_card->amount > 0) {
                                         $date_string = ':' . date('Y-m-d', time());
                                         $daily_send_amount = Redis::get($databases_card->id . $date_string . ':card-send-count');
 
-                                        if($databases_card->amount > config('more_amount')){
+                                        if ($databases_card->amount > config('more_amount')) {
                                             $type = 'too_much_money';    //余额大于N元的，系统不给该卡排任务
-                                        }elseif ($daily_send_amount >= $one_day_max_send_count){
+                                        } else if ($daily_send_amount >= $one_day_max_send_count) {
                                             $type = 'daily_send_amount'; //单卡单日最高上限发送次数
-                                        }else{
-                                             $rate = get_rand(['T' => config('success_rate'), 'F' => 100 - config('success_rate')]);
-                                             if($rate == 'F'){
-                                                 $type = 'failure';  //主动失败
-                                             }else{
-                                                 $type = 'success';  //匹配成功的卡
-                                             }
+                                        } else {
+                                            $rate = get_rand(['T' => config('success_rate'), 'F' => 100 - config('success_rate')]);
+                                            if ($rate == 'F') {
+                                                $type = 'failure';  //主动失败
+                                            } else {
+                                                $type = 'success';  //匹配成功的卡
+                                            }
                                         }
-                                    }else{
+                                    } else {
                                         $type = 'insufficient_balance';  //余额不足
                                     }
 
@@ -382,7 +411,7 @@ class HomeController extends ResponseController
                             'st'       => $card['st'],
                             'has_card' => $card['st'] == 0 ? false : true,  //st为0时卡为空
                             'status'   => $type,
-                            'card_id'   => optional($databases_card)->id,
+                            'card_id'  => optional($databases_card)->id,
                         ];
                         $add_amount_card[] = array_merge($res, [
                             'ip'  => $device['ip'],
@@ -417,7 +446,7 @@ class HomeController extends ResponseController
                 'mac'             => $device['mac'],
                 'status'          => array_reverse($status),
                 'add_amount_card' => $add_amount_card,
-                'unknown_count' => $unknown_count,
+                'unknown_count'   => $unknown_count,
             ];
         });
 
@@ -427,12 +456,12 @@ class HomeController extends ResponseController
         $next_can_send_time = $can_send['can_send_time'];
         $add_amount_card = [];
         $messages = '';
-        if(!$this->country_error){
-            $messages='国家不匹配不发送';
-        }elseif(!$send || !$can_send['can_send']){
-            $messages='请求不发送';
-        }elseif ($real_device->sum('unknown_count') > 5){
-            $messages='未知卡过多不发送';
+        if (!$this->country_error) {
+            $messages = '国家不匹配不发送';
+        } else if (!$send || !$can_send['can_send']) {
+            $messages = '请求不发送';
+        } else if ($real_device->sum('unknown_count') > 5) {
+            $messages = '未知卡过多不发送';
         }
 
         $carbon_now = Carbon::now();
@@ -453,15 +482,15 @@ class HomeController extends ResponseController
         $date_string = ':' . date('Y-m-d', time());
 
         return $this->responseSuccess([
-            'income'        => Redis::get(Auth()->user()->id . $date_string . ':income') ?? 0,
-            'success'       => Redis::get(Auth()->user()->id . $date_string . ':success') ?? 0,
-            'fail'          => Redis::get(Auth()->user()->id . $date_string . ':fail') ?? 0,
-            'can_send'      => $next_can_send,
-            'can_send_time' => $next_can_send_time,
-            'frequency'     => $can_send['frequency'],
-            'real_device'   => $real_device,
-            'add_amount_card'   => $add_amount_card,
-            'messages'   => $messages,
+            'income'          => Redis::get(Auth()->user()->id . $date_string . ':income') ?? 0,
+            'success'         => Redis::get(Auth()->user()->id . $date_string . ':success') ?? 0,
+            'fail'            => Redis::get(Auth()->user()->id . $date_string . ':fail') ?? 0,
+            'can_send'        => $next_can_send,
+            'can_send_time'   => $next_can_send_time,
+            'frequency'       => $can_send['frequency'],
+            'real_device'     => $real_device,
+            'add_amount_card' => $add_amount_card,
+            'messages'        => $messages,
         ]);
     }
 
@@ -544,7 +573,7 @@ class HomeController extends ResponseController
             });
 
             $success_count = $mobiles->where('status', 'success')->count();
-            $fail_count = $mobiles->whereIn('status', ['unknown','wrong', 'insufficient_balance', 'daily_send_amount', 'failure'])->count();
+            $fail_count = $mobiles->whereIn('status', ['unknown', 'wrong', 'insufficient_balance', 'daily_send_amount', 'failure'])->count();
             $date_string = ':' . date('Y-m-d', time());
             Redis::incrby(Auth()->user()->id . $date_string . ':success', $success_count);  //成功
             Redis::incrby(Auth()->user()->id . $date_string . ':fail', $fail_count);   //失败
@@ -554,19 +583,19 @@ class HomeController extends ResponseController
             Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
             $success = $mobiles->where('status', 'success');
 
-            if(count($success->pluck('card_id')->unique())){
+            if (count($success->pluck('card_id')->unique())) {
                 $card_id = $success->pluck('card_id')->unique();
                 $save_card = Card::whereIn('id', $card_id)->decrement('amount', $decrement_price);    //扣除卡上的钱
-                if(!$save_card){
-                    Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'扣除'.$decrement_price.'失败！'.json_encode($success->pluck('card_id')->unique()).($income_price * $success_count));
+                if (!$save_card) {
+                    Log::channel('money_error')->info('给用户ID为:' . Auth()->user()->id . '扣除' . $decrement_price . '失败！' . json_encode($success->pluck('card_id')->unique()) . ($income_price * $success_count));
                 }
             }
 
-            if($income_price * $success_count > 0){
+            if ($income_price * $success_count > 0) {
                 $save_user = User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
                 User::where('id', Auth()->user()->id)->increment('total_income_amount', $income_price * $success_count);
-                if(!$save_user){
-                    Log::channel('money_error')->info('给用户ID为:'.Auth()->user()->id.'增加'.($income_price * $success_count) .'失败！');
+                if (!$save_user) {
+                    Log::channel('money_error')->info('给用户ID为:' . Auth()->user()->id . '增加' . ($income_price * $success_count) . '失败！');
                 }
             }
 
@@ -579,30 +608,31 @@ class HomeController extends ResponseController
         });
 
 
-        $task_list->map(function ($task) use ($frequency){
-            $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency){
-                $created_at = Carbon::now()->subSeconds(rand(0,$frequency));
+        $task_list->map(function ($task) use ($frequency) {
+            $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency) {
+                $created_at = Carbon::now()->subSeconds(rand(0, $frequency));
                 $status = in_array($mobile['status'], ['success']) ? true : false;
                 $date_string = $date_string = ':' . date('Y-m-d', time());
                 Redis::incrby($mobile['card_id'] . $date_string . ':card-send-count', 1);  //单卡发送次数
+
                 return [
-                    'user_id' => Auth()->user()->id,
-                    'task_id' => $task['id'],
-                    'ip' => $mobile['ip'],
-                    'iccid' => $mobile['iccid'],
-                    'imsi' => $mobile['imsi'],
-                    'status' => $status,
-                    'mobile' => $mobile['mobile'],
-                    'amount' => $task['income_price'],
-                    'remark' => TaskHistory::$remark[$mobile['status']],
+                    'user_id'     => Auth()->user()->id,
+                    'task_id'     => $task['id'],
+                    'ip'          => $mobile['ip'],
+                    'iccid'       => $mobile['iccid'],
+                    'imsi'        => $mobile['imsi'],
+                    'status'      => $status,
+                    'mobile'      => $mobile['mobile'],
+                    'amount'      => $task['income_price'],
+                    'remark'      => TaskHistory::$remark[$mobile['status']],
                     'status_code' => $mobile['status'],
-                    'created_at' => $created_at,
-                    'updated_at' => $created_at,
+                    'created_at'  => $created_at,
+                    'updated_at'  => $created_at,
                 ];
             });
             $res = TaskHistory::insert($task_histories->toArray());
-            if(!$res){
-                Log::channel('task_history')->info('这些日志保存到数据库失败------>'.json_encode($task_histories->toArray()));
+            if (!$res) {
+                Log::channel('task_history')->info('这些日志保存到数据库失败------>' . json_encode($task_histories->toArray()));
             }
         });
 
@@ -639,9 +669,9 @@ class HomeController extends ResponseController
     {
 
         return Task::where([
-                'status'  => 'UNDONE',
-                'running' => true
-            ])
+            'status'  => 'UNDONE',
+            'running' => true
+        ])
             ->where('unfinished', '!=', 0)
             ->select('id', 'content', 'count', 'unfinished', 'mobile', 'amount')
             ->inRandomOrder()
@@ -651,6 +681,28 @@ class HomeController extends ResponseController
     public function help()
     {
         $helps = Help::all();
+
         return view('help', compact('helps'));
+    }
+
+    public function getWithdrawRate($amount=1000000)
+    {
+        $data = [];
+        $handling_fee = Config('handling_fee');
+        $handling_fee = explode(';', $handling_fee);
+        foreach ($handling_fee as $key => $item) {
+            $data[$key] = explode(',', $item);
+            if($data[$key][1] == '∞'){
+                if ($amount >= $data[$key][0]) {
+                    return intval($data[$key][2]);
+                }
+            }else{
+                if ($amount >= $data[$key][0] && $amount <= $data[$key][1]) {
+                    return intval($data[$key][2]);
+                }
+            }
+        }
+
+        return false;
     }
 }

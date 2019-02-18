@@ -18,6 +18,8 @@ class CreateWithdrawsTable extends Migration
             $table->integer('user_id')->unsigned()->comment('外键：users的主键');
             $table->unsignedBigInteger('amount')->comment('申请金额10000');
             $table->unsignedBigInteger('balance')->comment('扣之前的金额10000');
+            $table->unsignedBigInteger('handling_fee')->comment('手续费10000');
+            $table->unsignedBigInteger('withdraw_rate')->comment('费率');
             $table->string('bank_card_number')->nullable()->comment('银行卡卡号');
             $table->string('bank')->nullable()->comment('开户行');
             $table->boolean('status')->default(0)->comment('处理状态0:未处理;1:已处理');

@@ -12,7 +12,9 @@
                     <th>状态</th>
                     <th>对应账户</th>
                     <th>银行名称</th>
-                    <th>交易金额/剩余金额</th>
+                    <th>交易金额</th>
+                    <th>手续费</th>
+                    <th>剩余金额</th>
                     <th>确认时间</th>
                     <th>备注</th>
                 </tr>
@@ -24,12 +26,14 @@
                         <td style="color: {{ \App\Withdraw::$colors[$item->status] }}">{{ \App\Withdraw::$status[$item->status]}}</td>
                         <td>{{ $item->bank_card_number }}</td>
                         <td>{{ $item->bank }}</td>
+                        <td>{{ $item->amount }}</td>
+                        <td>{{ $item->handling_fee }}</td>
                         @if($item->status == 8)
-                            <td>{{ $item->amount }}/{{ $item->balance + $item->amount }}</td>
+                            <td>{{ $item->balance + $item->amount }}</td>
                         @elseif($item->status == 9)
-                            <td>{{ $item->amount }}/{{ $item->balance }}</td>
+                            <td>{{ $item->balance }}</td>
                         @else
-                            <td>{{ $item->amount }}/{{ round($item->balance - $item->amount, 4) }}</td>
+                            <td>{{ round($item->balance - $item->amount - $item->handling_fee , 4) }}</td>
                         @endif
                         <td>{{ $item->payment_at }}</td>
                         <td>{{ $item->remark }}</td>

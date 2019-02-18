@@ -9,6 +9,8 @@ class Withdraw extends Model
     protected $fillable= [
         'user_id',
         'amount',
+        'handling_fee',
+        'withdraw_rate',
         'status',
         'balance',
         'bank_card_number',
@@ -56,5 +58,15 @@ class Withdraw extends Model
     public function setBalanceAttribute($value)
     {
         $this->attributes['balance'] = $value * 10000;
+    }
+
+    public function getHandlingFeeAttribute($value)
+    {
+        return $value / 10000;
+    }
+
+    public function setHandlingFeeAttribute($value)
+    {
+        $this->attributes['handling_fee'] = $value * 10000;
     }
 }

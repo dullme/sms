@@ -82,7 +82,7 @@ class WithdrawController extends Controller
             $withdraw = Withdraw::where('status', 0)->findOrFail($id);
             if ($data['status'] == 9) {
                 $data['remark'] .= '(已退回余额)';
-                User::where('id', $withdraw->user_id)->increment('amount', ($withdraw->amount * 10000));
+                User::where('id', $withdraw->user_id)->increment('amount', (($withdraw->amount + $withdraw->handling_fee) * 10000));
             }
 
             return $withdraw->update($data);
@@ -119,6 +119,10 @@ class WithdrawController extends Controller
         $grid->column('user.username', '用户账号');
         $grid->column('user.real_name', '用户姓名');
         $grid->amount('提现金额');
+        $grid->handling_fee('手续费');
+        $grid->withdraw_rate('费率')->display(function ($value){
+            return $value/100;
+        });
         $grid->status('状态')->display(function ($status) {
             $color = array_get(Withdraw::$colors, $status);
             $status = array_get(Withdraw::$status, $status);
@@ -184,6 +188,10 @@ class WithdrawController extends Controller
         $form->display('amount', '提现金额');
         $form->display('bank', '银行名称');
         $form->display('bank_card_number', '银行卡号');
+        $form->display('handling_fee', '手续费');
+        $form->display('withdraw_rate','费率')->with(function ($withdraw_rate){
+            return $withdraw_rate / 100;
+        });
         $form->radio('status', '提现状态')->options([0 => '待处理', 1 => '提现成功', 9 => '提现失败']);
         $form->text('remark', '备注')->rules('required_if:status,9');
         $form->datetime('payment_at', '提现时间')->default(date('Y-m-d H:i:s'));

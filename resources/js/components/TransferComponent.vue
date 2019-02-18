@@ -87,9 +87,9 @@
                     withdraw_password: this.withdraw_password,
                     username: this.username,
                 }).then(response => {
-                    this.success = response.data.data;
-                    this.amount = (this.amount - this.transfer_amount).toFixed(4);
-                    this.can_withdraw = (this.can_withdraw -this.transfer_amount).toFixed(4);
+                    this.success = '转账成功！';
+                    this.amount = response.data.data.amount;
+                    this.can_withdraw = response.data.data.can_withdraw;
                 }).catch(error => {
                     this.message = error.response.data.message;
                 });
