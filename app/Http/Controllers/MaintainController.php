@@ -14,4 +14,9 @@ class MaintainController extends Controller
         }
         return view('down');
     }
+
+    public function edition()
+    {
+        return view('edition');
+    }
 }

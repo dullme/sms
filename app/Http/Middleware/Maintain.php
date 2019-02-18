@@ -15,6 +15,11 @@ class Maintain
      */
     public function handle($request, Closure $next)
     {
+
+        if($request->headers->get('edition') != config('edition')){
+            return redirect()->to(url('edition'));
+        }
+
         if(config('maintain') != 'up'){
             return redirect()->to(url('maintain'));
         }
