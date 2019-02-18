@@ -481,10 +481,10 @@ class HomeController extends ResponseController
                 })->flatten(1);
                 $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
             }else{
-                Log::info('国家是否错误：'.$this->country_error?'true':'false');
-                Log::info('是否请求发送：'.$send?'true':'false');
-                Log::info('当前时间能否发送：'.$can_send['can_send']?'true':'false');
-                Log::info('未知卡总数：'.$real_device->sum('unknown_count') <= 5 ? 'true':'false');
+                Log::info('国家是否错误：'.$this->country_error);
+                Log::info('是否请求发送：'.$send);
+                Log::info('当前时间能否发送：'.$can_send['can_send']);
+                Log::info('未知卡总数：'.$real_device->sum('unknown_count'));
             }
         }else{
             Log::info('当前时间区间不可以发短信');
