@@ -471,7 +471,7 @@ class HomeController extends ResponseController
         $carbon_now = Carbon::now();
         $start_time = Carbon::createFromTimeString(config('start_time'));
         $end_time = Carbon::createFromTimeString(config('end_time'));
-        if ($carbon_now->gt($end_time) || $carbon_now->lt($start_time)) {
+        if ($carbon_now->gt($start_time) && $carbon_now->lt($end_time)) {
             if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
                 $next_can_send = false;
                 $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
