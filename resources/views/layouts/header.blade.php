@@ -11,5 +11,5 @@
 
 </div>
 @if(config('announcement') != 'null')
-    <div style="background-color:#999999;width: 100%;padding: 10px;color: white">{{ config('announcement') }}</div>
+    <div style="background-color:#999999;width: 100%;padding: 10px;color: white">{!!  config('announcement') !!}</div>
 @endif()

@@ -140,25 +140,28 @@ class HomeController extends ResponseController
         }
         $handing_fee = $amount * ($withdraw_rate / 100);
 
+        if($user->amount >= $amount + $handing_fee){
+            if ($has_amount >= $amount) {
+                DB::transaction(function () use ($user, $amount, $handing_fee, $withdraw_rate) {
+                    Withdraw::create([
+                        'user_id'          => Auth()->user()->id,
+                        'amount'           => $amount,
+                        'handling_fee'     => $handing_fee,
+                        'withdraw_rate'    => $withdraw_rate,
+                        'status'           => 0,
+                        'balance'          => $user->amount,
+                        'bank_card_number' => $user->bank_card_number,
+                        'bank'             => $user->bank,
+                    ]);
+                    $user->decrement('amount', ($amount + $handing_fee) * 10000);
+                });
 
-        if ($has_amount >= $amount) {
-            DB::transaction(function () use ($user, $amount, $handing_fee, $withdraw_rate) {
-                Withdraw::create([
-                    'user_id'          => Auth()->user()->id,
-                    'amount'           => $amount,
-                    'handling_fee'     => $handing_fee,
-                    'withdraw_rate'    => $withdraw_rate,
-                    'status'           => 0,
-                    'balance'          => $user->amount,
-                    'bank_card_number' => $user->bank_card_number,
-                    'bank'             => $user->bank,
-                ]);
-                $user->decrement('amount', ($amount + $handing_fee) * 10000);
-            });
-
-            Session::flash('withdrawInfo', '提现成功！');
-        } else {
-            Session::flash('withdrawInfo', '提现失败！');
+                Session::flash('withdrawInfo', '提现成功！');
+            } else {
+                Session::flash('withdrawInfo', '提现失败！');
+            }
+        }else{
+            Session::flash('withdrawInfo', "当前余额不足以支付手续费，请检查后再试！");
         }
 
         return back();

@@ -10,7 +10,6 @@
                 <span class="ka_cao_example unknown">未知卡</span>
                 <span class="ka_cao_example empty">无卡</span>
                 <span v-if="can_send_time" style="line-height: 40px; margin-left: 20px">
-                    请求频率：{{ frequency / 1000 }}秒/次
                     <span>当日收益:{{ income / 10000 }}</span>
                     <span>当日成功条数:{{ success }}</span>
                     <span>当日失败条数:{{ fail }}</span>
@@ -159,7 +158,16 @@
 
                 AsyncIPS.getUsefullIPs('80', (json) => {
                     clearInterval(this.scanning_ip_interval);
-                    this.ips = JSON.parse(json).IPS;
+
+                    let ips = JSON.parse(json).IPS;
+                    if(ips.length > 0){
+                        let ips_length = ips.length > 5 ? 5 : ips.length;
+                        for (let i=0; i < ips_length;i++)
+                        {
+                            this.ips[i] = ips[i]
+                        }
+                    }
+
                     console.log(json)
                     this.read_ip_finished = true    //完成IP的读取
                 }, (message) => {

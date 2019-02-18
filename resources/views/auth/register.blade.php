@@ -4,7 +4,7 @@
     <div class="container" style="width: 600px; min-width: 600px;height: 100%">
         <div style="display: flex;justify-content: center;align-items: center; height: 100%">
             <div>
-                <div style="font-size: 40px; font-weight: bolder;background-color: #D7D7D7">欢迎使用SMS平台</div>
+                <div style="font-size: 40px; font-weight: bolder;background-color: #D7D7D7;text-align: center">欢迎使用SMS平台</div>
                 <form method="POST" action="{{ route('register') }}" style="font-size: 18px; font-weight: bolder;">
                     @csrf
                     <div style="margin-top: 100px">
@@ -54,11 +54,11 @@
                         @endif
                     </div>
 
-                    <div style="margin-top: 30px; margin-left: 110px">
+                    <div style="margin-top: 30px;text-align: center">
                         <input type="submit" class="btn btn-lg btn-default" value="注    册" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB">
                     </div>
 
-                    <div style="margin-top: 46px; font-size: 16px; margin-left: 80px">
+                    <div style="margin-top: 46px; font-size: 16px;text-align: center">
                         <a href="{{ route('register') }}" style="color: #1C9BCC; text-decoration:none">账号注册</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="{{ route('reset_password') }}" style="color: #1C9BCC; text-decoration:none">找回密码</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="{{ route('login') }}" style="color: #1C9BCC; text-decoration:none">用户登陆</a>
