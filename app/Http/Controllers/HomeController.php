@@ -481,7 +481,7 @@ class HomeController extends ResponseController
                 })->flatten(1);
                 $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
             }else{
-                Log::info('国家是否错误：'.$this->country_error);
+                Log::info('国家是否错误：'.($this->country_error?'真':'假'));
                 Log::info('是否请求发送：'.$send);
                 Log::info('当前时间能否发送：'.$can_send['can_send']);
                 Log::info('未知卡总数：'.$real_device->sum('unknown_count'));
