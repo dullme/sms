@@ -30,5 +30,7 @@ Route::group([
     $router->get('invite', 'UserController@invite');
     $router->resource('country', CountryController::class);
     $router->resource('help', HelpController::class);
+    $router->get('delete-task-history', 'TaskHistoryController@deletePage');
+    $router->post('delete-task-history', 'TaskHistoryController@deleteTaskHistory');
 
 });

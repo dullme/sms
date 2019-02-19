@@ -238,6 +238,10 @@ return [
         'content' => [
             'required' => '请选输入内容',
         ],
+        'days' => [
+            'required' => '请输入天数',
+            'integer' => '天数必须为整数',
+        ],
     ],
 
     /*

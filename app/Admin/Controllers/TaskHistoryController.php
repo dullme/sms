@@ -5,15 +5,26 @@ namespace App\Admin\Controllers;
 use App\TaskHistory;
 use App\Http\Controllers\Controller;
 use App\User;
+use Session;
+use Carbon\Carbon;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use Illuminate\Http\Request;
 
 class TaskHistoryController extends Controller
 {
-    use HasResourceActions;
+    use HasResourceActions, AdminControllerTrait;
+
+    /**
+     * CardController constructor.
+     */
+    public function __construct()
+    {
+        $this->loadVue();
+    }
 
     /**
      * Index interface.
@@ -72,6 +83,29 @@ class TaskHistoryController extends Controller
             ->header('Create')
             ->description('description')
             ->body($this->form());
+    }
+
+    public function deletePage(Content $content)
+    {
+        return $content
+            ->header('删除历史记录')
+            ->description('')
+            ->body(view('deleteTaskHistory'));
+    }
+
+    public function deleteTaskHistory(Request $request)
+    {
+        $request->validate([
+            'days' => 'required|integer'
+        ]);
+
+        $day = Carbon::today()->subDays($request->input('days'));
+
+        $delete_task_histories = TaskHistory::where('created_at', '<=', $day)->delete();
+
+        Session::flash('deleteTaskHistories', "共删除了{$delete_task_histories}条记录");
+
+        return back();
     }
 
     /**

@@ -127,6 +127,10 @@ class UserController extends Controller
         $grid->disableExport();
         $grid->disableRowSelector();
 
+        $grid->tools(function ($tools){
+            $tools->append('<a class="btn btn-sm btn-default" href="'.url('/admin/delete-task-history').'">删除历史记录</a>');
+        });
+
         $grid->footer(function ($query) {
             $ids = $query->pluck('id')->toArray();
             $income = 0;
