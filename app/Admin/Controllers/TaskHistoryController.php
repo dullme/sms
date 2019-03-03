@@ -133,9 +133,15 @@ class TaskHistoryController extends Controller
         $grid->mobile('接收号码');
         $grid->column('task.content', '接收内容');
         $grid->created_at('接收时间');
+        $grid->send_at('实际时间');
+
+        $grid->filter(function ($filter){
+            $filter->disableIdFilter();
+            $filter->between('send_at', '实际时间')->datetime();
+        });
+
         $grid->disableActions();
         $grid->disableExport();
-        $grid->disableTools();
         $grid->disableCreateButton();
         $grid->disableRowSelector();
         return $grid;

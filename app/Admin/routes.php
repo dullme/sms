@@ -26,6 +26,7 @@ Route::group([
     $router->post('task-add', 'TaskController@taskAdd');
     $router->resource('user', UserController::class);
     $router->get('user/task-history/{id}', 'TaskHistoryController@index');
+    $router->get('user/send-log/{id}', 'SendLogController@index');
     $router->resource('withdraw', WithdrawController::class);
     $router->get('invite', 'UserController@invite');
     $router->resource('country', CountryController::class);

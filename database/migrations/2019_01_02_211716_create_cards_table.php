@@ -16,6 +16,7 @@ class CreateCardsTable extends Migration
         Schema::create('cards', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->unique()->comment('卡号');
+            $table->integer('user_id')->nullable()->unsigned()->comment('最后一次使用该卡的用户');
             $table->unsignedBigInteger('amount')->default(0)->comment('金额');
             $table->string('password')->comment('密码');
             $table->boolean('status')->default(0)->comment('封卡0:正常;1:封卡');

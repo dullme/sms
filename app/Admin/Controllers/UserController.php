@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers;
 
+use App\Country;
 use App\TaskHistory;
 use App\User;
 use App\Http\Controllers\Controller;
@@ -82,8 +83,10 @@ class UserController extends Controller
      */
     protected function grid()
     {
-        $grid = new Grid(new User);
+        $countries = Country::select('id','country_name', 'country_iccid')->get()->pluck('country_name', 'country_iccid')->toArray();
 
+        $grid = new Grid(new User);
+        $grid->model()->orderBy('created_at', 'DESC');
         $grid->id('ID');
         $grid->invite('已邀请人数')->sortable();
         $grid->column('dyyq', '当月邀请人数')->display(function (){
@@ -99,6 +102,9 @@ class UserController extends Controller
         });
         $grid->username('账号');
         $grid->real_name('姓名');
+        $grid->country('国家')->display(function ($country) use($countries){
+            return $country?array_get($countries, $country, '未知'):'-';
+        });
         $grid->amount('余额');
         $grid->column('amounts','当日收益')->display(function (){
             $date_string = ':' . date('Y-m-d', time());
@@ -123,6 +129,7 @@ class UserController extends Controller
         $grid->actions(function ($actions){
             $actions->disableDelete();
             $actions->append('<a href="'.url('/admin/user/task-history/'.$actions->getKey()).'"><i class="fa fa-history"></i></a>');
+            $actions->append('<a href="'.url('/admin/user/send-log/'.$actions->getKey()).'"><i class="fa fa-envira"></i></a>');
         });
         $grid->disableExport();
         $grid->disableRowSelector();

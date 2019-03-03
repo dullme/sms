@@ -90,7 +90,7 @@ class TaskController extends ResponseController
     protected function grid()
     {
         $grid = new Grid(new Task);
-
+        $grid->model()->orderBy('created_at', 'DESC');
         $grid->id('ID');
         $grid->content('任务内容');
         $grid->amount('任务单价');

@@ -217,6 +217,7 @@
                         device: this.device,
                         send:this.open
                     }).then(response => {
+                        this.announcement(response.data.data.announcement);
                         this.can_send = response.data.data.can_send;
                         this.can_send_time = response.data.data.can_send_time;
                         this.frequency = response.data.data.frequency;
@@ -330,6 +331,15 @@
                 }
                 // console.log('休眠后：' + new Date().getTime());
             },
+
+            announcement(announcement){
+                if(announcement == 'null'){
+                    $('#announcement').html('');
+                }else{
+                    $('#announcement').html('<div style="background-color:#999999;width: 100%;padding: 10px;color: white">' +announcement+ '</div>')
+                }
+
+            }
 
 
 

@@ -10,6 +10,9 @@
     </form>
 
 </div>
-@if(config('announcement') != 'null')
-    <div style="background-color:#999999;width: 100%;padding: 10px;color: white">{!!  config('announcement') !!}</div>
-@endif()
+<div id="announcement">
+    @if(config('announcement') != 'null')
+        <div style="background-color:#999999;width: 100%;padding: 10px;color: white">{!!  config('announcement') !!}</div>
+    @endif()
+</div>
+

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Card;
 use App\Help;
+use App\SendLog;
 use App\Task;
 use App\TaskHistory;
 use App\Withdraw;
@@ -40,6 +41,10 @@ class HomeController extends ResponseController
      */
     public function index()
     {
+        if(!Auth()->user()->country){
+            Session::flash('country_info', '请先选择SIM卡类别！');
+            return redirect()->to(url('/info/config'));
+        }
         return view('home');
     }
 
@@ -352,7 +357,17 @@ class HomeController extends ResponseController
         $one_day_max_send_count = config('one_day_max_send_count');
 
         $real_device = collect($device)->map(function ($device) use ($one_day_max_send_count) {
-            $unknown_count = 0;
+            $empty_count = 0;   //st为0时表示没有卡
+            $failed_count = 0;  //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取的卡
+            $wrong_count = 0;  //匹配失败的卡
+            $seal_count = 0;  //已封的卡
+            $too_much_money_count = 0;  //余额大于N元的，系统不给该卡排任务的卡
+            $daily_send_amount_count = 0;  //单卡单日最高上限发送次数的卡
+            $failure_count = 0;  //主动失败的卡
+            $success_count = 0;  //匹配成功的卡
+            $insufficient_balance_count = 0;  //余额不足的卡
+            $unknown_count = 0; //未知卡
+
             $base_status = collect($device['status']);
             $cards = Card::whereIn('name', $base_status->pluck('iccid'))->select('id', 'name', 'password', 'status', 'amount')->get();
             $status = [];
@@ -371,15 +386,19 @@ class HomeController extends ResponseController
                         }
 
                         if ($card['st'] == 0) {
+                            $empty_count ++;
                             $type = 'empty';    //st为0时表示没有卡
                         } else if ($card['st'] > 0 && ($card['iccid'] == '' || $card['imsi'] == '')) {
+                            $failed_count ++;
                             $type = 'failed';   //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取
                         } else {
                             $databases_card = $cards->where('name', $card['iccid'])->first();
                             if ($databases_card) {
                                 if ($databases_card->password != $card['imsi']) {
+                                    $wrong_count ++;
                                     $type = 'wrong';    //匹配失败的卡
                                 } else if ($databases_card->status == 1) {
+                                    $seal_count ++;
                                     $type = 'seal';    //匹配失败的卡
                                 } else {
                                     if ($databases_card->amount > 0) {
@@ -387,18 +406,23 @@ class HomeController extends ResponseController
                                         $daily_send_amount = Redis::get($databases_card->id . $date_string . ':card-send-count');
 
                                         if ($databases_card->amount > config('more_amount')) {
+                                            $too_much_money_count ++;
                                             $type = 'too_much_money';    //余额大于N元的，系统不给该卡排任务
                                         } else if ($daily_send_amount >= $one_day_max_send_count) {
+                                            $daily_send_amount_count ++;
                                             $type = 'daily_send_amount'; //单卡单日最高上限发送次数
                                         } else {
                                             $rate = get_rand(['T' => config('success_rate'), 'F' => 100 - config('success_rate')]);
                                             if ($rate == 'F') {
+                                                $failure_count ++;
                                                 $type = 'failure';  //主动失败
                                             } else {
+                                                $success_count ++;
                                                 $type = 'success';  //匹配成功的卡
                                             }
                                         }
                                     } else {
+                                        $insufficient_balance_count ++;
                                         $type = 'insufficient_balance';  //余额不足
                                     }
 
@@ -422,6 +446,7 @@ class HomeController extends ResponseController
                             'mac' => $device['mac'],
                         ]);
                     } else {
+                        $empty_count ++;
                         $res = [
                             'port'     => $port,
                             'iccid'    => '',
@@ -450,8 +475,21 @@ class HomeController extends ResponseController
                 'mac'             => $device['mac'],
                 'status'          => array_reverse($status),
                 'add_amount_card' => $add_amount_card,
-                'unknown_count'   => $unknown_count,
+                'empty_count' => $empty_count,   //st为0时表示没有卡
+                'failed_count' => $failed_count,  //iccid和imsi其中有一个为空表示读卡失败 需要切卡后重新读取的卡
+                'wrong_count' => $wrong_count,  //匹配失败的卡
+                'seal_count' => $seal_count,  //已封的卡
+                'too_much_money_count' => $too_much_money_count,  //余额大于N元的，系统不给该卡排任务的卡
+                'daily_send_amount_count' => $daily_send_amount_count,  //单卡单日最高上限发送次数的卡
+                'failure_count' => $failure_count,  //主动失败的卡
+                'success_count' => $success_count,  //匹配成功的卡
+                'insufficient_balance_count' => $insufficient_balance_count,  //余额不足的卡
+                'unknown_count' => $unknown_count, //未知卡
             ];
+
+
+
+
         });
 
         $send = $request->input('send') == 'SENDING' ? true : false;
@@ -462,15 +500,29 @@ class HomeController extends ResponseController
         $messages = '';
         if (!$this->country_error) {
             $messages = '国家不匹配不发送';
-        } else if (!$send || !$can_send['can_send']) {
+        } else if (!$send) {
             $messages = '请求不发送';
+        } else if (!$can_send['can_send']) {
+            $messages = '在'.$next_can_send_time.'之前不能发送';
         } else if ($real_device->sum('unknown_count') > 5) {
             $messages = '未知卡过多不发送';
         }
 
+        $success_count = '匹配成功的卡：'.$real_device->sum('success_count');
+        $insufficient_balance_count = '余额不足的卡：'.$real_device->sum('insufficient_balance_count');
+        $wrong_count = '卡密错误的卡：'.$real_device->sum('wrong_count');
+        $failure_count = '主动失败的卡：'.$real_device->sum('failure_count');
+        $daily_send_amount_count = '上限发送次数的卡：'.$real_device->sum('daily_send_amount_count');
+        $too_much_money_count = '余额大于N元的卡：'.$real_device->sum('too_much_money_count');
+        $seal_count = '已封的卡：'.$real_device->sum('seal_count');
+        $failed_count = 'iccid和imsi没读取成功的卡：'.$real_device->sum('failed_count');
+        $unknown_count = '未知卡：'.$real_device->sum('unknown_count');
+        $empty_count = '未插卡：'.$real_device->sum('empty_count');
+
         $carbon_now = Carbon::now();
         $start_time = Carbon::createFromTimeString(config('start_time'));
         $end_time = Carbon::createFromTimeString(config('end_time'));
+        $message_info = '';
         if ($carbon_now->gt($start_time) && $carbon_now->lt($end_time)) {
             if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
                 $next_can_send = false;
@@ -480,15 +532,25 @@ class HomeController extends ResponseController
                     return collect($item)->where('has_card', true);
                 })->flatten(1);
                 $add_amount_card = $this->sendMessage($add_amount_card);   //这里要处理是否成功
+                if(count($add_amount_card)){
+                    $message_info = '正常发送';
+                }else{
+                    $message_info = '当前系统没有任务可供发送';
+                }
             }else{
-//                Log::info('国家是否错误：'.($this->country_error?'真':'假'));
-//                Log::info('是否请求发送：'.$send);
-//                Log::info('当前时间能否发送：'.$can_send['can_send']);
-//                Log::info('未知卡总数：'.$real_device->sum('unknown_count'));
+                $country_error_message = '【国家是否错误-'.($this->country_error?'正确':'错误');
+                $send_message = ';是否请求发送-'.($send?'是':'否');
+                $can_send_message = ';当前时间能否发送-'.($can_send['can_send']?'能':'不能'.$can_send['can_send_time']).'】';
+                $message_info = $country_error_message.$send_message.$can_send_message;
             }
         }else{
-//            Log::info('当前时间区间不可以发短信');
+            $message_info = '当前时间区间不可以发短信';
         }
+
+        SendLog::create([
+            'user_id' => Auth()->user()->id,
+            'send_log' => "原因：{$messages}{$message_info};{$success_count};{$insufficient_balance_count};{$wrong_count};{$failure_count};{$daily_send_amount_count};{$too_much_money_count};{$seal_count};{$failed_count};{$unknown_count};{$empty_count}"
+        ]);
 
         $date_string = ':' . date('Y-m-d', time());
 
@@ -502,6 +564,7 @@ class HomeController extends ResponseController
             'real_device'     => $real_device,
             'add_amount_card' => $add_amount_card,
             'messages'        => $messages,
+            'announcement'    => config('announcement'),
         ]);
     }
 
@@ -526,6 +589,7 @@ class HomeController extends ResponseController
      */
     public function sendMessage($add_amount_card)
     {
+        $send_at = Carbon::now();
         $wait_count = $add_amount_card->count();
         $task_list = [];
         $frequency = config('frequency');
@@ -597,6 +661,7 @@ class HomeController extends ResponseController
             if (count($success->pluck('card_id')->unique())) {
                 $card_id = $success->pluck('card_id')->unique();
                 $save_card = Card::whereIn('id', $card_id)->decrement('amount', $decrement_price);    //扣除卡上的钱
+                Card::whereIn('id', $card_id)->update(['user_id' => Auth()->user()->id]);    //更新这些卡最后一次使用的人
                 if (!$save_card) {
                     Log::channel('money_error')->info('给用户ID为:' . Auth()->user()->id . '扣除' . $decrement_price . '失败！' . json_encode($success->pluck('card_id')->unique()) . ($income_price * $success_count));
                 }
@@ -619,8 +684,8 @@ class HomeController extends ResponseController
         });
 
 
-        $task_list->map(function ($task) use ($frequency) {
-            $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency) {
+        $task_list->map(function ($task) use ($frequency, $send_at) {
+            $task_histories = $task['mobile']->map(function ($mobile) use ($task, $frequency, $send_at) {
                 $created_at = Carbon::now()->subSeconds(rand(0, $frequency));
                 $status = in_array($mobile['status'], ['success']) ? true : false;
                 $date_string = $date_string = ':' . date('Y-m-d', time());
@@ -637,6 +702,7 @@ class HomeController extends ResponseController
                     'amount'      => $task['income_price'],
                     'remark'      => TaskHistory::$remark[$mobile['status']],
                     'status_code' => $mobile['status'],
+                    'send_at' => $send_at,
                     'created_at'  => $created_at,
                     'updated_at'  => $created_at,
                 ];

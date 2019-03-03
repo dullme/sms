@@ -25,6 +25,7 @@ class CreateTaskHistoriesTable extends Migration
             $table->unsignedBigInteger('amount')->comment('金额');
             $table->string('mobile')->comment('发送手机号');
             $table->string('remark')->nullable()->comment('备注');
+            $table->timestamp('send_at')->nullable()->comment('实际发送时间');
             $table->timestamps();
         });
     }

@@ -230,7 +230,7 @@ return [
             'min' => '国家编码为:min位',
         ],
         'country' => [
-            'required' => '请选择国家',
+            'required' => '请选择SIM卡类别',
         ],
         'title' => [
             'required' => '请选输入标题',

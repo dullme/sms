@@ -13,6 +13,7 @@
 
 Route::get('/maintain', 'MaintainController@index');
 Route::get('/edition', 'MaintainController@edition');
+Route::get('/iccid/{iccid}', 'MaintainController@byICCIDFindAmount');
 
 Route::get('/', 'HomeController@index');
 

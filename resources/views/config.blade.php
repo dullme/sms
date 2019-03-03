@@ -27,6 +27,10 @@
                             <option value="{{ $item->country_iccid }}" {{ Auth()->user()->country == $item->country_iccid ? 'selected="selected"':'' }}>{{ $item->country_name }}</option>
                         @endforeach
                     </select>
+                    @if(Session::has('country_info'))
+                        <span class="text-danger" style="margin-left: 10px">{{ Session::get('country_info') }}</span>
+                    @endif
+
                 </div>
 
                 <div style="margin-top: 18px">
