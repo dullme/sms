@@ -7,6 +7,7 @@ use App\Help;
 use App\SendLog;
 use App\Task;
 use App\TaskHistory;
+use App\UserDailyRevenue;
 use App\Withdraw;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -657,9 +658,10 @@ class HomeController extends ResponseController
 
             Redis::incrby(Auth()->user()->id . $date_string . ':income', $income_price * $success_count);
             $success = $mobiles->where('status', 'success');
-
+            $total_charged_amount = 0;
             if (count($success->pluck('card_id')->unique())) {
                 $card_id = $success->pluck('card_id')->unique();
+                $total_charged_amount = count($card_id) * $decrement_price;
                 $save_card = Card::whereIn('id', $card_id)->decrement('amount', $decrement_price);    //扣除卡上的钱
                 Card::whereIn('id', $card_id)->update(['user_id' => Auth()->user()->id]);    //更新这些卡最后一次使用的人
                 if (!$save_card) {
@@ -667,12 +669,31 @@ class HomeController extends ResponseController
                 }
             }
 
+            $total_income_amount = 0;
             if ($income_price * $success_count > 0) {
+                $total_income_amount = $income_price * $success_count;
                 $save_user = User::where('id', Auth()->user()->id)->increment('amount', $income_price * $success_count); //增加用户的钱
                 User::where('id', Auth()->user()->id)->increment('total_income_amount', $income_price * $success_count);
+
                 if (!$save_user) {
                     Log::channel('money_error')->info('给用户ID为:' . Auth()->user()->id . '增加' . ($income_price * $success_count) . '失败！');
                 }
+            }
+
+
+            $userDailyRevenue = UserDailyRevenue::where('user_id', Auth()->user()->id)->where('date', Carbon::today())->first();
+
+            if($userDailyRevenue){
+                $userDailyRevenue->total_income_amount +=$total_income_amount;
+                $userDailyRevenue->total_charged_amount +=$total_charged_amount;
+                $userDailyRevenue->save();
+            }else{
+                UserDailyRevenue::create([
+                    'user_id' => Auth()->user()->id,
+                    'total_income_amount' => $total_income_amount,
+                    'total_charged_amount' => $total_charged_amount,
+                    'date' => Carbon::today()
+                ]);
             }
 
             return [

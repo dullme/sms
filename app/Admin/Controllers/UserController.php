@@ -130,6 +130,7 @@ class UserController extends Controller
             $actions->disableDelete();
             $actions->append('<a href="'.url('/admin/user/task-history/'.$actions->getKey()).'"><i class="fa fa-history"></i></a>');
             $actions->append('<a href="'.url('/admin/user/send-log/'.$actions->getKey()).'"><i class="fa fa-envira"></i></a>');
+            $actions->append('<a href="'.url('/admin/user/user-daily-revenue/'.$actions->getKey()).'"><i class="fa fa-btc"></i></a>');
         });
         $grid->disableExport();
         $grid->disableRowSelector();
