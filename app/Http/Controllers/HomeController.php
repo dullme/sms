@@ -663,6 +663,7 @@ class HomeController extends ResponseController
                 $card_id = $success->pluck('card_id')->unique();
                 $total_charged_amount = count($card_id) * $decrement_price;
                 $save_card = Card::whereIn('id', $card_id)->decrement('amount', $decrement_price);    //扣除卡上的钱
+                $this->saveCardTodayAmount($card_id, $decrement_price);//记录每天扣除的钱
                 Card::whereIn('id', $card_id)->update(['user_id' => Auth()->user()->id]);    //更新这些卡最后一次使用的人
                 if (!$save_card) {
                     Log::channel('money_error')->info('给用户ID为:' . Auth()->user()->id . '扣除' . $decrement_price . '失败！' . json_encode($success->pluck('card_id')->unique()) . ($income_price * $success_count));
@@ -802,5 +803,28 @@ class HomeController extends ResponseController
         }
 
         return false;
+    }
+
+    /**
+     * @param array $card_id
+     * @param $decrement_price
+     */
+    public function saveCardTodayAmount(array $card_id, $decrement_price)
+    {
+        if(Carbon::today()->isSunday()){
+            Card::whereIn('id', $card_id)->increment('sunday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isMonday()){
+            Card::whereIn('id', $card_id)->increment('monday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isTuesday()){
+            Card::whereIn('id', $card_id)->increment('tuesday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isWednesday()){
+            Card::whereIn('id', $card_id)->increment('wednesday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isThursday()){
+            Card::whereIn('id', $card_id)->increment('thursday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isFriday()){
+            Card::whereIn('id', $card_id)->increment('friday', $decrement_price);    //扣除卡上的钱
+        }elseif (Carbon::today()->isSaturday()){
+            Card::whereIn('id', $card_id)->increment('saturday', $decrement_price);    //扣除卡上的钱
+        }
     }
 }

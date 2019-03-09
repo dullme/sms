@@ -26,6 +26,7 @@ Route::group([
     $router->post('task-add', 'TaskController@taskAdd');
     $router->resource('user', UserController::class);
     $router->get('user/task-history/{id}', 'TaskHistoryController@index');
+    $router->get('card/card-daily-deduction-history/{id}', 'CardDailyDeductionController@index');
     $router->get('user/send-log/{id}', 'SendLogController@index');
     $router->get('user/user-daily-revenue/{id}', 'UserDailyRevenueController@index');
     $router->resource('withdraw', WithdrawController::class);

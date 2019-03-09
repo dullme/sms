@@ -140,6 +140,11 @@ class CardController extends ResponseController
 //        $grid->actions(function ($actions){
 //            $actions->disableDelete();
 //        });
+
+        $grid->actions(function ($actions){
+            $actions->append('<a href="'.url('/admin/card/card-daily-deduction-history/'.$actions->getKey()).'"><i class="fa fa-history"></i></a>');
+        });
+
         $grid->disableExport();
 //        $grid->disableRowSelector();
 

@@ -7,7 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Card extends Model
 {
     protected $fillable = [
-        'name', 'amount', 'password','user_id'
+        'name',
+        'amount',
+        'password',
+        'user_id',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
     ];
 
     public function getAmountAttribute($value)
