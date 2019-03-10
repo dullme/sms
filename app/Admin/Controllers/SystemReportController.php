@@ -2,8 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\User;
-use App\UserDailyRevenue;
+use App\SystemReport;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
@@ -11,7 +10,7 @@ use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
-class UserDailyRevenueController extends Controller
+class SystemReportController extends Controller
 {
     use HasResourceActions;
 
@@ -21,13 +20,12 @@ class UserDailyRevenueController extends Controller
      * @param Content $content
      * @return Content
      */
-    public function index($id, Content $content)
+    public function index(Content $content)
     {
-        $user = User::findOrFail($id);
         return $content
-            ->header($user->username)
-            ->description($user->real_name)
-            ->body($this->grid($id));
+            ->header('系统报表')
+            ->description('')
+            ->body($this->grid());
     }
 
     /**
@@ -79,26 +77,29 @@ class UserDailyRevenueController extends Controller
      *
      * @return Grid
      */
-    protected function grid($id)
+    protected function grid()
     {
-        $grid = new Grid(new UserDailyRevenue);
-        $grid->model()->where('user_id', $id)->orderBy('created_at', 'DESC');
+        $grid = new Grid(new SystemReport);
+
         $grid->id('ID');
-        $grid->user()->username('用户账号');
-        $grid->total_income_amount('当日总收入')->display(function ($total_income_amount){
-            return $total_income_amount /10000;
+        $grid->user_total_amount('用户总收益')->display(function ($value){
+            return $value /10000;
         });
-        $grid->total_count('当日总成功发送次数');
-        $grid->total_charged_amount('当日总支出')->display(function ($total_charged_amount){
-            return $total_charged_amount /10000;
+        $grid->card_total_deduction('账号总扣款')->display(function ($value){
+            return $value /10000;
         });
         $grid->date('日期');
 
+        $grid->filter(function ($filter){
+            $filter->disableIdFilter();
+            $filter->between('date', '日期')->datetime();
+        });
 
         $grid->disableActions();
         $grid->disableExport();
         $grid->disableCreateButton();
         $grid->disableRowSelector();
+
         return $grid;
     }
 
@@ -110,12 +111,11 @@ class UserDailyRevenueController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(UserDailyRevenue::findOrFail($id));
+        $show = new Show(SystemReport::findOrFail($id));
 
         $show->id('Id');
-        $show->user_id('User id');
-        $show->total_income_amount('Total income amount');
-        $show->total_charged_amount('Total charged amount');
+        $show->user_total_amount('User total amount');
+        $show->card_total_deduction('Card total deduction');
         $show->date('Date');
         $show->created_at('Created at');
         $show->updated_at('Updated at');
@@ -130,11 +130,10 @@ class UserDailyRevenueController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new UserDailyRevenue);
+        $form = new Form(new SystemReport);
 
-        $form->number('user_id', 'User id');
-        $form->number('total_income_amount', 'Total income amount');
-        $form->number('total_charged_amount', 'Total charged amount');
+        $form->number('user_total_amount', 'User total amount');
+        $form->number('card_total_deduction', 'Card total deduction');
         $form->date('date', 'Date')->default(date('Y-m-d'));
 
         return $form;

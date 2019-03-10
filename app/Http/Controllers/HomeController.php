@@ -687,12 +687,14 @@ class HomeController extends ResponseController
             if($userDailyRevenue){
                 $userDailyRevenue->total_income_amount +=$total_income_amount;
                 $userDailyRevenue->total_charged_amount +=$total_charged_amount;
+                $userDailyRevenue->total_count +=1;
                 $userDailyRevenue->save();
             }else{
                 UserDailyRevenue::create([
                     'user_id' => Auth()->user()->id,
                     'total_income_amount' => $total_income_amount,
                     'total_charged_amount' => $total_charged_amount,
+                    'total_count' => 1,
                     'date' => Carbon::today()
                 ]);
             }

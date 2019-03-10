@@ -21,11 +21,13 @@ class MaintainController extends ResponseController
         return view('edition');
     }
 
-    public function byICCIDFindAmount($iccid)
+    public function byICCIDFindAmount($iccid, $token)
     {
-        $card =  Card::where('name', $iccid)->select('name as iccid', 'amount')->first();
-        if($card){
-            return $this->responseSuccess($card);
+        if($token == config('api')){
+            $card =  Card::where('name', $iccid)->select('name as iccid', 'amount')->first();
+            if($card){
+                return $this->responseSuccess($card);
+            }
         }
 
         return $this->responseError('error');

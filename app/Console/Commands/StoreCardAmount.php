@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Card;
 use App\CardDailyDeduction;
+use App\SystemReport;
+use App\UserDailyRevenue;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -40,7 +42,6 @@ class StoreCardAmount extends Command
      */
     public function handle()
     {
-
         if(Carbon::today()->isSunday()){
             $today = 'sunday';
             Card::query()->update([
@@ -113,22 +114,24 @@ class StoreCardAmount extends Command
             ]);
         }
 
-        if(isset($today)){
-            $cards = Card::all();
-            $now = Carbon::now();
-            $date = $now->toDateString();
-            $cards = $cards->map(function ($card)use ($today, $date, $now){
-                return [
-                    'card_id' => $card['id'],
-                    'total_charged_amount' => $card[$today],
-                    'date' => $date,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            })->toArray();
+        $this->systemReport();
 
-            $this->storeComplex($cards);
-        }
+//        if(isset($today)){
+//            $cards = Card::all();
+//            $now = Carbon::now();
+//            $date = $now->toDateString();
+//            $cards = $cards->map(function ($card)use ($today, $date, $now){
+//                return [
+//                    'card_id' => $card['id'],
+//                    'total_charged_amount' => $card[$today],
+//                    'date' => $date,
+//                    'created_at' => $now,
+//                    'updated_at' => $now,
+//                ];
+//            })->toArray();
+//
+//            $this->storeComplex($cards);
+//        }
 
     }
 
@@ -148,5 +151,23 @@ class StoreCardAmount extends Command
         $data->map(function($item){
             CardDailyDeduction::insert($item->toArray());
         });
+    }
+
+    public function systemReport()
+    {
+        $user_daily_revenue = UserDailyRevenue::where('date', Carbon::today())->get();
+        $system_report = SystemReport::where('date', Carbon::today())->first();
+
+        if($system_report){
+            $system_report->user_total_amount = $user_daily_revenue->sum('total_income_amount');
+            $system_report->card_total_deduction = $user_daily_revenue->sum('total_charged_amount');
+            $system_report->save();
+        }else{
+            SystemReport::create([
+                'user_total_amount' => $user_daily_revenue->sum('total_income_amount'),
+                'card_total_deduction' => $user_daily_revenue->sum('total_charged_amount'),
+                'date' => Carbon::today()
+            ]);
+        }
     }
 }

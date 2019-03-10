@@ -109,6 +109,28 @@ class CardController extends ResponseController
         $grid->daily_count('当日发送次数')->display(function () use ($date_string) {
             return Redis::get($this->id . $date_string . ':card-send-count') ?? 0;
         });
+
+        if(Carbon::today()->isSunday()){
+            $today = 'sunday';
+        }elseif (Carbon::today()->isMonday()){
+            $today = 'monday';
+        }elseif (Carbon::today()->isTuesday()){
+            $today = 'tuesday';
+        }elseif (Carbon::today()->isWednesday()){
+            $today = 'wednesday';
+        }elseif (Carbon::today()->isThursday()){
+            $today = 'thursday';
+        }elseif (Carbon::today()->isFriday()){
+            $today = 'friday';
+        }else{
+            $today = 'saturday';
+        }
+
+        $grid->$today('当日扣费总金额')->display(function ($value) {
+            return $value/10000;
+        });
+
+
         $grid->user('最后使用的用户账号')->display(function ($user){
             return $user['username'];
         });
@@ -141,9 +163,9 @@ class CardController extends ResponseController
 //            $actions->disableDelete();
 //        });
 
-        $grid->actions(function ($actions){
-            $actions->append('<a href="'.url('/admin/card/card-daily-deduction-history/'.$actions->getKey()).'"><i class="fa fa-history"></i></a>');
-        });
+//        $grid->actions(function ($actions){
+//            $actions->append('<a href="'.url('/admin/card/card-daily-deduction-history/'.$actions->getKey()).'"><i class="fa fa-history"></i></a>');
+//        });
 
         $grid->disableExport();
 //        $grid->disableRowSelector();

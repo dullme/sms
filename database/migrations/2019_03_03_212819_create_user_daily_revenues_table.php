@@ -18,6 +18,7 @@ class CreateUserDailyRevenuesTable extends Migration
             $table->integer('user_id')->unsigned();
             $table->unsignedBigInteger('total_income_amount')->default(0)->comment('总收益');
             $table->unsignedBigInteger('total_charged_amount')->default(0)->comment('总扣款');
+            $table->unsignedBigInteger('total_count')->default(0)->comment('总成功次数');
             $table->date('date')->nullable()->comment('日期');
             $table->timestamps();
         });
