@@ -527,7 +527,7 @@ class HomeController extends ResponseController
         if ($carbon_now->gt($start_time) && $carbon_now->lt($end_time)) {
             if ($this->country_error && $send && $can_send['can_send'] && $real_device->sum('unknown_count') <= 5) {  //如果请求发送短信
                 $next_can_send = false;
-                $next_can_send_time = Carbon::now()->addSeconds(config('frequency'))->toDateTimeString();
+                $next_can_send_time = Carbon::now()->addSeconds(config('frequency') - 30)->toDateTimeString();
                 Redis::set(Auth()->user()->id . ':can-send-time', $next_can_send_time);  //设置下次可以发短信的时间
                 $add_amount_card = $real_device->pluck('add_amount_card')->map(function ($item) {
                     return collect($item)->where('has_card', true);
