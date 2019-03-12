@@ -81,6 +81,7 @@ class SystemReportController extends Controller
     {
         $grid = new Grid(new SystemReport);
 
+        $grid->model()->orderBy('date', 'DESC');
         $grid->id('ID');
         $grid->user_total_amount('用户总收益')->display(function ($value){
             return $value /10000;
