@@ -155,8 +155,8 @@ class StoreCardAmount extends Command
 
     public function systemReport()
     {
-        $user_daily_revenue = UserDailyRevenue::where('date', Carbon::today())->get();
-        $system_report = SystemReport::where('date', Carbon::today())->first();
+        $user_daily_revenue = UserDailyRevenue::where('date', Carbon::yesterday())->get();
+        $system_report = SystemReport::where('date', Carbon::yesterday())->first();
 
         if($system_report){
             $system_report->user_total_amount = $user_daily_revenue->sum('total_income_amount');
@@ -166,7 +166,7 @@ class StoreCardAmount extends Command
             SystemReport::create([
                 'user_total_amount' => $user_daily_revenue->sum('total_income_amount'),
                 'card_total_deduction' => $user_daily_revenue->sum('total_charged_amount'),
-                'date' => Carbon::today()
+                'date' => Carbon::yesterday()
             ]);
         }
     }
