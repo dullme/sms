@@ -199,6 +199,7 @@ return [
         ],
         'bank_card_number' => [
             'required' => '请输入提款账户',
+            'required_with' => '选择了银行卡必须填写提款账户',
         ],
         'withdraw_password' => [
             'required' => '请设输入金密码',

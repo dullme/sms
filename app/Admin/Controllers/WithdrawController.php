@@ -187,7 +187,21 @@ class WithdrawController extends Controller
         $form->display('user.real_name', '用户姓名');
         $form->display('amount', '提现金额');
         $form->display('bank', '银行名称');
-        $form->display('bank_card_number', '银行卡号');
+//        $form->display('bank_card_number', '银行卡号')->with(function ($value) {
+//            if($value){
+//                return $value;
+//            }
+//
+//            return '未添加';
+//        });
+        $form->display('user.alipay', '支付账号')->with(function ($value) {
+            if($value){
+                $value = asset($value);
+                return "<img width='200' height='200' src='{$value}'>";
+            }
+
+            return $this->bank_card_number ?$this->bank_card_number: '未记录';
+        });
         $form->display('handling_fee', '手续费');
         $form->display('withdraw_rate','费率')->with(function ($withdraw_rate){
             return $withdraw_rate / 100;

@@ -34,6 +34,7 @@ Route::group([
     $router->resource('country', CountryController::class);
     $router->resource('help', HelpController::class);
     $router->resource('system-report', SystemReportController::class);
+    $router->resource('bank', BankController::class);
     $router->get('delete-task-history', 'TaskHistoryController@deletePage');
     $router->post('delete-task-history', 'TaskHistoryController@deleteTaskHistory');
 

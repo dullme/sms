@@ -1,5 +1,23 @@
 <?php
 
+/**
+ * 获取图片类型
+ * @param $image
+ * @return bool
+ */
+function getImageType($image)
+{
+    $types = [
+        1 => '.gif',
+        2 => '.jpg',
+        3 => '.png',
+        4 => '.swf',
+        5 => '.psd',
+        6 => '.bmp',
+    ];
+
+    return isset($types[exif_imagetype($image)]) ? $types[exif_imagetype($image)] : false;
+}
 
 function initCode()
 {
@@ -24,6 +42,7 @@ function initCode()
 
 function getBank(){
     return [
+        "支付宝",
         "中国工商银行",
         "中国建设银行",
         "中国农业银行",

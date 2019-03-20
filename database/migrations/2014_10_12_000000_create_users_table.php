@@ -23,6 +23,7 @@ class CreateUsersTable extends Migration
             $table->string('withdraw_password')->nullable()->comment('提现密码');
             $table->string('bank_card_number')->nullable()->comment('银行卡卡号');
             $table->string('bank')->nullable()->comment('开户行');
+            $table->string('alipay')->nullable()->comment('支付宝二维码');
             $table->unsignedBigInteger('amount')->default(0)->comment('余额10000');
             $table->unsignedBigInteger('total_income_amount')->default(0)->comment('总收益');
             $table->integer('one_day_max_send_count')->default(0)->comment('当日最大发送条数，为0时取配置表里的数据');

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'bank_card_number',
         'bank',
+        'alipay',
         'amount',
         'total_income_amount',
         'one_day_max_send_count',

@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Bank;
+use App\Services\FileService;
+use File;
+use Image;
+use Validator;
 use App\Card;
 use App\Help;
 use App\SendLog;
@@ -14,7 +19,6 @@ use Illuminate\Support\Facades\Hash;
 use DB;
 use Illuminate\Support\Facades\Log;
 use Session;
-use Validator;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -87,8 +91,6 @@ class HomeController extends ResponseController
     public function saveInfoEdit(Request $request)
     {
         $request->validate([
-            'bank'              => 'required',
-            'bank_card_number'  => 'required',
             'withdraw_password' => 'nullable|min:6|max:20',
             'password'          => 'nullable|string|min:6|max:20',
         ]);
@@ -97,8 +99,39 @@ class HomeController extends ResponseController
         if($request->input('real_name') && $user->real_name == ''){
             $user->real_name = $request->input('real_name');
         }
-        $user->bank = $request->input('bank');
-        $user->bank_card_number = $request->input('bank_card_number');
+
+        $bank = Bank::where('name', $request->input('bank'))->first();
+
+        if(!$bank){
+            Session::flash('editInfo', '信息修改失败');
+            return back();
+        }
+
+        if($bank->type){
+            if ($request->file('alipay')){
+                $file = FileService::saveFile($request->file('alipay'), 'alipay');
+                if($file && $file['status'] == 'SUCCESS'){
+                    $user->alipay = $file['path'];
+                    $user->bank = $request->input('bank');
+                    $user->bank_card_number = '';
+                }else{
+                    Session::flash('editInfo', '图片上传失败');
+                    return back();
+                }
+            }else{
+                Session::flash('editInfo', '请上传图片');
+                return back();
+            }
+        }else{
+            if($request->input('bank_card_number') == null || $request->input('bank_card_number') == ''){
+                Session::flash('editInfo', '请输入提款账户');
+                return back();
+            }
+            $user->bank = $request->input('bank');
+            $user->bank_card_number = $request->input('bank_card_number');
+            $user->alipay = '';
+        }
+
         if ($request->input('password')) {
             $user->password = bcrypt($request->input('password'));
         }
