@@ -39,7 +39,7 @@
                     <input type="file" style="width: 250px;" name="alipay">
                     <input id="alipay_hidden" type="hidden" name="alipay_hidden" value="{{ Auth()->user()->alipay }}">
                     @if(Auth()->user()->alipay)
-                        <span id="alipay_hidden_image"><img style="width: 100px; height: 100px; margin-left: 50px;" src="{{ asset(Auth()->user()->alipay) }}"></span>
+                        <span style="cursor: pointer" id="alipay_hidden_image" data-toggle="modal" data-target="#myModal"><img style="width: 100px; height: 100px; margin-left: 50px;" src="{{ asset(Auth()->user()->alipay) }}"></span>
                         {{--<a href="##" onclick="deleteImage()">删除</a>--}}
                     @endif
                 </div>
@@ -79,6 +79,14 @@
                     <input type="submit" class="btn btn-lg btn-default" value="修    改" style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB">
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <img style="width: 100%" src="{{ asset(Auth()->user()->alipay) }}">
+            </div>
         </div>
     </div>
 

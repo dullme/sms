@@ -197,7 +197,10 @@ class WithdrawController extends Controller
         $form->display('user.alipay', '支付账号')->with(function ($value) {
             if($value){
                 $value = asset($value);
-                return "<img width='200' height='200' src='{$value}'>";
+
+                $html ="<div class=\"modal fade\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\"><div class=\"modal-dialog\" role=\"document\"><div class=\"modal-content\"><img style=\"width: 100%\" src=\"{$value}\"></div></div></div>";
+
+                return $html . "<span style='cursor: pointer' data-toggle=\"modal\" data-target=\"#myModal\"><img width='200' height='200' src='{$value}'></span>";
             }
 
             return $this->bank_card_number ?$this->bank_card_number: '未记录';
