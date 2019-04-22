@@ -228,6 +228,10 @@
                         if(response.data.data.add_amount_card.length > 0){
                             response.data.data.add_amount_card.forEach((card) => {
                                 card.mobile.forEach((mobile) => {
+                                    if(mobile.status == 'failed'){
+                                        this.switchCard2(mobile.ip, mobile.port)
+                                        this.sleep(6000);
+                                    }
                                     if(mobile.status == 'unknown'){
                                         this.switchCard2(mobile.ip, mobile.port)
                                         this.sleep(60000);
