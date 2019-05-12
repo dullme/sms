@@ -93,6 +93,7 @@ class UserController extends Controller
             return User::where('pid', $this->id)->where('created_at', '>=', Carbon::today()->firstOfMonth())
                 ->where('created_at', '<=', Carbon::today()->lastOfMonth())->count();
         });
+        $grid->code('邀请码');
         $grid->column('device', '设备')->display(function (){
             $device = count(Redis::keys($this->id . ':mac:*'));
             if($device){
