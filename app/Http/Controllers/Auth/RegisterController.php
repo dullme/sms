@@ -54,7 +54,7 @@ class RegisterController extends Controller
             'password'          => ['required', 'string', 'min:6', 'max:20', 'confirmed'],
             'security_question' => ['required', 'string', 'max:255'],
             'classified_answer' => ['required', 'string', 'max:255'],
-//            'code'              => ['code', 'required', 'string', 'max:255'],
+            'code'              => ['code', 'required', 'string', 'max:255'],
         ]);
     }
 
@@ -66,14 +66,14 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-//        $user = User::where('code', strtoupper($data['code']))->first();
-//        $user->increment('invite');
+        $user = User::where('code', strtoupper($data['code']))->first();
+        $user->increment('invite');
         do {
             $code = strtoupper(initCode());
         } while (User::where('code', $code)->count());
 
         return User::create([
-            'pid'               => 0,//$user->id,
+            'pid'               => $user->id,
             'username'          => $data['username'],
             'security_question' => $data['security_question'],
             'classified_answer' => $data['classified_answer'],

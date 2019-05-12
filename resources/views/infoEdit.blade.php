@@ -11,10 +11,10 @@
                     <label>当前账号 ： &nbsp;</label>
                     <span>{{ Auth()->user()->username }}</span>
                 </div>
-                {{--<div style="margin-top: 18px">--}}
-                    {{--<label>邀&nbsp;&nbsp;请&nbsp;&nbsp;码 ： &nbsp;</label>--}}
-                    {{--<span>{{ Auth()->user()->code }}</span>--}}
-                {{--</div>--}}
+                <div style="margin-top: 18px">
+                    <label>邀&nbsp;&nbsp;请&nbsp;&nbsp;码 ： &nbsp;</label>
+                    <span>{{ Auth()->user()->code }}</span>
+                </div>
                 <div style="margin-top: 18px">
                     <label>真实姓名 ： &nbsp;</label>
                     @if(Auth()->user()->real_name)
