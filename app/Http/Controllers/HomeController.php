@@ -307,7 +307,7 @@ class HomeController extends ResponseController
 
     public function infoTransaction()
     {
-        $withdraw = Withdraw::where('user_id', Auth()->user()->id)->orderBy('id', 'DESC')->paginate(20);
+        $withdraw = Withdraw::where('user_id', Auth()->user()->id)->orderBy('id', 'DESC')->paginate(10);
 
         return view('infoTransaction', compact('withdraw'));
     }

@@ -172,6 +172,7 @@ return [
         ],
         'username' => [
             'required' => '请输入账号',
+            'unique' => '账号已存在',
             'min' => '账号最短为:min位',
             'max' => '账号最长为:max位',
         ],
