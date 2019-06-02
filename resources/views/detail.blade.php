@@ -27,16 +27,23 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($task_histories as $history)
+                    @if(count($task_histories))
+                        @foreach($task_histories as $history)
+                            <tr>
+                                <th style="min-width: 180px;" scope="row">{{ $history->created_at }}</th>
+                                <td style="min-width: 100px;" class="text-{{ $history->status ? 'success' :'danger' }}">{{ $history->status ? '成功' :'失败-'.$history->remark }}</td>
+                                <td>{{ $history->iccid }}</td>
+                                <td>{{ substr_replace($history->mobile,'****',3,4) }}</td>
+                                <td style="max-width: 200px; min-width: 200px;">{{ optional($history->task)->content }}</td>
+                                <td>{{ $history->status?optional($history->task)->amount:0 }}</td>
+                            </tr>
+                        @endforeach
+                        @else
                         <tr>
-                            <th style="min-width: 180px;" scope="row">{{ $history->created_at }}</th>
-                            <td style="min-width: 100px;" class="text-{{ $history->status ? 'success' :'danger' }}">{{ $history->status ? '成功' :'失败-'.$history->remark }}</td>
-                            <td>{{ $history->iccid }}</td>
-                            <td>{{ substr_replace($history->mobile,'****',3,4) }}</td>
-                            <td style="max-width: 200px; min-width: 200px;">{{ optional($history->task)->content }}</td>
-                            <td>{{ $history->status?optional($history->task)->amount:0 }}</td>
+                            <td colspan="6" style="text-align: center;height: 200px;line-height: 200px;">暂无数据</td>
                         </tr>
-                    @endforeach
+                    @endif
+
                     </tbody>
                 </table>
                 <div class="text-center">

@@ -600,3 +600,7 @@ a:hover{
     height: 14px;
     width: 14px;
 }
+
+input[type=file] {
+    display: unset;
+}

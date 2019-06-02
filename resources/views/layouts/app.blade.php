@@ -92,9 +92,9 @@
             </ul>
         </div>
         <div style="margin-left: 21px;">
-            <a href="#myModal" role="button" data-toggle="modal"><span class="glyphicon glyphicon-off"></span> 注销</a>
+            <a href="#myModal123" role="button" data-toggle="modal"><span class="glyphicon glyphicon-off"></span> 注销</a>
             <!-- Modal -->
-            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="top: 30%;">
+            <div class="modal fade" id="myModal123" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="top: 30%;">
                 <div class="modal-dialog" role="document" style="width: 350px;">
                     <div class="modal-content">
                         <div class="resizable window">
