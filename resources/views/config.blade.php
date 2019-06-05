@@ -63,6 +63,15 @@
                         </select>
                     </div>
 
+                    <div style="margin-top: 10px">
+                        <label style="width: 200px">设备类型 ： &nbsp;</label>
+                        <select style="width: 180px; height: 26px" name="equipment">
+                            <option value="64" {{ Auth()->user()->equipment == 64 ? 'selected="selected"' :'' }}>64</option>
+                            <option value="128" {{ Auth()->user()->equipment == 128 ? 'selected="selected"' :'' }}>128</option>
+                            <option value="256" {{ Auth()->user()->equipment == 256 ? 'selected="selected"' :'' }}>256</option>
+                        </select>
+                    </div>
+
                     <div style="margin-left: 204px;margin-top: 20px;float: left">
                         <input type="submit" value="保    存" style="font-size: 12px;cursor: pointer;padding: 4px 26px">
                         <span style="font-size: 12px;color: #ce0000;">

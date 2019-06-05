@@ -1,6 +1,9 @@
 <template>
     <div>
-    <div style="width: 100%; padding: 10px; color: red;">如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！</div>
+    <div style="width: 100%; padding: 10px; color: red;">
+        如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！
+        <span style="border: 2px solid #18c106; padding: 4px 8px; border-radius: 20px">设备类型：{{ equipment }}</span>
+    </div>
         <div style="padding: 10px; min-width: 600px">
             <div>
                 <span class="ka_cao_example failed">未识别</span>
@@ -63,6 +66,26 @@
             </div>
 
         </div>
+        <div class="modal fade" id="myModalinfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="top: 30%;">
+            <div class="modal-dialog" role="document" style="width: 350px;">
+                <div class="modal-content">
+                    <div class="resizable window">
+                        <div class="header-win">
+                            <img class="icon" src="icons/txt.gif">
+                            提示
+                            <div class="buttons">
+                                <button type="button" data-dismiss="modal">X</button>
+                            </div>
+                        </div>
+
+                        <div id="modalMessage" class="content">
+                            网络不稳定，请关闭客户端后重新登陆
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -110,12 +133,15 @@
             },
         },
 
+        props: [
+            'equipment', //设备
+        ],
+
         created() {
             _this = this;
             this.scanningIp();
         },
         mounted() {
-
         },
 
         methods: {
@@ -140,6 +166,11 @@
                     console.log('开始扫描设备');
                     this.scanning_ip_interval = setInterval(() => {
                         this.time += 1
+
+                        if(this.time >= 5 && this.equipment != 256){
+                            this.message = '...【未扫描到设备或您的设备暂不支持】...'
+                        }
+
                         if (this.time >= 20) {
                             this.message = '...设备扫描时间过长请重新扫描...'
                         }
@@ -150,28 +181,30 @@
 
             //读IP
             getIps() {
-                // setTimeout(() => {
-                //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.112"]}').IPS;
-                //     this.read_ip_finished = true    //完成IP的读取
-                // }, 1000)
+                if(this.equipment == 256){
+                    // setTimeout(() => {
+                    //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.112"]}').IPS;
+                    //     this.read_ip_finished = true    //完成IP的读取
+                    // }, 1000)
 
-                AsyncIPS.getUsefullIPs('80', (json) => {
-                    clearInterval(this.scanning_ip_interval);
+                    AsyncIPS.getUsefullIPs('80', (json) => {
+                        clearInterval(this.scanning_ip_interval);
 
-                    let ips = JSON.parse(json).IPS;
-                    if(ips.length > 0){
-                        let ips_length = ips.length > 5 ? 5 : ips.length;
-                        for (let i=0; i < ips_length;i++)
-                        {
-                            this.ips[i] = ips[i]
+                        let ips = JSON.parse(json).IPS;
+                        if(ips.length > 0){
+                            let ips_length = ips.length > 5 ? 5 : ips.length;
+                            for (let i=0; i < ips_length;i++)
+                            {
+                                this.ips[i] = ips[i]
+                            }
                         }
-                    }
 
-                    console.log(json)
-                    this.read_ip_finished = true    //完成IP的读取
-                }, (message) => {
-                    console.log(message)
-                });
+                        console.log(json)
+                        this.read_ip_finished = true    //完成IP的读取
+                    }, (message) => {
+                        console.log(message)
+                    });
+                }
             },
 
             //读卡
@@ -184,7 +217,7 @@
                 //     } else {
                 //         this.read_card_status = true;
                 //     }
-                // }, 1000)
+                // }, 1000)//修改
 
                 if(this.ips.length){
                     AsyncHttp.httpRequest(
@@ -246,7 +279,8 @@
                         console.log(error);
                         if(error.response.data.code == 419){
                             this.open = 'STOPPED';
-                            alert('网络不稳定，请关闭客户端后重新登陆')
+                            $('#modalMessage').html(error.response.data.message);
+                            $('#myModalinfo').modal('show');
                         }
                     });
                 }
@@ -416,6 +450,11 @@
         color: white;
     }
 
+    .seal {
+        background-color: #6cb2eb;
+        color: white;
+    }
+
     .daily_send_amount {
         background-color: #eb02eb;
         color: white;
@@ -444,5 +483,13 @@
     .nav-tabs>li>a:hover {
         border: 2px solid #c4c4c4;
         border-bottom: none;
+    }
+
+    .modal-open .modal-backdrop {
+        opacity: 0.6 !important;
+    }
+
+    .modal-open .modal {
+        opacity: 1.0 !important;
     }
 </style>

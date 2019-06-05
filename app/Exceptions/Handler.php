@@ -49,7 +49,7 @@ class Handler extends ExceptionHandler
         if (request()->expectsJson() && $exception->getCode() == "0"){
             $data = [
                 'code' => 419,
-                'message' => '请重新登陆',
+                'message' => '网络不稳定，请关闭客户端后重新登陆！',
             ];
 
             return response()->json($data, 419);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 
@@ -54,10 +55,17 @@ class LoginController extends Controller
 
     protected function validateLogin(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             $this->username() => 'required|string',
             'password' => 'required|string',
             'captcha' => 'required|captcha',
         ]);
+
+        $user = User::where('username', $data['username'])->first();
+
+        if($user->status == 1){
+            abort(401);
+        }
+
     }
 }

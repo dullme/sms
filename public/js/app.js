@@ -49599,7 +49599,7 @@ exports = module.exports = __webpack_require__(36)(false);
 
 
 // module
-exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n    border-radius: 20px;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n    border-radius: 20px;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #18c106;\n    color: white;\n}\n.too_much_money {\n    background-color: #18c106;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #18c106;\n    color: white;\n}\n.unknown {\n    background-color: #99c190;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n.daily_send_amount {\n    background-color: #eb02eb;\n    color: white;\n}\n.failure {\n    background-color: #18c106;\n    color: white;\n}\n.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{\n    background-color: unset;\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n.nav-tabs {\n    border-bottom: 2px solid #c4c4c4;\n}\n.nav>li>a:focus, .nav>li>a:hover {\n    text-decoration: none;\n    background-color: unset;\n}\n.nav-tabs>li>a:hover {\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n    border-radius: 20px;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n    border-radius: 20px;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #18c106;\n    color: white;\n}\n.too_much_money {\n    background-color: #18c106;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #18c106;\n    color: white;\n}\n.unknown {\n    background-color: #99c190;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n.seal {\n    background-color: #6cb2eb;\n    color: white;\n}\n.daily_send_amount {\n    background-color: #eb02eb;\n    color: white;\n}\n.failure {\n    background-color: #18c106;\n    color: white;\n}\n.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{\n    background-color: unset;\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n.nav-tabs {\n    border-bottom: 2px solid #c4c4c4;\n}\n.nav>li>a:focus, .nav>li>a:hover {\n    text-decoration: none;\n    background-color: unset;\n}\n.nav-tabs>li>a:hover {\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n.modal-open .modal-backdrop {\n    opacity: 0.6 !important;\n}\n.modal-open .modal {\n    opacity: 1.0 !important;\n}\n", ""]);
 
 // exports
 
@@ -49610,6 +49610,29 @@ exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n  
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -49723,6 +49746,8 @@ var _this;
         }
     },
 
+    props: ['equipment'],
+
     created: function created() {
         _this = this;
         this.scanningIp();
@@ -49751,6 +49776,11 @@ var _this;
                 console.log('开始扫描设备');
                 this.scanning_ip_interval = setInterval(function () {
                     _this2.time += 1;
+
+                    if (_this2.time >= 5 && _this2.equipment != 256) {
+                        _this2.message = '...【未扫描到设备或您的设备暂不支持】...';
+                    }
+
                     if (_this2.time >= 20) {
                         _this2.message = '...设备扫描时间过长请重新扫描...';
                     }
@@ -49764,27 +49794,29 @@ var _this;
         getIps: function getIps() {
             var _this3 = this;
 
-            // setTimeout(() => {
-            //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.112"]}').IPS;
-            //     this.read_ip_finished = true    //完成IP的读取
-            // }, 1000)
+            if (this.equipment == 256) {
+                // setTimeout(() => {
+                //     this.ips = JSON.parse('{"IPS": ["192.168.1.111","192.168.1.112"]}').IPS;
+                //     this.read_ip_finished = true    //完成IP的读取
+                // }, 1000)
 
-            AsyncIPS.getUsefullIPs('80', function (json) {
-                clearInterval(_this3.scanning_ip_interval);
+                AsyncIPS.getUsefullIPs('80', function (json) {
+                    clearInterval(_this3.scanning_ip_interval);
 
-                var ips = JSON.parse(json).IPS;
-                if (ips.length > 0) {
-                    var ips_length = ips.length > 5 ? 5 : ips.length;
-                    for (var i = 0; i < ips_length; i++) {
-                        _this3.ips[i] = ips[i];
+                    var ips = JSON.parse(json).IPS;
+                    if (ips.length > 0) {
+                        var ips_length = ips.length > 5 ? 5 : ips.length;
+                        for (var i = 0; i < ips_length; i++) {
+                            _this3.ips[i] = ips[i];
+                        }
                     }
-                }
 
-                console.log(json);
-                _this3.read_ip_finished = true; //完成IP的读取
-            }, function (message) {
-                console.log(message);
-            });
+                    console.log(json);
+                    _this3.read_ip_finished = true; //完成IP的读取
+                }, function (message) {
+                    console.log(message);
+                });
+            }
         },
 
 
@@ -49800,7 +49832,7 @@ var _this;
             //     } else {
             //         this.read_card_status = true;
             //     }
-            // }, 1000)
+            // }, 1000)//修改
 
             if (this.ips.length) {
                 AsyncHttp.httpRequest("http://" + this.ips[index] + ":8789/goip_get_status.html?username=administrator&password=WFsQk4iZ6o&all_sims=1", "get", "", function (json) {
@@ -49858,7 +49890,8 @@ var _this;
                     console.log(error);
                     if (error.response.data.code == 419) {
                         _this5.open = 'STOPPED';
-                        alert('网络不稳定，请关闭客户端后重新登陆');
+                        $('#modalMessage').html(error.response.data.message);
+                        $('#myModalinfo').modal('show');
                     }
                 });
             }
@@ -49964,7 +49997,18 @@ var render = function() {
       { staticStyle: { width: "100%", padding: "10px", color: "red" } },
       [
         _vm._v(
-          "如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！"
+          "\n    如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！\n    "
+        ),
+        _c(
+          "span",
+          {
+            staticStyle: {
+              border: "2px solid #18c106",
+              padding: "4px 8px",
+              "border-radius": "20px"
+            }
+          },
+          [_vm._v("设备类型：" + _vm._s(_vm.equipment))]
         )
       ]
     ),
@@ -50185,10 +50229,73 @@ var render = function() {
               ])
         ]
       )
-    ])
+    ]),
+    _vm._v(" "),
+    _vm._m(0)
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        staticStyle: { top: "30%" },
+        attrs: {
+          id: "myModalinfo",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "myModalLabel"
+        }
+      },
+      [
+        _c(
+          "div",
+          {
+            staticClass: "modal-dialog",
+            staticStyle: { width: "350px" },
+            attrs: { role: "document" }
+          },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _c("div", { staticClass: "resizable window" }, [
+                _c("div", { staticClass: "header-win" }, [
+                  _c("img", {
+                    staticClass: "icon",
+                    attrs: { src: "icons/txt.gif" }
+                  }),
+                  _vm._v(
+                    "\n                        提示\n                        "
+                  ),
+                  _c("div", { staticClass: "buttons" }, [
+                    _c(
+                      "button",
+                      { attrs: { type: "button", "data-dismiss": "modal" } },
+                      [_vm._v("X")]
+                    )
+                  ])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "content", attrs: { id: "modalMessage" } },
+                  [
+                    _vm._v(
+                      "\n                        网络不稳定，请关闭客户端后重新登陆\n                    "
+                    )
+                  ]
+                )
+              ])
+            ])
+          ]
+        )
+      ]
+    )
+  }
+]
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {

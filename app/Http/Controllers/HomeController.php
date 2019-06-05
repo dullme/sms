@@ -323,7 +323,8 @@ class HomeController extends ResponseController
             'baud_rate'  => 'required',
             'mode'       => 'required',
             'encryption' => 'required',
-            'country'    => 'required'
+            'country'    => 'required',
+            'equipment'    => 'required'
         ]);
 
         $user = User::findOrFail(Auth()->user()->id);
@@ -332,6 +333,7 @@ class HomeController extends ResponseController
         $user->mode = $request->input('mode');
         $user->encryption = $request->input('encryption');
         $user->country = $request->input('country');
+        $user->equipment = $request->input('equipment');
         $res = $user->save();
 
         if ($res) {
@@ -381,6 +383,15 @@ class HomeController extends ResponseController
 
     public function makeCard(Request $request)
     {
+        if(Auth()->user()->status == 1){
+            $data = [
+                'code' => 419,
+                'message' => '该账户已被冻结！',
+            ];
+
+            return response()->json($data, 419);
+        }
+
         $request->validate([
             'device' => 'required',
             'send'   => 'required'

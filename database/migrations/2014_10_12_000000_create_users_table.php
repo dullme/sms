@@ -36,6 +36,7 @@ class CreateUsersTable extends Migration
             $table->string('baud_rate')->default('1200')->comment('波特率');
             $table->integer('wrong_password')->default(0)->comment('密码错误次数');
             $table->string('country')->nullable()->comment('国家ICCID');
+            $table->integer('equipment')->default(256)->comment('设备');
             $table->rememberToken();
             $table->timestamps();
         });

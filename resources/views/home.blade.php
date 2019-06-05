@@ -2,5 +2,5 @@
 
 @section('content')
     @include('layouts.header')
-    <device></device>
+    <device equipment='{{ Auth()->user()->equipment }}'></device>
 @endsection
