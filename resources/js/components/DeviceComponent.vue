@@ -1,6 +1,6 @@
 <template>
     <div>
-    <div style="background-color: rgb(153, 153, 153); width: 100%; padding: 10px; color: white;">如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！</div>
+    <div style="width: 100%; padding: 10px; color: red;">如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！</div>
         <div style="padding: 10px; min-width: 600px">
             <div>
                 <span class="ka_cao_example failed">未识别</span>
@@ -43,17 +43,17 @@
             <div class="text-center" v-else v-text="read_card_status == true ? '未找到设备':''"
                  style="min-height: 200px; line-height: 200px"></div>
 
-            <div class="text-center">
+            <div class="text-center" style="padding-top: 40px;clear:both">
                 <span v-if="read_card_status == false">
                     <i>搜索中({{ this.time }})</i>
                     <i v-text="message"></i>
                     <a href="##" v-on:click="scanningIp">重新搜索</a>
                 </span>
                 <div v-else>
-                    <a class="btn btn-lg btn-default" :class="open == 'SENDING' ? 'disabled' : ''"
+                    <a class="btn btn-default" :class="open == 'SENDING' ? 'disabled' : ''"
                        style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
                        v-on:click="scanningIp">重新扫描设备</a>
-                    <a class="btn btn-lg btn-default"
+                    <a class="btn btn-default"
                        style="width: 160px;background-color: white; font-weight: bolder; border: 2px solid #BBBBBB"
                        v-on:click="start" v-text="open == 'STOPPED' ? '启动':'停止' "></a>
                     <div style="width: 40px;display: inline-block"><img v-if="open == 'SENDING'" src="/images/loading.svg"
@@ -155,7 +155,6 @@
                 //     this.read_ip_finished = true    //完成IP的读取
                 // }, 1000)
 
-
                 AsyncIPS.getUsefullIPs('80', (json) => {
                     clearInterval(this.scanning_ip_interval);
 
@@ -244,7 +243,11 @@
                         }
 
                     }).catch(error => {
-                        console.log(error.response.data.message)
+                        console.log(error);
+                        if(error.response.data.code == 419){
+                            this.open = 'STOPPED';
+                            alert('网络不稳定，请关闭客户端后重新登陆')
+                        }
                     });
                 }
             },
@@ -361,6 +364,7 @@
         text-align: center;
         line-height: 39px;
         float: left;
+        border-radius: 20px;
     }
 
     .ka_cao {
@@ -370,6 +374,7 @@
         height: 6.25%;
         text-align: center;
         padding: 0.5rem;
+        border-radius: 20px;
     }
 
     .failed:hover{
@@ -419,5 +424,25 @@
     .failure {
         background-color: #18c106;
         color: white;
+    }
+
+    .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{
+        background-color: unset;
+        border: 2px solid #c4c4c4;
+        border-bottom: none;
+    }
+
+    .nav-tabs {
+        border-bottom: 2px solid #c4c4c4;
+    }
+
+    .nav>li>a:focus, .nav>li>a:hover {
+        text-decoration: none;
+        background-color: unset;
+    }
+
+    .nav-tabs>li>a:hover {
+        border: 2px solid #c4c4c4;
+        border-bottom: none;
     }
 </style>

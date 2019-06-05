@@ -49599,7 +49599,7 @@ exports = module.exports = __webpack_require__(36)(false);
 
 
 // module
-exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #18c106;\n    color: white;\n}\n.too_much_money {\n    background-color: #18c106;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #18c106;\n    color: white;\n}\n.unknown {\n    background-color: #99c190;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n.daily_send_amount {\n    background-color: #eb02eb;\n    color: white;\n}\n.failure {\n    background-color: #18c106;\n    color: white;\n}\n", ""]);
+exports.push([module.i, "\n.ka_cao_example {\n    border: 1px solid #dee2e6;\n    width: 80px;\n    height: 40px;\n    text-align: center;\n    line-height: 39px;\n    float: left;\n    border-radius: 20px;\n}\n.ka_cao {\n    float: left;\n    border: 1px solid #dee2e6;\n    width: 6.25%;\n    height: 6.25%;\n    text-align: center;\n    padding: 0.5rem;\n    border-radius: 20px;\n}\n.failed:hover{\n    color: white;\n}\n.empty {\n    background-color: #c4c4c4;\n    color: black;\n}\n.success {\n    background-color: #18c106;\n    color: white;\n}\n.too_much_money {\n    background-color: #18c106;\n    color: white;\n}\n.insufficient_balance {\n    background-color: #18c106;\n    color: white;\n}\n.unknown {\n    background-color: #99c190;\n    color: white;\n}\n.failed {\n    background-color: #e3342f;\n    color: white;\n}\n.wrong {\n    background-color: #6cb2eb;\n    color: white;\n}\n.daily_send_amount {\n    background-color: #eb02eb;\n    color: white;\n}\n.failure {\n    background-color: #18c106;\n    color: white;\n}\n.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{\n    background-color: unset;\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n.nav-tabs {\n    border-bottom: 2px solid #c4c4c4;\n}\n.nav>li>a:focus, .nav>li>a:hover {\n    text-decoration: none;\n    background-color: unset;\n}\n.nav-tabs>li>a:hover {\n    border: 2px solid #c4c4c4;\n    border-bottom: none;\n}\n", ""]);
 
 // exports
 
@@ -49769,7 +49769,6 @@ var _this;
             //     this.read_ip_finished = true    //完成IP的读取
             // }, 1000)
 
-
             AsyncIPS.getUsefullIPs('80', function (json) {
                 clearInterval(_this3.scanning_ip_interval);
 
@@ -49856,7 +49855,11 @@ var _this;
                         });
                     }
                 }).catch(function (error) {
-                    console.log(error.response.data.message);
+                    console.log(error);
+                    if (error.response.data.code == 419) {
+                        _this5.open = 'STOPPED';
+                        alert('网络不稳定，请关闭客户端后重新登陆');
+                    }
                 });
             }
         },
@@ -49958,14 +49961,7 @@ var render = function() {
   return _c("div", [
     _c(
       "div",
-      {
-        staticStyle: {
-          "background-color": "rgb(153, 153, 153)",
-          width: "100%",
-          padding: "10px",
-          color: "white"
-        }
-      },
+      { staticStyle: { width: "100%", padding: "10px", color: "red" } },
       [
         _vm._v(
           "如果卡为红色未识别状态请等待1-2分钟后重新搜索设备，直到全部识别！"
@@ -50121,67 +50117,74 @@ var render = function() {
             }
           }),
       _vm._v(" "),
-      _c("div", { staticClass: "text-center" }, [
-        _vm.read_card_status == false
-          ? _c("span", [
-              _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
-              _vm._v(" "),
-              _c("i", { domProps: { textContent: _vm._s(_vm.message) } }),
-              _vm._v(" "),
-              _c(
-                "a",
-                { attrs: { href: "##" }, on: { click: _vm.scanningIp } },
-                [_vm._v("重新搜索")]
-              )
-            ])
-          : _c("div", [
-              _c(
-                "a",
-                {
-                  staticClass: "btn btn-lg btn-default",
-                  class: _vm.open == "SENDING" ? "disabled" : "",
+      _c(
+        "div",
+        {
+          staticClass: "text-center",
+          staticStyle: { "padding-top": "40px", clear: "both" }
+        },
+        [
+          _vm.read_card_status == false
+            ? _c("span", [
+                _c("i", [_vm._v("搜索中(" + _vm._s(this.time) + ")")]),
+                _vm._v(" "),
+                _c("i", { domProps: { textContent: _vm._s(_vm.message) } }),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  { attrs: { href: "##" }, on: { click: _vm.scanningIp } },
+                  [_vm._v("重新搜索")]
+                )
+              ])
+            : _c("div", [
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-default",
+                    class: _vm.open == "SENDING" ? "disabled" : "",
+                    staticStyle: {
+                      width: "160px",
+                      "background-color": "white",
+                      "font-weight": "bolder",
+                      border: "2px solid #BBBBBB"
+                    },
+                    on: { click: _vm.scanningIp }
+                  },
+                  [_vm._v("重新扫描设备")]
+                ),
+                _vm._v(" "),
+                _c("a", {
+                  staticClass: "btn btn-default",
                   staticStyle: {
                     width: "160px",
                     "background-color": "white",
                     "font-weight": "bolder",
                     border: "2px solid #BBBBBB"
                   },
-                  on: { click: _vm.scanningIp }
-                },
-                [_vm._v("重新扫描设备")]
-              ),
-              _vm._v(" "),
-              _c("a", {
-                staticClass: "btn btn-lg btn-default",
-                staticStyle: {
-                  width: "160px",
-                  "background-color": "white",
-                  "font-weight": "bolder",
-                  border: "2px solid #BBBBBB"
-                },
-                domProps: {
-                  textContent: _vm._s(_vm.open == "STOPPED" ? "启动" : "停止")
-                },
-                on: { click: _vm.start }
-              }),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticStyle: { width: "40px", display: "inline-block" } },
-                [
-                  _vm.open == "SENDING"
-                    ? _c("img", {
-                        attrs: {
-                          src: "/images/loading.svg",
-                          width: "100%",
-                          height: "100%"
-                        }
-                      })
-                    : _vm._e()
-                ]
-              )
-            ])
-      ])
+                  domProps: {
+                    textContent: _vm._s(_vm.open == "STOPPED" ? "启动" : "停止")
+                  },
+                  on: { click: _vm.start }
+                }),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticStyle: { width: "40px", display: "inline-block" } },
+                  [
+                    _vm.open == "SENDING"
+                      ? _c("img", {
+                          attrs: {
+                            src: "/images/loading.svg",
+                            width: "100%",
+                            height: "100%"
+                          }
+                        })
+                      : _vm._e()
+                  ]
+                )
+              ])
+        ]
+      )
     ])
   ])
 }

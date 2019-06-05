@@ -46,6 +46,15 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if (request()->expectsJson() && $exception->getCode() == "0"){
+            $data = [
+                'code' => 419,
+                'message' => '请重新登陆',
+            ];
+
+            return response()->json($data, 419);
+        }
+
         return parent::render($request, $exception);
     }
 }
