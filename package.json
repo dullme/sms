@@ -20,7 +20,7 @@
         "vue": "^2.5.7"
     },
     "dependencies": {
-        "ajv": "^6.5.5",
+        "ajv": "^6.12.3",
         "imagemin": "^6.0.0",
         "select2": "^4.0.6-rc.1",
         "vue-select": "^2.5.1"
